@@ -52,7 +52,7 @@
       border:3px solid var(--border);
       border-radius:var(--radius);
       box-shadow:none; /* ✅ 꽉 찬 느낌 (원하면 다시 켜도 됨) */
-      padding:16px 16px 12px;
+      padding:14px 14px 10px;
       position:relative;
       overflow:hidden;
     }
@@ -123,8 +123,8 @@
     /* ✅ 남는 하단 공간 없이 메인 꽉 채우기 */
     .main{
       display:grid;
-      grid-template-columns: 1fr 340px;
-      gap:14px;
+      grid-template-columns: 1fr 320px;
+      gap:12px;
       align-items:start;
       height: calc(100% - 112px); /* ✅ top+divider 영역 */
       min-height:0;
@@ -192,10 +192,10 @@
     .dow{
       display:grid;
       grid-template-columns:repeat(7, 1fr);
-      gap:10px;
-      padding:6px 10px 10px;
+      gap:8px;
+      padding:4px 8px 8px;
       color:var(--muted);
-      font-size:12px;
+      font-size:11px;
       letter-spacing:2px;
       text-align:center;
       flex:0 0 auto;
@@ -214,16 +214,16 @@
     .cell{
       position:relative;
       border:3px solid var(--line);
-      border-radius:16px;
+      border-radius:15px;
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size:16px;
+      font-size:15px;
       cursor:pointer;
       background:#fff;
       transition:transform .06s ease;
       user-select:none;
-      min-height:46px; /* ✅ 너무 납작해지는 것 방지 */
+      min-height:42px; /* ✅ 너무 납작해지는 것 방지 */
     }
     .cell:hover{ transform:translateY(-1px); }
     .cell.empty{
@@ -305,8 +305,8 @@
 
     .rbox{
       border:3px solid var(--line);
-      border-radius:20px;
-      padding:14px;
+      border-radius:18px;
+      padding:12px;
       display:flex;
       gap:12px;
       align-items:center;
@@ -335,12 +335,12 @@
     }
 
     .rtext .rt{
-      font-size:14px;
+      font-size:13px;
       letter-spacing:2px;
     }
     .rtext .rd{
       margin-top:6px;
-      font-size:11px;
+      font-size:10px;
       color:var(--muted);
       letter-spacing:1px;
       font-family:system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
@@ -353,7 +353,7 @@
     }
     .side-actions .btn{
       flex:1;
-      padding:12px 10px;
+      padding:11px 10px;
     }
 
     /* ✅ 오늘의 루틴(선택 날짜 기준) */
@@ -370,17 +370,20 @@
       flex-direction:column;
       gap:10px;
     }
-    .todayPanelHead{
+     .todayPanelHead{
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:10px;
       flex:0 0 auto;
+      min-width:0; /* ✅ 날짜칩 잘림 방지 핵심 */
     }
+    
     .todayPanelHead .t{
       font-size:14px;
       letter-spacing:2px;
     }
+    
     .todayChip{
       border:3px solid var(--line);
       border-radius:16px;
@@ -389,7 +392,11 @@
       font-size:12px;
       letter-spacing:1px;
       background:#fff;
-      max-width:130px;
+    
+      flex:0 1 auto; /* ✅ 줄어들 수 있게 */
+      min-width:0;   /* ✅ overflow 적용되게 */
+      max-width:118px;
+    
       overflow:hidden;
       text-overflow:ellipsis;
       white-space:nowrap;
@@ -1076,3 +1083,4 @@
   </script>
 </body>
 </html>
+
