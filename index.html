@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>YOHAN OS / Pixel Calendar Embed</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Silkscreen&display=swap" rel="stylesheet">
@@ -22,6 +22,13 @@
       --shadow:rgba(0,0,0,.06);
       --radius:22px;
     }
+
+    <script>
+// 페이지 로드 시 URL 체크해서 캐시 방지
+if(!window.location.search) {
+  window.location.href = window.location.href + '?t=' + Date.now();
+}
+</script>
 
     *{ box-sizing:border-box; }
     html, body{
@@ -51,7 +58,7 @@
       padding:18px 18px 14px;
       position:relative;
 
-      /* ✅ 바텀 패널 때문에 카드가 너무 커지지 않게 */
+      /* ✅ Bottom Sheet 때문에 카드가 비정상적으로 커지지 않게 */
       height: min(720px, calc(100vh - 28px));
       overflow:hidden;
     }
@@ -127,6 +134,7 @@
       align-items:start;
       height: calc(100% - 110px); /* ✅ 상단+divider 공간 제외 */
       overflow:hidden;
+      padding-bottom: 40px; /* ✅ footer + sheet 여유 */
     }
 
     .leftcol{
@@ -275,17 +283,32 @@
       background:#fff;
     }
 
+    /* ✅ 체크박스 공통 */
     .chk{
-      width:26px; height:26px;
-      border:3px solid #1d1d1d;
-      border-radius:7px;
-      background:#fff;
       display:flex;
       align-items:center;
       justify-content:center;
       cursor:pointer;
       flex:0 0 auto;
+      user-select:none;
     }
+
+    /* ✅ 루틴 체크박스 */
+    .routine-chk{
+      width:26px; height:26px;
+      border:3px solid #1d1d1d;
+      border-radius:7px;
+      background:#fff;
+    }
+
+    /* ✅ 태스크 체크박스 (작게) */
+    .task-chk{
+      width:22px; height:22px;
+      border:2px solid #1d1d1d;
+      border-radius:6px;
+      background:#fff;
+    }
+
     .chk.on{
       background:var(--pink2);
       position:relative;
@@ -325,11 +348,13 @@
       right:18px;
       bottom:10px;
       display:flex;
+      justify-content:space-between;
       gap:10px;
       color:var(--muted);
       font-size:11px;
       letter-spacing:2px;
       pointer-events:none;
+      z-index:1;
     }
     .foot .left{ flex:1; }
     .foot .right{ text-align:right; }
@@ -345,74 +370,95 @@
       opacity:0;
       pointer-events:none;
       transition:opacity .14s ease;
+      z-index:40; /* ✅ dim은 sheet보다 아래 */
     }
     .sheet-dim.on{
       opacity:1;
       pointer-events:auto;
     }
 
-.tasks-sheet{
-  left:18px;
-  right:18px;
-  bottom:80px;               /* ✅ footer랑 거리 줄임 */
-  border:2px solid #1d1d1d;  /* ✅ 덜 무겁게 */
-  border-radius:22px;
+    .tasks-sheet{
+      position:absolute; /* ✅ 이거 없으면 팝업이 안 뜸 */
+      left:18px;
+      right:18px;
+      bottom:54px; /* ✅ footer 위로 살짝만 */
+      border:2px solid #1d1d1d;
+      border-radius:22px;
+      background:#fff;
 
-  max-height:180px;          /* ✅ 더 작게 */
-  height:180px;
+      max-height:220px;
+      height:220px;
 
-  box-shadow:6px 8px 0 var(--shadow);
+      box-shadow:6px 8px 0 var(--shadow);
 
-  transform:translateY(120%);
-  opacity:0;
-  pointer-events:none;
-  transition:transform .18s ease, opacity .18s ease;
-  overflow:hidden;
-}
+      transform:translateY(130%);
+      opacity:0;
+      pointer-events:none;
+      transition:transform .18s ease, opacity .18s ease;
+      overflow:hidden;
+      z-index:50; /* ✅ 가장 위 */
+    }
 
-.tasks-head{
-  padding:10px 12px;
-}
+    /* ✅ open 상태 (필수) */
+    .tasks-sheet.open{
+      transform:translateY(0);
+      opacity:1;
+      pointer-events:auto;
+    }
 
-.tasks-head .t{
-  font-size:13px;            /* ✅ 헤더 크기 조금 다운 */
-  letter-spacing:2px;
-}
+    .tasks-head{
+      padding:10px 12px;
+      border-bottom:2px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      background:#fff;
+    }
 
-.tasks-body{
-  padding:10px 12px 12px;
-  height: calc(180px - 48px); /* ✅ 헤더 높이 맞춤 */
-  overflow:auto;
-}
+    .tasks-head .t{
+      font-size:13px;
+      letter-spacing:2px;
+    }
+
+    .tasks-body{
+      padding:10px 12px 12px;
+      height: calc(220px - 52px);
+      overflow:auto;
+    }
 
     .tasklist{
       display:flex;
       flex-direction:column;
       gap:10px;
     }
-.task{
-  border:2px solid var(--line);
-  border-radius:16px;
-  padding:8px 10px;     /* ✅ 더 얇게 */
-  gap:10px;
-}
 
-.task input[type="text"]{
-  font-size:12px;       /* ✅ 폰트 살짝 작게 */
-}
-.chk{
-  width:22px;
-  height:22px;
-  border:2px solid #1d1d1d;
-  border-radius:6px;
-}
+    .task{
+      border:2px solid var(--line);
+      border-radius:16px;
+      padding:8px 10px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      background:#fff;
+    }
+
+    .task input[type="text"]{
+      width:100%;
+      border:none;
+      outline:none;
+      font-size:12px;
+      letter-spacing:1px;
+      background:transparent;
+      font-family:system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    }
 
     /* responsive */
     @media (max-width: 940px){
-      html, body{ overflow:auto; } /* 모바일에선 스크롤 허용 */
+      html, body{ overflow:auto; }
       .wrap{ height:auto; }
       .card{ height:auto; overflow:visible; }
-      .main{ grid-template-columns:1fr; height:auto; overflow:visible; }
+      .main{ grid-template-columns:1fr; height:auto; overflow:visible; padding-bottom:0; }
       .side{ order:2; }
 
       .tasks-sheet{
@@ -481,7 +527,7 @@
 
           <div class="routine">
             <div class="rbox">
-              <div class="chk" id="r_workout"></div>
+              <div class="chk routine-chk" id="r_workout"></div>
               <div class="rtext">
                 <div class="rt">WORKOUT</div>
                 <div class="rd">운동 1회 이상</div>
@@ -489,7 +535,7 @@
             </div>
 
             <div class="rbox">
-              <div class="chk" id="r_reading"></div>
+              <div class="chk routine-chk" id="r_reading"></div>
               <div class="rtext">
                 <div class="rt">READING</div>
                 <div class="rd">독서 10P 이상</div>
@@ -497,7 +543,7 @@
             </div>
 
             <div class="rbox">
-              <div class="chk" id="r_budget"></div>
+              <div class="chk routine-chk" id="r_budget"></div>
               <div class="rtext">
                 <div class="rt">BUDGET</div>
                 <div class="rd">가계부 기록</div>
@@ -525,15 +571,15 @@
         <div class="tasks-body">
           <div class="tasklist">
             <div class="task">
-              <div class="chk" data-taskcheck="0"></div>
+              <div class="chk task-chk" data-taskcheck="0"></div>
               <input type="text" id="task1" placeholder="TASK 1 (클릭해서 입력)" />
             </div>
             <div class="task">
-              <div class="chk" data-taskcheck="1"></div>
+              <div class="chk task-chk" data-taskcheck="1"></div>
               <input type="text" id="task2" placeholder="TASK 2" />
             </div>
             <div class="task">
-              <div class="chk" data-taskcheck="2"></div>
+              <div class="chk task-chk" data-taskcheck="2"></div>
               <input type="text" id="task3" placeholder="TASK 3" />
             </div>
           </div>
@@ -542,7 +588,7 @@
 
       <div class="foot">
         <div class="left">NOTION EMBED SAFE</div>
-        <div class="right">v2.3</div>
+        <div class="right">v2.4</div>
       </div>
 
     </div>
@@ -574,7 +620,7 @@
       const allRoutineBtn = $("allRoutineBtn");
       const weekChip = $("weekChip");
 
-      const KEY = "yohan_os_calendar_v23";
+      const KEY = "yohan_os_calendar_v24";
 
       const months = [
         "JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE",
@@ -699,12 +745,14 @@
       prevBtn.addEventListener("click", ()=>{
         state.viewMonth--;
         if(state.viewMonth < 0){ state.viewMonth = 11; state.viewYear--; }
+        closeTasks();  // ✅ 월 이동 시 패널 닫기 (겹침 방지)
         save(); render();
       });
 
       nextBtn.addEventListener("click", ()=>{
         state.viewMonth++;
         if(state.viewMonth > 11){ state.viewMonth = 0; state.viewYear++; }
+        closeTasks();  // ✅ 월 이동 시 패널 닫기
         save(); render();
       });
 
@@ -737,7 +785,7 @@
 
       // task checkbox
       tasksPanel.addEventListener("click", (e)=>{
-        const chk = e.target.closest(".chk");
+        const chk = e.target.closest(".chk[data-taskcheck]");
         if(!chk) return;
 
         const i = chk.getAttribute("data-taskcheck");
@@ -779,7 +827,3 @@
   </script>
 </body>
 </html>
-
-
-
-
