@@ -47,6 +47,10 @@
       box-shadow:8px 10px 0 var(--shadow);
       padding:18px 18px 14px;
       position:relative;
+
+      /* ✅ 바텀 패널 때문에 카드가 너무 커지지 않게 */
+      height: min(720px, calc(100vh - 28px));
+      overflow:hidden;
     }
 
     /* top label */
@@ -118,6 +122,14 @@
       grid-template-columns: 1fr 340px;
       gap:14px;
       align-items:start;
+      height: calc(100% - 110px); /* ✅ 상단+divider 공간 제외 */
+      overflow:hidden;
+    }
+
+    .leftcol{
+      height:100%;
+      overflow:hidden;
+      padding-bottom: 10px;
     }
 
     .badge-row{
@@ -160,6 +172,8 @@
 
     .calendar{
       padding:8px 6px 6px;
+      height: calc(100% - 54px);
+      overflow:hidden;
     }
 
     .dow{
@@ -301,27 +315,86 @@
       padding:12px 10px;
     }
 
-    /* tasks panel */
-    .tasks{
-      margin-top:14px;
+    /* ✅ footer */
+    .foot{
+      position:absolute;
+      left:18px;
+      right:18px;
+      bottom:10px;
+      display:flex;
+      gap:10px;
+      color:var(--muted);
+      font-size:11px;
+      letter-spacing:2px;
+      pointer-events:none;
+    }
+    .foot .left{ flex:1; }
+    .foot .right{ text-align:right; }
+
+    /* ==============================
+       ✅ Bottom Tasks Sheet (Overlay)
+       ============================== */
+
+    .sheet-dim{
+      position:absolute;
+      inset:0;
+      background:rgba(0,0,0,.12);
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .14s ease;
+    }
+    .sheet-dim.on{
+      opacity:1;
+      pointer-events:auto;
+    }
+
+    .tasks-sheet{
+      position:absolute;
+      left:18px;
+      right:18px;
+      bottom:34px; /* ✅ footer 위로 살짝 띄움 */
+      background:#fff;
       border:3px solid #1d1d1d;
       border-radius:24px;
-      padding:14px;
-      background:#fff;
-      display:none;
+      box-shadow:8px 10px 0 var(--shadow);
+
+      /* ✅ 크기: 작게 + 내부 스크롤 */
+      max-height:240px;
+      height:240px;
+
+      transform:translateY(120%);
+      opacity:0;
+      pointer-events:none;
+      transition:transform .18s ease, opacity .18s ease;
+      overflow:hidden;
     }
-    .tasks.open{ display:block; }
+
+    .tasks-sheet.open{
+      transform:translateY(0);
+      opacity:1;
+      pointer-events:auto;
+    }
 
     .tasks-head{
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:10px;
-      margin-bottom:12px;
+      padding:12px 14px;
+      border-bottom:3px solid var(--line);
+      background:#fff;
     }
     .tasks-head .t{
-      font-size:16px;
+      font-size:14px;
       letter-spacing:2px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .tasks-body{
+      padding:12px 14px 14px;
+      height: calc(240px - 54px);
+      overflow:auto;
     }
 
     .tasklist{
@@ -331,8 +404,8 @@
     }
     .task{
       border:3px solid var(--line);
-      border-radius:20px;
-      padding:12px;
+      border-radius:18px;
+      padding:10px 12px;
       display:flex;
       align-items:center;
       gap:12px;
@@ -348,25 +421,24 @@
       font-family:system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
     }
 
-    .foot{
-      display:flex;
-      justify-content:justify;
-      gap:10px;
-      margin-top:10px;
-      color:var(--muted);
-      font-size:11px;
-      letter-spacing:2px;
-    }
-    .foot .left{ flex:1; }
-    .foot .right{ text-align:right; }
-
     /* responsive */
     @media (max-width: 940px){
       html, body{ overflow:auto; } /* 모바일에선 스크롤 허용 */
       .wrap{ height:auto; }
-      .card{ height:auto; }
-      .main{ grid-template-columns:1fr; }
+      .card{ height:auto; overflow:visible; }
+      .main{ grid-template-columns:1fr; height:auto; overflow:visible; }
       .side{ order:2; }
+
+      .tasks-sheet{
+        position:relative;
+        left:auto; right:auto; bottom:auto;
+        transform:none;
+        opacity:1;
+        pointer-events:auto;
+        margin-top:12px;
+      }
+      .sheet-dim{ display:none; }
+      .foot{ position:relative; left:auto; right:auto; bottom:auto; margin-top:10px; }
     }
   </style>
 </head>
@@ -374,6 +446,7 @@
 <body>
   <div class="wrap">
     <div class="card">
+
       <div class="topline">
         <div class="brand">
           <div class="dots">
@@ -396,7 +469,7 @@
 
       <div class="main">
         <!-- left -->
-        <div>
+        <div class="leftcol">
           <div class="badge-row">
             <div class="picked">
               <div class="k">PICKED:</div>
@@ -410,28 +483,6 @@
               <div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div>
             </div>
             <div class="grid" id="grid"></div>
-          </div>
-
-          <div class="tasks" id="tasksPanel">
-            <div class="tasks-head">
-              <div class="t" id="tasksTitle">TODAY TASKS</div>
-              <button class="btn" id="closeTasksBtn">CLOSE</button>
-            </div>
-
-            <div class="tasklist">
-              <div class="task">
-                <div class="chk" data-taskcheck="0"></div>
-                <input type="text" id="task1" placeholder="TASK 1 (클릭해서 입력)" />
-              </div>
-              <div class="task">
-                <div class="chk" data-taskcheck="1"></div>
-                <input type="text" id="task2" placeholder="TASK 2" />
-              </div>
-              <div class="task">
-                <div class="chk" data-taskcheck="2"></div>
-                <input type="text" id="task3" placeholder="TASK 3" />
-              </div>
-            </div>
           </div>
         </div>
 
@@ -475,10 +526,39 @@
         </div>
       </div>
 
+      <!-- ✅ Dim -->
+      <div class="sheet-dim" id="dim"></div>
+
+      <!-- ✅ Bottom Sheet -->
+      <div class="tasks-sheet" id="tasksPanel">
+        <div class="tasks-head">
+          <div class="t" id="tasksTitle">TODAY TASKS</div>
+          <button class="btn" id="closeTasksBtn">CLOSE</button>
+        </div>
+
+        <div class="tasks-body">
+          <div class="tasklist">
+            <div class="task">
+              <div class="chk" data-taskcheck="0"></div>
+              <input type="text" id="task1" placeholder="TASK 1 (클릭해서 입력)" />
+            </div>
+            <div class="task">
+              <div class="chk" data-taskcheck="1"></div>
+              <input type="text" id="task2" placeholder="TASK 2" />
+            </div>
+            <div class="task">
+              <div class="chk" data-taskcheck="2"></div>
+              <input type="text" id="task3" placeholder="TASK 3" />
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="foot">
         <div class="left">NOTION EMBED SAFE</div>
-        <div class="right">v2.2</div>
+        <div class="right">v2.3</div>
       </div>
+
     </div>
   </div>
 
@@ -497,6 +577,7 @@
       const tasksPanel = $("tasksPanel");
       const tasksTitle = $("tasksTitle");
       const closeTasksBtn = $("closeTasksBtn");
+      const dim = $("dim");
 
       const taskInputs = [ $("task1"), $("task2"), $("task3") ];
 
@@ -507,7 +588,7 @@
       const allRoutineBtn = $("allRoutineBtn");
       const weekChip = $("weekChip");
 
-      const KEY = "yohan_os_calendar_v22";
+      const KEY = "yohan_os_calendar_v23";
 
       const months = [
         "JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE",
@@ -518,7 +599,6 @@
       const fmt = (d) => `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
 
       function getWeekNumber(date){
-        // ISO week (간단 버전)
         const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
         const dayNum = d.getUTCDay() || 7;
         d.setUTCDate(d.getUTCDate() + 4 - dayNum);
@@ -527,11 +607,8 @@
       }
 
       function load(){
-        try{
-          return JSON.parse(localStorage.getItem(KEY)) || null;
-        }catch(e){
-          return null;
-        }
+        try{ return JSON.parse(localStorage.getItem(KEY)) || null; }
+        catch(e){ return null; }
       }
 
       function save(){
@@ -543,12 +620,8 @@
         viewYear: now.getFullYear(),
         viewMonth: now.getMonth(),
         picked: null,
-        tasks: {}, // { "YYYY-MM-DD": { text:["","",""], done:[false,false,false] } }
-        routine: {
-          workout:false,
-          reading:false,
-          budget:false
-        }
+        tasks: {},
+        routine: { workout:false, reading:false, budget:false }
       };
 
       function setRoutineUI(){
@@ -569,14 +642,12 @@
         setWeekChip();
 
         const first = new Date(state.viewYear, state.viewMonth, 1);
-        const firstDay = first.getDay(); // 0:Sun
+        const firstDay = first.getDay();
         const lastDate = new Date(state.viewYear, state.viewMonth+1, 0).getDate();
 
         const todayStr = fmt(new Date());
-
         grid.innerHTML = "";
 
-        // empty
         for(let i=0;i<firstDay;i++){
           const e = document.createElement("div");
           e.className = "cell empty";
@@ -603,10 +674,9 @@
             state.picked = dateStr;
             pickedLabel.textContent = dateStr;
 
-            // open tasks panel
             openTasks(dateStr);
             save();
-            render(); // re-paint selection + week chip
+            render();
           });
 
           grid.appendChild(cell);
@@ -615,10 +685,7 @@
 
       function ensureTask(dateStr){
         if(!state.tasks[dateStr]){
-          state.tasks[dateStr] = {
-            text: ["","",""],
-            done: [false,false,false]
-          };
+          state.tasks[dateStr] = { text:["","",""], done:[false,false,false] };
         }
         return state.tasks[dateStr];
       }
@@ -628,8 +695,8 @@
 
         tasksTitle.textContent = `TODAY TASKS / ${dateStr}`;
         tasksPanel.classList.add("open");
+        dim.classList.add("on");
 
-        // fill inputs
         for(let i=0;i<3;i++){
           taskInputs[i].value = t.text[i] || "";
           const chk = tasksPanel.querySelector(`.chk[data-taskcheck="${i}"]`);
@@ -639,27 +706,20 @@
 
       function closeTasks(){
         tasksPanel.classList.remove("open");
+        dim.classList.remove("on");
       }
 
-      // events
+      // month controls
       prevBtn.addEventListener("click", ()=>{
         state.viewMonth--;
-        if(state.viewMonth < 0){
-          state.viewMonth = 11;
-          state.viewYear--;
-        }
-        save();
-        render();
+        if(state.viewMonth < 0){ state.viewMonth = 11; state.viewYear--; }
+        save(); render();
       });
 
       nextBtn.addEventListener("click", ()=>{
         state.viewMonth++;
-        if(state.viewMonth > 11){
-          state.viewMonth = 0;
-          state.viewYear++;
-        }
-        save();
-        render();
+        if(state.viewMonth > 11){ state.viewMonth = 0; state.viewYear++; }
+        save(); render();
       });
 
       todayBtn.addEventListener("click", ()=>{
@@ -672,8 +732,11 @@
         openTasks(state.picked);
       });
 
-      closeTasksBtn.addEventListener("click", ()=>{
-        closeTasks();
+      closeTasksBtn.addEventListener("click", closeTasks);
+      dim.addEventListener("click", closeTasks);
+
+      window.addEventListener("keydown", (e)=>{
+        if(e.key === "Escape") closeTasks();
       });
 
       // task save
@@ -704,18 +767,9 @@
       });
 
       // routine toggles
-      rWorkout.addEventListener("click", ()=>{
-        state.routine.workout = !state.routine.workout;
-        setRoutineUI(); save();
-      });
-      rReading.addEventListener("click", ()=>{
-        state.routine.reading = !state.routine.reading;
-        setRoutineUI(); save();
-      });
-      rBudget.addEventListener("click", ()=>{
-        state.routine.budget = !state.routine.budget;
-        setRoutineUI(); save();
-      });
+      rWorkout.addEventListener("click", ()=>{ state.routine.workout = !state.routine.workout; setRoutineUI(); save(); });
+      rReading.addEventListener("click", ()=>{ state.routine.reading = !state.routine.reading; setRoutineUI(); save(); });
+      rBudget.addEventListener("click", ()=>{ state.routine.budget = !state.routine.budget; setRoutineUI(); save(); });
 
       resetRoutineBtn.addEventListener("click", ()=>{
         state.routine.workout=false;
@@ -734,9 +788,6 @@
       // init
       setRoutineUI();
       render();
-
-      // if already picked, keep tasks panel closed by default (원하면 자동 오픈 가능)
-      // if (state.picked) openTasks(state.picked);
 
     })();
   </script>
