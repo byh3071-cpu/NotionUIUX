@@ -1,20 +1,14 @@
 {
+  "rewrites": [
+    { "source": "/embed", "destination": "/embed.html" }
+  ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "frame-ancestors 'self' https://notion.so https://www.notion.so https://*.notion.site https://*.notion.so;"
-        }
-      ]
-    },
-    {
-      "source": "/embed/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store, max-age=0"
+          "value": "frame-ancestors 'self' https://www.notion.so https://*.notion.site;"
         }
       ]
     }
