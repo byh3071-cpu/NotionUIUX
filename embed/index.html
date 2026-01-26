@@ -351,78 +351,61 @@
       pointer-events:auto;
     }
 
-    .tasks-sheet{
-      position:absolute;
-      left:18px;
-      right:18px;
-      bottom:34px; /* ✅ footer 위로 살짝 띄움 */
-      background:#fff;
-      border:3px solid #1d1d1d;
-      border-radius:24px;
-      box-shadow:8px 10px 0 var(--shadow);
+.tasks-sheet{
+  left:18px;
+  right:18px;
+  bottom:80px;               /* ✅ footer랑 거리 줄임 */
+  border:2px solid #1d1d1d;  /* ✅ 덜 무겁게 */
+  border-radius:22px;
 
-      /* ✅ 크기: 작게 + 내부 스크롤 */
-      max-height:240px;
-      height:240px;
+  max-height:180px;          /* ✅ 더 작게 */
+  height:180px;
 
-      transform:translateY(120%);
-      opacity:0;
-      pointer-events:none;
-      transition:transform .18s ease, opacity .18s ease;
-      overflow:hidden;
-    }
+  box-shadow:6px 8px 0 var(--shadow);
 
-    .tasks-sheet.open{
-      transform:translateY(0);
-      opacity:1;
-      pointer-events:auto;
-    }
+  transform:translateY(120%);
+  opacity:0;
+  pointer-events:none;
+  transition:transform .18s ease, opacity .18s ease;
+  overflow:hidden;
+}
 
-    .tasks-head{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      padding:12px 14px;
-      border-bottom:3px solid var(--line);
-      background:#fff;
-    }
-    .tasks-head .t{
-      font-size:14px;
-      letter-spacing:2px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-    .tasks-body{
-      padding:12px 14px 14px;
-      height: calc(240px - 54px);
-      overflow:auto;
-    }
+.tasks-head{
+  padding:10px 12px;
+}
+
+.tasks-head .t{
+  font-size:13px;            /* ✅ 헤더 크기 조금 다운 */
+  letter-spacing:2px;
+}
+
+.tasks-body{
+  padding:10px 12px 12px;
+  height: calc(180px - 48px); /* ✅ 헤더 높이 맞춤 */
+  overflow:auto;
+}
 
     .tasklist{
       display:flex;
       flex-direction:column;
       gap:10px;
     }
-    .task{
-      border:3px solid var(--line);
-      border-radius:18px;
-      padding:10px 12px;
-      display:flex;
-      align-items:center;
-      gap:12px;
-      background:#fff;
-    }
-    .task input[type="text"]{
-      width:100%;
-      border:none;
-      outline:none;
-      font-size:13px;
-      letter-spacing:1px;
-      background:transparent;
-      font-family:system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-    }
+.task{
+  border:2px solid var(--line);
+  border-radius:16px;
+  padding:8px 10px;     /* ✅ 더 얇게 */
+  gap:10px;
+}
+
+.task input[type="text"]{
+  font-size:12px;       /* ✅ 폰트 살짝 작게 */
+}
+.chk{
+  width:22px;
+  height:22px;
+  border:2px solid #1d1d1d;
+  border-radius:6px;
+}
 
     /* responsive */
     @media (max-width: 940px){
@@ -796,5 +779,6 @@
   </script>
 </body>
 </html>
+
 
 
