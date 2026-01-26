@@ -16,38 +16,47 @@
       --pink:#f09ab1;
       --pink2:#ffe2ea;
       --shadow:rgba(0,0,0,.06);
-      --radius:22px;
     }
 
     *{ box-sizing:border-box; }
-
     html, body{
       margin:0;
       padding:0;
       background:var(--bg);
       font-family:'Silkscreen', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
       color:var(--ink);
-      overflow:hidden; /* 노션 임베드: 스크롤 최소화 */
+      overflow:hidden;
     }
 
-    /* ✅ 여백 최소화 */
-    .wrap{
-      width:100%;
+    /* =========================================
+       ✅ 노션 임베드 "자동 스케일링" 핵심 구조
+       - stage는 고정 디자인 사이즈
+       - viewport에 맞춰 JS가 scale 조정
+       ========================================= */
+    #viewport{
+      width:100vw;
       height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:6px; /* ✅ 기존 14px -> 6px */
+      overflow:hidden;
+      position:relative;
+      background:var(--bg);
+    }
+    #stage{
+      position:absolute;
+      left:0; top:0;
+      transform-origin: top left;
+      will-change: transform;
     }
 
+    /* ✅ 고정 디자인 원본 크기 (여기 기준으로 스케일됨) */
     .card{
-      width:min(1020px, 100%);
-      height:min(680px, calc(100vh - 12px)); /* ✅ 전체 높이 꽉 */
+      width: 1020px;
+      height: 680px;
+
       background:#fff;
       border:3px solid #1d1d1d;
       border-radius:28px;
       box-shadow:8px 10px 0 var(--shadow);
-      padding:12px 12px 10px; /* ✅ 내부 여백 줄임 */
+      padding:12px 12px 10px;
       position:relative;
       overflow:hidden;
     }
@@ -60,37 +69,31 @@
       gap:10px;
       margin-bottom:8px;
     }
-
     .brand{
       display:flex;
       align-items:flex-start;
       gap:10px;
       min-width:260px;
     }
-
     .dots{
       display:flex;
       gap:7px;
       margin-top:2px;
     }
-
     .dot{
       width:18px; height:18px;
       border:3px solid #1d1d1d;
       border-radius:7px;
       background:#fff;
     }
-
-    .title{
-      line-height:1.1;
-    }
+    .title{ line-height:1.1; }
     .title .mini{
       font-size:12px;
       color:var(--muted);
       letter-spacing:1px;
     }
     .title .big{
-      font-size:24px; /* ✅ 26 -> 24 */
+      font-size:24px;
       letter-spacing:2px;
       margin-top:2px;
     }
@@ -105,7 +108,7 @@
       border:3px solid #1d1d1d;
       background:#fff;
       border-radius:18px;
-      padding:9px 14px; /* ✅ 살짝 축소 */
+      padding:9px 14px;
       font-size:14px;
       cursor:pointer;
       box-shadow:3px 4px 0 var(--shadow);
@@ -130,10 +133,10 @@
 
     .main{
       display:grid;
-      grid-template-columns: 1fr 320px; /* ✅ 우측 패널 살짝 축소 */
+      grid-template-columns: 1fr 320px;
       gap:10px;
       align-items:start;
-      height: calc(100% - 104px); /* top + divider 감안 */
+      height: calc(100% - 104px);
       overflow:hidden;
     }
 
@@ -144,7 +147,6 @@
       display:flex;
       flex-direction:column;
     }
-
     .badge-row{
       display:flex;
       align-items:center;
@@ -152,7 +154,6 @@
       gap:10px;
       margin-bottom:8px;
     }
-
     .picked{
       border:3px solid var(--line);
       border-radius:18px;
@@ -204,25 +205,27 @@
     .grid{
       display:grid;
       grid-template-columns:repeat(7, 1fr);
-      gap:8px;                /* ✅ 12 -> 8 */
+      gap:8px;
       padding:0 8px 8px;
     }
 
-    /* ✅ 날짜칸 축소 */
+    /* ✅ 날짜칸 */
     .cell{
-      height:50px;            /* ✅ 58 -> 50 */
+      height:50px;
       border:3px solid var(--line);
       border-radius:16px;
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size:15px;         /* ✅ 16 -> 15 */
+      font-size:15px;
       cursor:pointer;
       background:#fff;
       transition:transform .06s ease;
       user-select:none;
+      position:relative; /* ✅ 점 표시용 */
     }
     .cell:hover{ transform:translateY(-1px); }
+
     .cell.empty{
       border-color:transparent;
       background:transparent;
@@ -241,6 +244,25 @@
     .cell.sun{ color:#b84a5a; }
     .cell.sat{ color:#3b66d6; }
 
+    /* ✅ 할 일 존재하면 작은 점 표시 */
+    .cell.hasDot::after{
+      content:"";
+      position:absolute;
+      bottom:6px;
+      left:50%;
+      transform:translateX(-50%);
+      width:7px;
+      height:7px;
+      border-radius:50%;
+      background:#111;
+      opacity:.35;
+    }
+    /* 선택된 날짜는 점이 더 잘 보이게 */
+    .cell.selected.hasDot::after{
+      opacity:.6;
+      background:#fff;
+    }
+
     /* right */
     .side{
       border:3px solid var(--line);
@@ -248,6 +270,9 @@
       padding:12px;
       background:#fff;
       overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
     }
 
     .side-head{
@@ -255,7 +280,7 @@
       align-items:center;
       justify-content:space-between;
       gap:10px;
-      margin-bottom:10px;
+      margin-bottom:6px;
     }
     .side-head .h{
       font-size:15px;
@@ -275,7 +300,6 @@
       display:flex;
       flex-direction:column;
       gap:10px;
-      margin-top:6px;
     }
 
     .rbox{
@@ -325,11 +349,41 @@
     .side-actions{
       display:flex;
       gap:10px;
-      margin-top:12px;
+      margin-top:2px;
     }
     .side-actions .btn{
       flex:1;
       padding:11px 10px;
+    }
+
+    /* ✅ 오늘의 루틴 박스(선택 날짜 있을 때만 표시) */
+    .todayBox{
+      border:3px solid #1d1d1d;
+      border-radius:24px;
+      padding:12px;
+      background:#fff;
+      display:none;
+    }
+    .todayBox.show{ display:block; }
+
+    .todayHead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .todayHead .t{
+      font-size:14px;
+      letter-spacing:2px;
+    }
+    .todayDate{
+      border:3px solid var(--line);
+      border-radius:16px;
+      padding:6px 10px;
+      color:var(--muted);
+      font-size:12px;
+      letter-spacing:1px;
     }
 
     /* footer */
@@ -348,10 +402,9 @@
     .foot .left{ flex:1; }
     .foot .right{ text-align:right; }
 
-    /* ==================================
-       ✅ 중앙 모달 팝업 (Today Tasks)
-       ================================== */
-
+    /* =========================
+       ✅ TODAY TASKS 중앙 모달
+       ========================= */
     .dim{
       position:absolute;
       inset:0;
@@ -359,6 +412,7 @@
       opacity:0;
       pointer-events:none;
       transition:opacity .15s ease;
+      z-index:4;
     }
     .dim.on{
       opacity:1;
@@ -370,8 +424,8 @@
       left:50%;
       top:50%;
       transform:translate(-50%,-50%) scale(.98);
-      width:min(880px, calc(100% - 36px));
-      max-height:min(420px, calc(100% - 140px));
+      width:900px;
+      max-height:420px;
       background:#fff;
       border:3px solid #1d1d1d;
       border-radius:24px;
@@ -382,7 +436,6 @@
       overflow:hidden;
       z-index:5;
     }
-
     .tasks-modal.open{
       opacity:1;
       pointer-events:auto;
@@ -394,8 +447,15 @@
       align-items:center;
       justify-content:space-between;
       gap:10px;
-      padding:12px 12px;
+      padding:12px;
       border-bottom:3px solid var(--line);
+    }
+
+    .tasks-left{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
     }
 
     .tasks-head .t{
@@ -404,12 +464,35 @@
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
+      max-width:420px;
+    }
+
+    /* ✅ TASK 추가/삭제 버튼 */
+    .miniBtns{
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+    .miniBtn{
+      border:3px solid #1d1d1d;
+      background:#fff;
+      border-radius:14px;
+      padding:7px 10px;
+      font-size:12px;
+      cursor:pointer;
+      box-shadow:3px 4px 0 var(--shadow);
+      user-select:none;
+      white-space:nowrap;
+    }
+    .miniBtn:active{
+      transform:translateY(1px);
+      box-shadow:2px 3px 0 var(--shadow);
     }
 
     .tasks-body{
       padding:12px;
       overflow:auto;
-      max-height: calc(min(420px, calc(100% - 140px)) - 56px);
+      max-height:340px;
     }
 
     .tasklist{
@@ -437,153 +520,210 @@
       background:transparent;
       font-family:system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
     }
-
-    /* mobile */
-    @media (max-width: 940px){
-      html, body{ overflow:auto; }
-      .wrap{ height:auto; padding:10px; }
-      .card{ height:auto; overflow:visible; }
-      .main{ grid-template-columns:1fr; height:auto; overflow:visible; }
-      .side{ order:2; }
-
-      .tasks-modal{
-        position:fixed;
-        left:50%;
-        top:50%;
-        width:calc(100% - 24px);
-        max-height:70vh;
-      }
-
-      .foot{
-        position:relative;
-        left:auto; right:auto; bottom:auto;
-        margin-top:10px;
-      }
-    }
   </style>
 </head>
 
 <body>
-  <div class="wrap">
-    <div class="card">
+  <div id="viewport">
+    <div id="stage">
+      <div class="card">
 
-      <div class="topline">
-        <div class="brand">
-          <div class="dots">
-            <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-          </div>
-          <div class="title">
-            <div class="mini">YOHAN OS / DASHBOARD</div>
-            <div class="big" id="monthLabel">----</div>
-          </div>
-        </div>
-
-        <div class="controls">
-          <button class="btn icon" id="prevBtn">◀</button>
-          <button class="btn" id="todayBtn">TODAY</button>
-          <button class="btn icon" id="nextBtn">▶</button>
-        </div>
-      </div>
-
-      <div class="divider"></div>
-
-      <div class="main">
-        <!-- left -->
-        <div class="leftcol">
-          <div class="badge-row">
-            <div class="picked">
-              <div class="k">PICKED:</div>
-              <div class="v" id="pickedLabel">NONE</div>
+        <div class="topline">
+          <div class="brand">
+            <div class="dots">
+              <div class="dot"></div><div class="dot"></div><div class="dot"></div>
             </div>
-            <div class="mode">MODE: YOHAN OS</div>
+            <div class="title">
+              <div class="mini">YOHAN OS / DASHBOARD</div>
+              <div class="big" id="monthLabel">----</div>
+            </div>
           </div>
 
-          <div class="calendar">
-            <div class="dow">
-              <div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div>
-            </div>
-            <div class="grid" id="grid"></div>
+          <div class="controls">
+            <button class="btn icon" id="prevBtn">◀</button>
+            <button class="btn" id="todayBtn">TODAY</button>
+            <button class="btn icon" id="nextBtn">▶</button>
           </div>
         </div>
 
-        <!-- right -->
-        <div class="side">
-          <div class="side-head">
-            <div class="h">THIS WEEK ROUTINE</div>
-            <div class="weekchip" id="weekChip">WEEK --</div>
+        <div class="divider"></div>
+
+        <div class="main">
+          <!-- left -->
+          <div class="leftcol">
+            <div class="badge-row">
+              <div class="picked">
+                <div class="k">PICKED:</div>
+                <div class="v" id="pickedLabel">NONE</div>
+              </div>
+              <div class="mode">MODE: YOHAN OS</div>
+            </div>
+
+            <div class="calendar">
+              <div class="dow">
+                <div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div>
+              </div>
+              <div class="grid" id="grid"></div>
+            </div>
           </div>
 
-          <div class="routine">
-            <div class="rbox">
-              <div class="chk" id="r_workout"></div>
-              <div class="rtext">
-                <div class="rt">WORKOUT</div>
-                <div class="rd">운동 1회 이상</div>
+          <!-- right -->
+          <div class="side">
+            <div>
+              <div class="side-head">
+                <div class="h">THIS WEEK ROUTINE</div>
+                <div class="weekchip" id="weekChip">WEEK --</div>
+              </div>
+
+              <div class="routine">
+                <div class="rbox">
+                  <div class="chk" id="r_workout"></div>
+                  <div class="rtext">
+                    <div class="rt">WORKOUT</div>
+                    <div class="rd">운동 1회 이상</div>
+                  </div>
+                </div>
+
+                <div class="rbox">
+                  <div class="chk" id="r_reading"></div>
+                  <div class="rtext">
+                    <div class="rt">READING</div>
+                    <div class="rd">독서 10P 이상</div>
+                  </div>
+                </div>
+
+                <div class="rbox">
+                  <div class="chk" id="r_budget"></div>
+                  <div class="rtext">
+                    <div class="rt">BUDGET</div>
+                    <div class="rd">가계부 기록</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="side-actions">
+                <button class="btn" id="resetRoutineBtn">RESET</button>
+                <button class="btn" id="allRoutineBtn">ALL</button>
               </div>
             </div>
 
-            <div class="rbox">
-              <div class="chk" id="r_reading"></div>
-              <div class="rtext">
-                <div class="rt">READING</div>
-                <div class="rd">독서 10P 이상</div>
+            <!-- ✅ 선택한 날짜일 때만 보이는 "오늘의 루틴(5개)" -->
+            <div class="todayBox" id="todayBox">
+              <div class="todayHead">
+                <div class="t">TODAY ROUTINE</div>
+                <div class="todayDate" id="todayDateChip">----</div>
+              </div>
+
+              <div class="routine">
+                <div class="rbox">
+                  <div class="chk" data-today="gratitude"></div>
+                  <div class="rtext">
+                    <div class="rt">GRATITUDE</div>
+                    <div class="rd">감사 일기</div>
+                  </div>
+                </div>
+
+                <div class="rbox">
+                  <div class="chk" data-today="emotion"></div>
+                  <div class="rtext">
+                    <div class="rt">EMOTION</div>
+                    <div class="rd">감정 일기</div>
+                  </div>
+                </div>
+
+                <div class="rbox">
+                  <div class="chk" data-today="sleep"></div>
+                  <div class="rtext">
+                    <div class="rt">SLEEP</div>
+                    <div class="rd">하루 수면 분석</div>
+                  </div>
+                </div>
+
+                <div class="rbox">
+                  <div class="chk" data-today="morning"></div>
+                  <div class="rtext">
+                    <div class="rt">MORNING</div>
+                    <div class="rd">아침 루티너리</div>
+                  </div>
+                </div>
+
+                <div class="rbox">
+                  <div class="chk" data-today="future"></div>
+                  <div class="rtext">
+                    <div class="rt">FUTURE</div>
+                    <div class="rd">미래 모습 실천 기록</div>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div class="rbox">
-              <div class="chk" id="r_budget"></div>
-              <div class="rtext">
-                <div class="rt">BUDGET</div>
-                <div class="rd">가계부 기록</div>
+          </div>
+        </div>
+
+        <!-- dim + modal -->
+        <div class="dim" id="dim"></div>
+
+        <div class="tasks-modal" id="tasksPanel">
+          <div class="tasks-head">
+            <div class="tasks-left">
+              <div class="t" id="tasksTitle">TODAY TASKS</div>
+
+              <!-- ✅ 사용자가 직접 TASK 입력칸을 늘리고 줄일 수 있게 -->
+              <div class="miniBtns">
+                <button class="miniBtn" id="addTaskBtn">+ TASK</button>
+                <button class="miniBtn" id="removeTaskBtn">- TASK</button>
               </div>
             </div>
+
+            <button class="btn" id="closeTasksBtn">CLOSE</button>
           </div>
 
-          <div class="side-actions">
-            <button class="btn" id="resetRoutineBtn">RESET</button>
-            <button class="btn" id="allRoutineBtn">ALL</button>
+          <div class="tasks-body">
+            <div class="tasklist" id="taskList"></div>
           </div>
         </div>
-      </div>
 
-      <!-- ✅ dim -->
-      <div class="dim" id="dim"></div>
-
-      <!-- ✅ modal -->
-      <div class="tasks-modal" id="tasksPanel">
-        <div class="tasks-head">
-          <div class="t" id="tasksTitle">TODAY TASKS</div>
-          <button class="btn" id="closeTasksBtn">CLOSE</button>
+        <div class="foot">
+          <div class="left">NOTION EMBED SAFE</div>
+          <div class="right">v2.8</div>
         </div>
 
-        <div class="tasks-body">
-          <div class="tasklist">
-            <div class="task">
-              <div class="chk" data-taskcheck="0"></div>
-              <input type="text" id="task1" placeholder="TASK 1 (클릭해서 입력)" />
-            </div>
-            <div class="task">
-              <div class="chk" data-taskcheck="1"></div>
-              <input type="text" id="task2" placeholder="TASK 2" />
-            </div>
-            <div class="task">
-              <div class="chk" data-taskcheck="2"></div>
-              <input type="text" id="task3" placeholder="TASK 3" />
-            </div>
-          </div>
-        </div>
       </div>
-
-      <div class="foot">
-        <div class="left">NOTION EMBED SAFE</div>
-        <div class="right">v2.5</div>
-      </div>
-
     </div>
   </div>
 
   <script>
     (function(){
+      /* ================================
+         ✅ 1) 자동 스케일링 (노션 임베드 꽉 차게)
+         ================================ */
+      const BASE_W = 1020;
+      const BASE_H = 680;
+
+      const viewport = document.getElementById("viewport");
+      const stage = document.getElementById("stage");
+
+      function fitStage(){
+        const vw = viewport.clientWidth;
+        const vh = viewport.clientHeight;
+
+        // 꽉 차게 하되, 비율 유지
+        const scale = Math.min(vw / BASE_W, vh / BASE_H);
+
+        // 가운데 정렬 (남는 공간 중앙)
+        const x = (vw - BASE_W * scale) / 2;
+        const y = (vh - BASE_H * scale) / 2;
+
+        stage.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+      }
+
+      window.addEventListener("resize", fitStage);
+      fitStage();
+
+
+      /* ================================
+         ✅ 2) 앱 로직
+         ================================ */
       const $ = (id) => document.getElementById(id);
 
       const monthLabel = $("monthLabel");
@@ -599,7 +739,9 @@
       const closeTasksBtn = $("closeTasksBtn");
       const dim = $("dim");
 
-      const taskInputs = [ $("task1"), $("task2"), $("task3") ];
+      const addTaskBtn = $("addTaskBtn");
+      const removeTaskBtn = $("removeTaskBtn");
+      const taskListEl = $("taskList");
 
       const rWorkout = $("r_workout");
       const rReading = $("r_reading");
@@ -608,7 +750,10 @@
       const allRoutineBtn = $("allRoutineBtn");
       const weekChip = $("weekChip");
 
-      const KEY = "yohan_os_calendar_v25";
+      const todayBox = $("todayBox");
+      const todayDateChip = $("todayDateChip");
+
+      const KEY = "yohan_os_calendar_v28";
 
       const months = [
         "JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE",
@@ -634,14 +779,27 @@
       function save(){ localStorage.setItem(KEY, JSON.stringify(state)); }
 
       const now = new Date();
+
       let state = load() || {
         viewYear: now.getFullYear(),
         viewMonth: now.getMonth(),
         picked: null,
-        tasks: {}, // { "YYYY-MM-DD": { text:["","",""], done:[false,false,false] } }
-        routine: { workout:false, reading:false, budget:false }
+
+        // ✅ 날짜별 TASK: 배열 길이가 유동 (사용자가 직접 늘림)
+        tasks: {
+          // "YYYY-MM-DD": { text:[], done:[] }
+        },
+
+        // 주간 루틴(공통)
+        routine: { workout:false, reading:false, budget:false },
+
+        // ✅ 날짜별 오늘의 루틴 5개
+        todayRoutine: {
+          // "YYYY-MM-DD": { gratitude:false, emotion:false, sleep:false, morning:false, future:false }
+        }
       };
 
+      /* ====== UI helpers ====== */
       function setRoutineUI(){
         rWorkout.classList.toggle("on", !!state.routine.workout);
         rReading.classList.toggle("on", !!state.routine.reading);
@@ -654,6 +812,40 @@
         weekChip.textContent = `WEEK ${pad2(w)}`;
       }
 
+      function ensureTask(dateStr){
+        if(!state.tasks[dateStr]){
+          // 기본 3칸
+          state.tasks[dateStr] = { text:["","",""], done:[false,false,false] };
+        }
+        // 안정성: 길이 맞추기
+        if(!Array.isArray(state.tasks[dateStr].text)) state.tasks[dateStr].text = ["","",""];
+        if(!Array.isArray(state.tasks[dateStr].done)) state.tasks[dateStr].done = state.tasks[dateStr].text.map(()=>false);
+
+        // text/done 길이 동기화
+        while(state.tasks[dateStr].done.length < state.tasks[dateStr].text.length) state.tasks[dateStr].done.push(false);
+        while(state.tasks[dateStr].done.length > state.tasks[dateStr].text.length) state.tasks[dateStr].done.pop();
+
+        return state.tasks[dateStr];
+      }
+
+      function ensureTodayRoutine(dateStr){
+        if(!state.todayRoutine[dateStr]){
+          state.todayRoutine[dateStr] = {
+            gratitude:false, emotion:false, sleep:false, morning:false, future:false
+          };
+        }
+        return state.todayRoutine[dateStr];
+      }
+
+      function hasAnyTask(dateStr){
+        const t = state.tasks[dateStr];
+        if(!t) return false;
+        const anyText = (t.text || []).some(v => String(v || "").trim().length > 0);
+        const anyDone = (t.done || []).some(Boolean);
+        return anyText || anyDone;
+      }
+
+      /* ====== Calendar render ====== */
       function render(){
         monthLabel.textContent = `${state.viewYear} ${months[state.viewMonth]}`;
         pickedLabel.textContent = state.picked ? state.picked : "NONE";
@@ -688,24 +880,59 @@
           if(dateStr === todayStr) cell.classList.add("today");
           if(state.picked === dateStr) cell.classList.add("selected");
 
+          // ✅ 할 일 점 표시
+          if(hasAnyTask(dateStr)) cell.classList.add("hasDot");
+
           cell.addEventListener("click", ()=>{
             state.picked = dateStr;
-            openTasks(dateStr);
             save();
             render();
+            openTasks(dateStr);
+            showTodayRoutine(dateStr);
           });
 
           grid.appendChild(cell);
         }
-      }
 
-      function ensureTask(dateStr){
-        if(!state.tasks[dateStr]){
-          state.tasks[dateStr] = { text:["","",""], done:[false,false,false] };
+        // 선택 날짜 없으면 todayRoutine 숨김
+        if(!state.picked){
+          todayBox.classList.remove("show");
+        }else{
+          showTodayRoutine(state.picked);
         }
-        return state.tasks[dateStr];
       }
 
+      /* ====== Today Routine Panel (Right) ====== */
+      function showTodayRoutine(dateStr){
+        if(!dateStr){
+          todayBox.classList.remove("show");
+          return;
+        }
+        todayBox.classList.add("show");
+        todayDateChip.textContent = dateStr;
+
+        const r = ensureTodayRoutine(dateStr);
+
+        // 체크 상태 반영
+        todayBox.querySelectorAll(".chk[data-today]").forEach(chk=>{
+          const key = chk.getAttribute("data-today");
+          chk.classList.toggle("on", !!r[key]);
+        });
+      }
+
+      todayBox.addEventListener("click", (e)=>{
+        const chk = e.target.closest(".chk[data-today]");
+        if(!chk) return;
+        if(!state.picked) return;
+
+        const key = chk.getAttribute("data-today");
+        const r = ensureTodayRoutine(state.picked);
+        r[key] = !r[key];
+        chk.classList.toggle("on", r[key]);
+        save();
+      });
+
+      /* ====== TASK Modal ====== */
       function openTasks(dateStr){
         const t = ensureTask(dateStr);
         tasksTitle.textContent = `TODAY TASKS / ${dateStr}`;
@@ -713,11 +940,7 @@
         tasksPanel.classList.add("open");
         dim.classList.add("on");
 
-        for(let i=0;i<3;i++){
-          taskInputs[i].value = t.text[i] || "";
-          const chk = tasksPanel.querySelector(`.chk[data-taskcheck="${i}"]`);
-          if(chk) chk.classList.toggle("on", !!t.done[i]);
-        }
+        renderTaskList(dateStr);
       }
 
       function closeTasks(){
@@ -725,7 +948,68 @@
         dim.classList.remove("on");
       }
 
-      // month controls
+      function renderTaskList(dateStr){
+        const t = ensureTask(dateStr);
+        taskListEl.innerHTML = "";
+
+        t.text.forEach((val, idx)=>{
+          const row = document.createElement("div");
+          row.className = "task";
+
+          const chk = document.createElement("div");
+          chk.className = "chk";
+          chk.setAttribute("data-taskcheck", String(idx));
+          if(t.done[idx]) chk.classList.add("on");
+
+          const input = document.createElement("input");
+          input.type = "text";
+          input.value = val || "";
+          input.placeholder = `TASK ${idx+1}`;
+
+          input.addEventListener("input", ()=>{
+            const tt = ensureTask(dateStr);
+            tt.text[idx] = input.value;
+            save();
+            render(); // ✅ 점 표시 즉시 갱신
+          });
+
+          chk.addEventListener("click", ()=>{
+            const tt = ensureTask(dateStr);
+            tt.done[idx] = !tt.done[idx];
+            chk.classList.toggle("on", tt.done[idx]);
+            save();
+            render(); // ✅ 점 표시 즉시 갱신
+          });
+
+          row.appendChild(chk);
+          row.appendChild(input);
+          taskListEl.appendChild(row);
+        });
+      }
+
+      // ✅ +TASK 버튼: 사용자가 직접 입력칸 늘림
+      addTaskBtn.addEventListener("click", ()=>{
+        if(!state.picked) return;
+        const t = ensureTask(state.picked);
+        t.text.push("");
+        t.done.push(false);
+        save();
+        renderTaskList(state.picked);
+      });
+
+      // ✅ -TASK 버튼: 마지막 칸 삭제 (최소 1칸은 유지)
+      removeTaskBtn.addEventListener("click", ()=>{
+        if(!state.picked) return;
+        const t = ensureTask(state.picked);
+        if(t.text.length <= 1) return; // 최소 1개는 남김
+        t.text.pop();
+        t.done.pop();
+        save();
+        renderTaskList(state.picked);
+        render();
+      });
+
+      /* ====== Month Controls ====== */
       prevBtn.addEventListener("click", ()=>{
         state.viewMonth--;
         if(state.viewMonth < 0){ state.viewMonth = 11; state.viewYear--; }
@@ -746,6 +1030,7 @@
         save();
         render();
         openTasks(state.picked);
+        showTodayRoutine(state.picked);
       });
 
       closeTasksBtn.addEventListener("click", closeTasks);
@@ -755,34 +1040,7 @@
         if(e.key === "Escape") closeTasks();
       });
 
-      // task save
-      taskInputs.forEach((inp, idx)=>{
-        inp.addEventListener("input", ()=>{
-          if(!state.picked) return;
-          const t = ensureTask(state.picked);
-          t.text[idx] = inp.value;
-          save();
-        });
-      });
-
-      // task checkbox
-      tasksPanel.addEventListener("click", (e)=>{
-        const chk = e.target.closest(".chk");
-        if(!chk) return;
-
-        const i = chk.getAttribute("data-taskcheck");
-        if(i === null) return;
-        if(!state.picked) return;
-
-        const t = ensureTask(state.picked);
-        const n = Number(i);
-
-        t.done[n] = !t.done[n];
-        chk.classList.toggle("on", t.done[n]);
-        save();
-      });
-
-      // routine toggles
+      /* ====== Weekly Routine Toggles ====== */
       rWorkout.addEventListener("click", ()=>{ state.routine.workout = !state.routine.workout; setRoutineUI(); save(); });
       rReading.addEventListener("click", ()=>{ state.routine.reading = !state.routine.reading; setRoutineUI(); save(); });
       rBudget.addEventListener("click", ()=>{ state.routine.budget = !state.routine.budget; setRoutineUI(); save(); });
@@ -801,9 +1059,10 @@
         setRoutineUI(); save();
       });
 
-      // init
+      /* init */
       setRoutineUI();
       render();
+      fitStage();
     })();
   </script>
 </body>
