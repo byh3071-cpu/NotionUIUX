@@ -1,6 +1,8 @@
 {
+  "version": 2,
   "rewrites": [
-    { "source": "/embed", "destination": "/embed.html" }
+    { "source": "/embed", "destination": "/embed/index.html" },
+    { "source": "/embed/", "destination": "/embed/index.html" }
   ],
   "headers": [
     {
@@ -9,6 +11,15 @@
         {
           "key": "Content-Security-Policy",
           "value": "frame-ancestors 'self' https://notion.so https://www.notion.so https://*.notion.site https://*.notion.so;"
+        }
+      ]
+    },
+    {
+      "source": "/embed/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, max-age=0"
         }
       ]
     }
