@@ -15,7 +15,7 @@
       ]
     },
     {
-      "source": "/embed/(.*)",
+      "source": "/embed(.*)",
       "headers": [
         {
           "key": "Cache-Control",
