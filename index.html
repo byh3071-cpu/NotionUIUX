@@ -35,7 +35,7 @@
       overflow:hidden;
     }
 
-    /* ✅ iframe 100% */
+    /* ✅ iframe 100% 채우기 */
     .stage{
       width:100vw;
       height:100vh;
@@ -52,7 +52,7 @@
       border:3px solid var(--border);
       border-radius:var(--radius);
       box-shadow:none;
-      padding:12px 12px 10px;   /* ✅ 전체 크기 살짝 축소 */
+      padding:14px 14px 10px;
       position:relative;
       overflow:hidden;
     }
@@ -63,7 +63,7 @@
       align-items:flex-start;
       justify-content:space-between;
       gap:12px;
-      margin-bottom:8px;        /* ✅ 조금 줄임 */
+      margin-bottom:10px;
     }
     .brand{
       display:flex;
@@ -90,11 +90,9 @@
       letter-spacing:1px;
     }
     .title .big{
-      font-size:24px;           /* ✅ 26 → 24 : 전체 밸런스 다운 */
+      font-size:26px;
       letter-spacing:2px;
       margin-top:2px;
-      /* ✅ 축소될 때 글씨 흐림 방지용 살짝 보정 */
-      text-shadow: 0 1px 0 rgba(0,0,0,0.08);
     }
 
     .controls{
@@ -107,85 +105,72 @@
       border:3px solid var(--border);
       background:#fff;
       border-radius:18px;
-      padding:9px 14px;         /* ✅ 살짝 축소 */
-      font-size:13px;           /* ✅ 14 → 13 */
+      padding:10px 16px;
+      font-size:14px;
       cursor:pointer;
       box-shadow:3px 4px 0 var(--shadow);
       user-select:none;
     }
     .btn:active{ transform:translateY(1px); box-shadow:2px 3px 0 var(--shadow); }
-    .btn.icon{ width:52px; padding:9px 0; display:flex; justify-content:center; }
+    .btn.icon{ width:54px; padding:10px 0; display:flex; justify-content:center; }
 
     .divider{
       width:100%;
       border-top:3px dashed var(--line);
-      margin:8px 0 10px;        /* ✅ 줄임 */
+      margin:10px 0 12px;
     }
 
-    /* ✅ 메인 영역 “진짜 꽉 차게” */
+    /* ✅ 달력만 꽉 채우기 */
     .main{
-      display:grid;
-      grid-template-columns: 1fr 310px; /* ✅ 320 → 310 : 오른쪽 살짝 컴팩트 */
-      gap:12px;
-      align-items:start;
-      height: calc(100% - 104px); /* ✅ top+divider 높이 재계산 */
+      height: calc(100% - 112px);
       min-height:0;
-    }
-
-    /* left */
-    .leftcol{
-      height:100%;
-      overflow:hidden;
       display:flex;
       flex-direction:column;
-      gap:8px;                 /* ✅ 10 → 8 */
-      padding-right:2px;
-      min-height:0;
+      gap:10px;
     }
 
     .badge-row{
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap:10px;
+      gap:12px;
       flex:0 0 auto;
     }
 
     .picked{
       border:3px solid var(--line);
       border-radius:18px;
-      padding:9px 12px;        /* ✅ 축소 */
+      padding:10px 14px;
       display:flex;
       gap:10px;
       align-items:center;
       width:fit-content;
       background:#fff;
-      flex:0 0 auto;
     }
     .picked .k{
       color:var(--muted);
-      font-size:11px;          /* ✅ 12 → 11 */
+      font-size:12px;
       letter-spacing:1px;
     }
     .picked .v{
-      font-size:13px;          /* ✅ 14 → 13 */
+      font-size:14px;
       letter-spacing:1px;
     }
 
     .mode{
       border:3px solid var(--border);
       border-radius:20px;
-      padding:9px 14px;        /* ✅ 축소 */
+      padding:10px 16px;
       background:var(--pink2);
       box-shadow:3px 4px 0 var(--shadow);
-      font-size:13px;          /* ✅ 14 → 13 */
+      font-size:14px;
       letter-spacing:1px;
     }
 
     .calendar{
       flex:1;
       overflow:hidden;
-      padding:2px 4px 4px;     /* ✅ 조금 줄임 */
+      padding:4px 6px 6px;
       display:flex;
       flex-direction:column;
       min-height:0;
@@ -195,9 +180,9 @@
       display:grid;
       grid-template-columns:repeat(7, 1fr);
       gap:8px;
-      padding:4px 8px 6px;
+      padding:4px 8px 8px;
       color:var(--muted);
-      font-size:10px;          /* ✅ 11 → 10 */
+      font-size:11px;
       letter-spacing:2px;
       text-align:center;
       flex:0 0 auto;
@@ -208,26 +193,27 @@
       display:grid;
       grid-template-columns:repeat(7, 1fr);
       grid-auto-rows:1fr;
-      gap:10px;                /* ✅ 12 → 10 : 달력 셀 “덩치” 축소 */
-      padding:0 8px 4px;       /* ✅ 줄임 */
+      gap:12px;
+      padding:0 10px 6px;
       min-height:0;
     }
 
     .cell{
       position:relative;
       border:3px solid var(--line);
-      border-radius:14px;      /* ✅ 15 → 14 */
+      border-radius:15px;
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size:14px;          /* ✅ 15 → 14 */
+      font-size:15px;
       cursor:pointer;
       background:#fff;
       transition:transform .06s ease;
       user-select:none;
-      min-height:40px;         /* ✅ 42 → 40 */
+      min-height:42px;
     }
     .cell:hover{ transform:translateY(-1px); }
+
     .cell.empty{
       border-color:transparent;
       background:transparent;
@@ -245,6 +231,7 @@
     .cell.sun{ color:#b84a5a; }
     .cell.sat{ color:#3b66d6; }
 
+    /* ✅ 할 일 존재 점 표시 */
     .cell.hasDot::after{
       content:"";
       position:absolute;
@@ -252,7 +239,7 @@
       height:7px;
       border-radius:50%;
       background:var(--border);
-      bottom:6px;              /* ✅ 살짝 위로 */
+      bottom:7px;
       left:50%;
       transform:translateX(-50%);
       opacity:.55;
@@ -262,191 +249,25 @@
       opacity:.9;
     }
 
-    /* right */
-    .side{
-      border:3px solid var(--line);
-      border-radius:24px;
-      padding:12px;            /* ✅ 14 → 12 */
-      background:#fff;
-      height:100%;
-      overflow:hidden;
-      display:flex;
-      flex-direction:column;
-      gap:10px;                /* ✅ 12 → 10 */
-      min-height:0;
-    }
-
-    .side-head{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      flex:0 0 auto;
-      min-width:0;
-    }
-    .side-head .h{
-      font-size:15px;          /* ✅ 16 → 15 */
-      letter-spacing:2px;
-      text-shadow: 0 1px 0 rgba(0,0,0,0.08);
-    }
-    .weekchip{
-      border:3px solid var(--line);
-      border-radius:16px;
-      padding:7px 9px;         /* ✅ 축소 */
-      color:var(--muted);
-      font-size:11px;          /* ✅ 12 → 11 */
-      letter-spacing:1px;
-      background:#fff;
-      flex:0 0 auto;
-    }
-
-    .routine{
-      display:flex;
-      flex-direction:column;
-      gap:9px;                 /* ✅ 살짝 줄임 */
-      flex:0 0 auto;
-    }
-
-    .rbox{
-      border:3px solid var(--line);
-      border-radius:18px;
-      padding:11px;            /* ✅ 12 → 11 */
-      display:flex;
-      gap:12px;
-      align-items:center;
-      background:#fff;
-      min-width:0;
-    }
-
-    .chk{
-      width:24px; height:24px;
-      border:3px solid var(--border);
-      border-radius:7px;
-      background:#fff;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      cursor:pointer;
-      flex:0 0 auto;
-    }
-    .chk.on{
-      background:var(--pink2);
-      position:relative;
-    }
-    .chk.on::after{
-      content:"✔";
-      font-size:14px;
-      line-height:1;
-    }
-
-    .rtext{
-      min-width:0;
-    }
-    .rtext .rt{
-      font-size:12px;          /* ✅ 13 → 12 */
-      letter-spacing:2px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-    .rtext .rd{
-      margin-top:5px;
-      font-size:10px;
-      color:var(--muted);
-      letter-spacing:1px;
-      font-family:system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .side-actions{
-      display:flex;
-      gap:10px;
-      flex:0 0 auto;
-    }
-    .side-actions .btn{
-      flex:1;
-      padding:10px 10px;
-      font-size:13px;
-    }
-
-    /* ✅ TODAY ROUTINE */
-    .todayPanel{
-      border:3px solid var(--border);
-      border-radius:22px;
-      padding:12px;
-      background:#fff;
-      overflow:hidden;
-
-      flex:1;
-      min-height:0;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
-
-    .todayPanelHead{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      flex:0 0 auto;
-      min-width:0; /* ✅ 날짜칩 잘림 방지 핵심 */
-    }
-
-    .todayPanelHead .t{
-      font-size:13px;          /* ✅ 14 → 13 */
-      letter-spacing:2px;
-      text-shadow: 0 1px 0 rgba(0,0,0,0.08);
-      flex:0 0 auto;
-    }
-
-    /* ✅ 날짜칩: "가려짐" 완전 방지 세팅 */
-    .todayChip{
-      border:3px solid var(--line);
-      border-radius:16px;
-      padding:6px 9px;
-      color:var(--muted);
-      font-size:11px;
-      letter-spacing:1px;
-      background:#fff;
-
-      flex:1 1 auto;           /* ✅ 핵심: 남는 공간만큼 확장/축소 */
-      min-width:0;             /* ✅ ellipsis 적용 */
-      max-width:140px;         /* ✅ 너무 커지지 않게 */
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
-      text-align:right;
-    }
-
-    .todayList{
-      overflow:auto;
-      display:flex;
-      flex-direction:column;
-      gap:9px;
-      padding-right:2px;
-      min-height:0;
-    }
-
     /* foot */
     .foot{
       position:absolute;
-      left:14px;
-      right:14px;
-      bottom:6px;             /* ✅ 하단 여백 더 줄임 */
+      left:16px;
+      right:16px;
+      bottom:8px;
       display:flex;
       gap:10px;
       color:var(--muted);
-      font-size:10px;         /* ✅ 11 → 10 */
+      font-size:11px;
       letter-spacing:2px;
       pointer-events:none;
     }
     .foot .left{ flex:1; }
     .foot .right{ text-align:right; }
 
-    /* dim + modal */
+    /* ======================
+       ✅ TASK MODAL (CENTER)
+       ====================== */
     .dim{
       position:absolute;
       inset:0;
@@ -466,7 +287,7 @@
       left:50%;
       top:50%;
       transform:translate(-50%, -50%) scale(.98);
-      width: min(740px, calc(100% - 34px));
+      width: min(760px, calc(100% - 36px));
       max-height: min(520px, calc(100% - 140px));
       background:#fff;
       border:3px solid var(--border);
@@ -498,6 +319,10 @@
     .modalHead .t{
       font-size:14px;
       letter-spacing:2px;
+      overflow:hidden;
+      white-space:nowrap;
+      text-overflow:ellipsis;
+      min-width:0;
     }
 
     .modalBody{
@@ -517,6 +342,27 @@
       align-items:center;
       gap:10px;
       background:#fff;
+    }
+
+    .chk{
+      width:24px; height:24px;
+      border:3px solid var(--border);
+      border-radius:7px;
+      background:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      flex:0 0 auto;
+    }
+    .chk.on{
+      background:var(--pink2);
+      position:relative;
+    }
+    .chk.on::after{
+      content:"✔";
+      font-size:14px;
+      line-height:1;
     }
 
     .taskRow input{
@@ -553,7 +399,7 @@
       padding:12px 10px;
     }
 
-    /* ✅ 작은 화면 대응 */
+    /* ✅ 작은 화면: 세로 스크롤 허용 */
     @media (max-width: 980px){
       html, body{ overflow:auto; }
       .stage{ height:auto; }
@@ -561,12 +407,12 @@
         height:auto;
         min-height:720px;
       }
-      .main{
-        grid-template-columns:1fr;
-        height:auto;
+      .main{ height:auto; }
+      .foot{
+        position:relative;
+        left:auto; right:auto; bottom:auto;
+        margin-top:10px;
       }
-      .side{ height:auto; }
-      .foot{ position:relative; left:auto; right:auto; bottom:auto; margin-top:10px; }
       .modal{ position:fixed; }
     }
   </style>
@@ -597,118 +443,25 @@
 
       <div class="divider"></div>
 
+      <!-- ✅ calendar only -->
       <div class="main">
-        <!-- left -->
-        <div class="leftcol">
-          <div class="badge-row">
-            <div class="picked">
-              <div class="k">PICKED:</div>
-              <div class="v" id="pickedLabel">NONE</div>
-            </div>
-            <div class="mode">MODE: YOHAN OS</div>
+        <div class="badge-row">
+          <div class="picked">
+            <div class="k">PICKED:</div>
+            <div class="v" id="pickedLabel">NONE</div>
           </div>
-
-          <div class="calendar">
-            <div class="dow">
-              <div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div>
-            </div>
-            <div class="grid" id="grid"></div>
-          </div>
+          <div class="mode">MODE: YOHAN OS</div>
         </div>
 
-        <!-- right -->
-        <div class="side">
-          <div class="side-head">
-            <div class="h">THIS WEEK ROUTINE</div>
-            <div class="weekchip" id="weekChip">WEEK --</div>
+        <div class="calendar">
+          <div class="dow">
+            <div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div>
           </div>
-
-          <!-- weekly routine -->
-          <div class="routine">
-            <div class="rbox">
-              <div class="chk" id="r_workout"></div>
-              <div class="rtext">
-                <div class="rt">WORKOUT</div>
-                <div class="rd">운동 1회 이상</div>
-              </div>
-            </div>
-
-            <div class="rbox">
-              <div class="chk" id="r_reading"></div>
-              <div class="rtext">
-                <div class="rt">READING</div>
-                <div class="rd">독서 10P 이상</div>
-              </div>
-            </div>
-
-            <div class="rbox">
-              <div class="chk" id="r_budget"></div>
-              <div class="rtext">
-                <div class="rt">BUDGET</div>
-                <div class="rd">가계부 기록</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="side-actions">
-            <button class="btn" id="resetRoutineBtn">RESET</button>
-            <button class="btn" id="allRoutineBtn">ALL</button>
-          </div>
-
-          <!-- today routine -->
-          <div class="todayPanel" id="todayPanel">
-            <div class="todayPanelHead">
-              <div class="t">TODAY ROUTINE</div>
-              <div class="todayChip" id="todayChip">NO DATE</div>
-            </div>
-
-            <div class="todayList" id="todayList">
-              <div class="rbox">
-                <div class="chk" data-daily="gratitude"></div>
-                <div class="rtext">
-                  <div class="rt">GRATITUDE</div>
-                  <div class="rd">감사 일기</div>
-                </div>
-              </div>
-
-              <div class="rbox">
-                <div class="chk" data-daily="emotion"></div>
-                <div class="rtext">
-                  <div class="rt">EMOTION</div>
-                  <div class="rd">감정 일기</div>
-                </div>
-              </div>
-
-              <div class="rbox">
-                <div class="chk" data-daily="sleep"></div>
-                <div class="rtext">
-                  <div class="rt">SLEEP</div>
-                  <div class="rd">하루 수면 분석</div>
-                </div>
-              </div>
-
-              <div class="rbox">
-                <div class="chk" data-daily="morning"></div>
-                <div class="rtext">
-                  <div class="rt">MORNING</div>
-                  <div class="rd">아침 루티너리</div>
-                </div>
-              </div>
-
-              <div class="rbox">
-                <div class="chk" data-daily="future"></div>
-                <div class="rtext">
-                  <div class="rt">FUTURE</div>
-                  <div class="rd">미래 모습 실천 기록</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
+          <div class="grid" id="grid"></div>
         </div>
       </div>
 
-      <!-- modal -->
+      <!-- ✅ modal -->
       <div class="dim" id="dim"></div>
 
       <div class="modal" id="taskModal">
@@ -727,7 +480,7 @@
 
       <div class="foot">
         <div class="left">NOTION EMBED SAFE</div>
-        <div class="right">v3.2</div>
+        <div class="right">v4.0</div>
       </div>
 
     </div>
@@ -745,17 +498,7 @@
       const nextBtn = $("nextBtn");
       const todayBtn = $("todayBtn");
 
-      const weekChip = $("weekChip");
-
-      const rWorkout = $("r_workout");
-      const rReading = $("r_reading");
-      const rBudget = $("r_budget");
-      const resetRoutineBtn = $("resetRoutineBtn");
-      const allRoutineBtn = $("allRoutineBtn");
-
-      const todayChip = $("todayChip");
-      const todayList = $("todayList");
-
+      // tasks modal
       const dim = $("dim");
       const taskModal = $("taskModal");
       const tasksTitle = $("tasksTitle");
@@ -764,7 +507,7 @@
       const addTaskBtn = $("addTaskBtn");
       const clearDoneBtn = $("clearDoneBtn");
 
-      const KEY = "yohan_os_calendar_v32";
+      const KEY = "yohan_os_calendar_tasks_v40";
 
       const months = [
         "JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE",
@@ -773,14 +516,6 @@
 
       const pad2 = (n) => String(n).padStart(2,"0");
       const fmt = (d) => `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
-
-      function getWeekNumber(date){
-        const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-        const dayNum = d.getUTCDay() || 7;
-        d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-        const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-        return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-      }
 
       function load(){
         try { return JSON.parse(localStorage.getItem(KEY)) || null; }
@@ -796,23 +531,8 @@
         viewYear: now.getFullYear(),
         viewMonth: now.getMonth(),
         picked: null,
-        tasks: {},
-        routine: { workout:false, reading:false, budget:false },
-        daily: {}
+        tasks: {} // {date: [{text:"",done:false}, ...]}
       };
-
-      function ensureDaily(dateStr){
-        if(!state.daily[dateStr]){
-          state.daily[dateStr] = {
-            gratitude:false,
-            emotion:false,
-            sleep:false,
-            morning:false,
-            future:false
-          };
-        }
-        return state.daily[dateStr];
-      }
 
       function ensureTasks(dateStr){
         if(!state.tasks[dateStr]){
@@ -825,57 +545,14 @@
         return state.tasks[dateStr];
       }
 
-      function hasAnyContent(dateStr){
+      function hasAnyTaskContent(dateStr){
         const t = state.tasks[dateStr];
-        const d = state.daily[dateStr];
-        const hasTask = Array.isArray(t) && t.some(x => (x.text && x.text.trim()) || x.done);
-        const hasDaily = d && Object.values(d).some(Boolean);
-        return hasTask || hasDaily;
+        return Array.isArray(t) && t.some(x => (x.text && x.text.trim()) || x.done);
       }
 
-      function setRoutineUI(){
-        rWorkout.classList.toggle("on", !!state.routine.workout);
-        rReading.classList.toggle("on", !!state.routine.reading);
-        rBudget.classList.toggle("on", !!state.routine.budget);
-      }
-
-      function setWeekChip(){
-        const ref = state.picked ? new Date(state.picked) : new Date(state.viewYear, state.viewMonth, 1);
-        const w = getWeekNumber(ref);
-        weekChip.textContent = `WEEK ${pad2(w)}`;
-      }
-
-      function renderTodayRoutine(){
-        if(!state.picked){
-          todayChip.textContent = "NO DATE";
-          [...todayList.querySelectorAll('.chk[data-daily]')].forEach(chk=>{
-            chk.classList.remove("on");
-          });
-          return;
-        }
-
-        todayChip.textContent = state.picked;
-        const d = ensureDaily(state.picked);
-
-        [...todayList.querySelectorAll('.chk[data-daily]')].forEach(chk=>{
-          const key = chk.getAttribute("data-daily");
-          chk.classList.toggle("on", !!d[key]);
-        });
-      }
-
-      todayList.addEventListener("click", (e)=>{
-        const chk = e.target.closest('.chk[data-daily]');
-        if(!chk) return;
-        if(!state.picked) return;
-
-        const key = chk.getAttribute("data-daily");
-        const d = ensureDaily(state.picked);
-        d[key] = !d[key];
-        chk.classList.toggle("on", d[key]);
-        save();
-        render();
-      });
-
+      /* =====================
+         ✅ TASK MODAL
+         ===================== */
       function openTasks(dateStr){
         state.picked = dateStr;
         pickedLabel.textContent = dateStr;
@@ -886,8 +563,7 @@
         taskModal.classList.add("open");
 
         buildTaskList(dateStr);
-        renderTodayRoutine();
-        render();
+        render(); // 선택/점 반영
       }
 
       function closeTasks(){
@@ -971,10 +647,12 @@
         if(e.key === "Escape") closeTasks();
       });
 
+      /* =====================
+         ✅ Calendar Render
+         ===================== */
       function render(){
         monthLabel.textContent = `${state.viewYear} ${months[state.viewMonth]}`;
         pickedLabel.textContent = state.picked ? state.picked : "NONE";
-        setWeekChip();
 
         const first = new Date(state.viewYear, state.viewMonth, 1);
         const firstDay = first.getDay();
@@ -1004,18 +682,20 @@
           if(dateStr === todayStr) cell.classList.add("today");
           if(state.picked === dateStr) cell.classList.add("selected");
 
-          if(hasAnyContent(dateStr)) cell.classList.add("hasDot");
+          if(hasAnyTaskContent(dateStr)) cell.classList.add("hasDot");
 
+          // ✅ 날짜 클릭 = 바로 tasks 팝업
           cell.addEventListener("click", ()=>{
             openTasks(dateStr);
           });
 
           grid.appendChild(cell);
         }
-
-        renderTodayRoutine();
       }
 
+      /* =====================
+         ✅ Month Controls
+         ===================== */
       prevBtn.addEventListener("click", ()=>{
         state.viewMonth--;
         if(state.viewMonth < 0){
@@ -1046,25 +726,7 @@
         openTasks(d);
       });
 
-      rWorkout.addEventListener("click", ()=>{ state.routine.workout = !state.routine.workout; setRoutineUI(); save(); });
-      rReading.addEventListener("click", ()=>{ state.routine.reading = !state.routine.reading; setRoutineUI(); save(); });
-      rBudget.addEventListener("click", ()=>{ state.routine.budget = !state.routine.budget; setRoutineUI(); save(); });
-
-      resetRoutineBtn.addEventListener("click", ()=>{
-        state.routine.workout=false;
-        state.routine.reading=false;
-        state.routine.budget=false;
-        setRoutineUI(); save();
-      });
-
-      allRoutineBtn.addEventListener("click", ()=>{
-        state.routine.workout=true;
-        state.routine.reading=true;
-        state.routine.budget=true;
-        setRoutineUI(); save();
-      });
-
-      setRoutineUI();
+      // init
       render();
     })();
   </script>
