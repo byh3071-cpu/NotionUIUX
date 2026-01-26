@@ -20,10 +20,6 @@
 
       --border:#1d1d1d;
       --radius:28px;
-
-      /* ✅ base size (이 크기를 기준으로 자동 스케일) */
-      --baseW:1060;
-      --baseH:720;
     }
 
     *{ box-sizing:border-box; }
@@ -33,36 +29,29 @@
       padding:0;
       width:100%;
       height:100%;
-      background:transparent; /* ✅ 노션 임베드 배경 */
+      background: #ffffff; /* ✅ 여백이 보이더라도 흰색으로 */
       font-family:'Silkscreen', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
       color:var(--ink);
-      overflow:hidden;
+      overflow:hidden; /* ✅ 노션 임베드 스크롤 최소화 */
     }
 
-    /* ✅ stage: iframe 안에서 꽉차게 + scale 대상 */
+    /* ✅ iframe을 100% 꽉 채우는 루트 */
     .stage{
       width:100vw;
       height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      overflow:hidden;
-      background:transparent;
+      padding:0;           /* ✅ 여백 제거 */
+      margin:0;
+      background:#fff;
     }
 
-    /* ✅ scale wrapper */
-    .scaleWrap{
-      transform-origin: top left;
-      will-change: transform;
-    }
-
+    /* ✅ 카드 = 화면 꽉 채움 + 테두리 유지 */
     .card{
-      width: calc(var(--baseW) * 1px);
-      height: calc(var(--baseH) * 1px);
+      width:100%;
+      height:100%;
       background:#fff;
       border:3px solid var(--border);
       border-radius:var(--radius);
-      box-shadow:8px 10px 0 var(--shadow);
+      box-shadow:none; /* ✅ 꽉 찬 느낌 (원하면 다시 켜도 됨) */
       padding:16px 16px 12px;
       position:relative;
       overflow:hidden;
@@ -131,12 +120,14 @@
       margin:10px 0 12px;
     }
 
+    /* ✅ 남는 하단 공간 없이 메인 꽉 채우기 */
     .main{
       display:grid;
       grid-template-columns: 1fr 340px;
       gap:14px;
       align-items:start;
-      height: calc(100% - 110px);
+      height: calc(100% - 112px); /* ✅ top+divider 영역 */
+      min-height:0;
     }
 
     /* left */
@@ -147,6 +138,7 @@
       flex-direction:column;
       gap:10px;
       padding-right:2px;
+      min-height:0;
     }
 
     .badge-row{
@@ -165,6 +157,7 @@
       align-items:center;
       width:fit-content;
       background:#fff;
+      flex:0 0 auto;
     }
     .picked .k{
       color:var(--muted);
@@ -186,12 +179,14 @@
       letter-spacing:1px;
     }
 
+    /* ✅ 달력이 남은 높이 전부를 먹고, 아래 흰 공백이 사라짐 */
     .calendar{
       flex:1;
       overflow:hidden;
       padding:4px 6px 6px;
       display:flex;
       flex-direction:column;
+      min-height:0;
     }
 
     .dow{
@@ -203,16 +198,18 @@
       font-size:12px;
       letter-spacing:2px;
       text-align:center;
+      flex:0 0 auto;
     }
 
-      .grid{
-        flex:1;
-        display:grid;
-        grid-template-columns:repeat(7, 1fr);
-        grid-auto-rows: 1fr;       /* ✅ 행도 자동으로 균등 분배 */
-        gap:12px;
-        padding:0 10px 6px;
-      }  
+    .grid{
+      flex:1;
+      display:grid;
+      grid-template-columns:repeat(7, 1fr);
+      grid-auto-rows:1fr;  /* ✅ 행 균등 분배 */
+      gap:12px;
+      padding:0 10px 6px;
+      min-height:0;
+    }
 
     .cell{
       position:relative;
@@ -226,6 +223,7 @@
       background:#fff;
       transition:transform .06s ease;
       user-select:none;
+      min-height:46px; /* ✅ 너무 납작해지는 것 방지 */
     }
     .cell:hover{ transform:translateY(-1px); }
     .cell.empty{
@@ -274,6 +272,7 @@
       display:flex;
       flex-direction:column;
       gap:12px;
+      min-height:0;
     }
 
     .side-head{
@@ -281,6 +280,7 @@
       align-items:center;
       justify-content:space-between;
       gap:10px;
+      flex:0 0 auto;
     }
     .side-head .h{
       font-size:16px;
@@ -300,6 +300,7 @@
       display:flex;
       flex-direction:column;
       gap:10px;
+      flex:0 0 auto;
     }
 
     .rbox{
@@ -348,6 +349,7 @@
     .side-actions{
       display:flex;
       gap:12px;
+      flex:0 0 auto;
     }
     .side-actions .btn{
       flex:1;
@@ -361,17 +363,19 @@
       padding:12px;
       background:#fff;
       overflow:hidden;
-      flex:1; /* ✅ 밑 공간 꽉 채워서 짤림 방지 */
+
+      flex:1;            /* ✅ 밑 공간 꽉 채워서 짤림 방지 */
+      min-height:0;      /* ✅ 스크롤 컨테이너 정상 동작 */
       display:flex;
       flex-direction:column;
       gap:10px;
-      min-height:0;
     }
     .todayPanelHead{
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:10px;
+      flex:0 0 auto;
     }
     .todayPanelHead .t{
       font-size:14px;
@@ -425,6 +429,7 @@
       opacity:0;
       pointer-events:none;
       transition:opacity .14s ease;
+      z-index:10;
     }
     .dim.on{
       opacity:1;
@@ -435,7 +440,7 @@
       position:absolute;
       left:50%;
       top:50%;
-      transform:translate(-50%, -44%) scale(.98);
+      transform:translate(-50%, -50%) scale(.98);
       width: min(760px, calc(100% - 36px));
       max-height: min(520px, calc(100% - 140px));
       background:#fff;
@@ -448,6 +453,7 @@
       overflow:hidden;
       display:flex;
       flex-direction:column;
+      z-index:11;
     }
 
     .modal.open{
@@ -475,6 +481,7 @@
       display:flex;
       flex-direction:column;
       gap:10px;
+      min-height:0;
     }
 
     .taskRow{
@@ -521,231 +528,190 @@
       padding:12px 10px;
     }
 
-    /* ✅ 모바일: 스케일 대신 그냥 세로 스크롤 */
-    @media (max-width: 900px){
+    /* ✅ 작은 화면 대응: 오른쪽 패널이 너무 좁아지면 한 줄로 */
+    @media (max-width: 980px){
       html, body{ overflow:auto; }
       .stage{ height:auto; }
-      .scaleWrap{ transform:none !important; }
       .card{
-        width:100%;
         height:auto;
         min-height:720px;
       }
-      .main{ grid-template-columns:1fr; height:auto; }
+      .main{
+        grid-template-columns:1fr;
+        height:auto;
+      }
       .side{ height:auto; }
       .foot{ position:relative; left:auto; right:auto; bottom:auto; margin-top:10px; }
-      .modal{
-        position:fixed;
-        left:50%;
-        top:50%;
-      }
+      .modal{ position:fixed; }
     }
   </style>
 </head>
 
 <body>
   <div class="stage">
-    <div class="scaleWrap" id="scaleWrap">
-      <div class="card" id="card">
+    <div class="card" id="card">
 
-        <!-- top -->
-        <div class="topline">
-          <div class="brand">
-            <div class="dots">
-              <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-            </div>
-            <div class="title">
-              <div class="mini">YOHAN OS / DASHBOARD</div>
-              <div class="big" id="monthLabel">----</div>
-            </div>
+      <!-- top -->
+      <div class="topline">
+        <div class="brand">
+          <div class="dots">
+            <div class="dot"></div><div class="dot"></div><div class="dot"></div>
           </div>
-
-          <div class="controls">
-            <button class="btn icon" id="prevBtn">◀</button>
-            <button class="btn" id="todayBtn">TODAY</button>
-            <button class="btn icon" id="nextBtn">▶</button>
+          <div class="title">
+            <div class="mini">YOHAN OS / DASHBOARD</div>
+            <div class="big" id="monthLabel">----</div>
           </div>
         </div>
 
-        <div class="divider"></div>
-
-        <div class="main">
-          <!-- left -->
-          <div class="leftcol">
-            <div class="badge-row">
-              <div class="picked">
-                <div class="k">PICKED:</div>
-                <div class="v" id="pickedLabel">NONE</div>
-              </div>
-              <div class="mode">MODE: YOHAN OS</div>
-            </div>
-
-            <div class="calendar">
-              <div class="dow">
-                <div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div>
-              </div>
-              <div class="grid" id="grid"></div>
-            </div>
-          </div>
-
-          <!-- right -->
-          <div class="side">
-            <div class="side-head">
-              <div class="h">THIS WEEK ROUTINE</div>
-              <div class="weekchip" id="weekChip">WEEK --</div>
-            </div>
-
-            <!-- weekly routine -->
-            <div class="routine">
-              <div class="rbox">
-                <div class="chk" id="r_workout"></div>
-                <div class="rtext">
-                  <div class="rt">WORKOUT</div>
-                  <div class="rd">운동 1회 이상</div>
-                </div>
-              </div>
-
-              <div class="rbox">
-                <div class="chk" id="r_reading"></div>
-                <div class="rtext">
-                  <div class="rt">READING</div>
-                  <div class="rd">독서 10P 이상</div>
-                </div>
-              </div>
-
-              <div class="rbox">
-                <div class="chk" id="r_budget"></div>
-                <div class="rtext">
-                  <div class="rt">BUDGET</div>
-                  <div class="rd">가계부 기록</div>
-                </div>
-              </div>
-            </div>
-
-            <div class="side-actions">
-              <button class="btn" id="resetRoutineBtn">RESET</button>
-              <button class="btn" id="allRoutineBtn">ALL</button>
-            </div>
-
-            <!-- ✅ today routine (선택 날짜 기준) -->
-            <div class="todayPanel" id="todayPanel">
-              <div class="todayPanelHead">
-                <div class="t">TODAY ROUTINE</div>
-                <div class="todayChip" id="todayChip">NO DATE</div>
-              </div>
-
-              <div class="todayList" id="todayList">
-                <div class="rbox">
-                  <div class="chk" data-daily="gratitude"></div>
-                  <div class="rtext">
-                    <div class="rt">GRATITUDE</div>
-                    <div class="rd">감사 일기</div>
-                  </div>
-                </div>
-
-                <div class="rbox">
-                  <div class="chk" data-daily="emotion"></div>
-                  <div class="rtext">
-                    <div class="rt">EMOTION</div>
-                    <div class="rd">감정 일기</div>
-                  </div>
-                </div>
-
-                <div class="rbox">
-                  <div class="chk" data-daily="sleep"></div>
-                  <div class="rtext">
-                    <div class="rt">SLEEP</div>
-                    <div class="rd">하루 수면 분석</div>
-                  </div>
-                </div>
-
-                <div class="rbox">
-                  <div class="chk" data-daily="morning"></div>
-                  <div class="rtext">
-                    <div class="rt">MORNING</div>
-                    <div class="rd">아침 루티너리</div>
-                  </div>
-                </div>
-
-                <div class="rbox">
-                  <div class="chk" data-daily="future"></div>
-                  <div class="rtext">
-                    <div class="rt">FUTURE</div>
-                    <div class="rd">미래 모습 실천 기록</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div class="controls">
+          <button class="btn icon" id="prevBtn">◀</button>
+          <button class="btn" id="todayBtn">TODAY</button>
+          <button class="btn icon" id="nextBtn">▶</button>
         </div>
-
-        <!-- ✅ modal -->
-        <div class="dim" id="dim"></div>
-
-        <div class="modal" id="taskModal">
-          <div class="modalHead">
-            <div class="t" id="tasksTitle">TODAY TASKS</div>
-            <button class="btn" id="closeTasksBtn">CLOSE</button>
-          </div>
-
-          <div class="modalBody" id="taskList">
-            <!-- rows injected -->
-          </div>
-
-          <div class="modalActions">
-            <button class="btn" id="addTaskBtn">+ ADD TASK</button>
-            <button class="btn" id="clearDoneBtn">CLEAR DONE</button>
-          </div>
-        </div>
-
-        <div class="foot">
-          <div class="left">NOTION EMBED SAFE</div>
-          <div class="right">v3.0</div>
-        </div>
-
       </div>
+
+      <div class="divider"></div>
+
+      <div class="main">
+        <!-- left -->
+        <div class="leftcol">
+          <div class="badge-row">
+            <div class="picked">
+              <div class="k">PICKED:</div>
+              <div class="v" id="pickedLabel">NONE</div>
+            </div>
+            <div class="mode">MODE: YOHAN OS</div>
+          </div>
+
+          <div class="calendar">
+            <div class="dow">
+              <div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div>
+            </div>
+            <div class="grid" id="grid"></div>
+          </div>
+        </div>
+
+        <!-- right -->
+        <div class="side">
+          <div class="side-head">
+            <div class="h">THIS WEEK ROUTINE</div>
+            <div class="weekchip" id="weekChip">WEEK --</div>
+          </div>
+
+          <!-- weekly routine -->
+          <div class="routine">
+            <div class="rbox">
+              <div class="chk" id="r_workout"></div>
+              <div class="rtext">
+                <div class="rt">WORKOUT</div>
+                <div class="rd">운동 1회 이상</div>
+              </div>
+            </div>
+
+            <div class="rbox">
+              <div class="chk" id="r_reading"></div>
+              <div class="rtext">
+                <div class="rt">READING</div>
+                <div class="rd">독서 10P 이상</div>
+              </div>
+            </div>
+
+            <div class="rbox">
+              <div class="chk" id="r_budget"></div>
+              <div class="rtext">
+                <div class="rt">BUDGET</div>
+                <div class="rd">가계부 기록</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="side-actions">
+            <button class="btn" id="resetRoutineBtn">RESET</button>
+            <button class="btn" id="allRoutineBtn">ALL</button>
+          </div>
+
+          <!-- ✅ today routine (선택 날짜 기준) -->
+          <div class="todayPanel" id="todayPanel">
+            <div class="todayPanelHead">
+              <div class="t">TODAY ROUTINE</div>
+              <div class="todayChip" id="todayChip">NO DATE</div>
+            </div>
+
+            <div class="todayList" id="todayList">
+              <div class="rbox">
+                <div class="chk" data-daily="gratitude"></div>
+                <div class="rtext">
+                  <div class="rt">GRATITUDE</div>
+                  <div class="rd">감사 일기</div>
+                </div>
+              </div>
+
+              <div class="rbox">
+                <div class="chk" data-daily="emotion"></div>
+                <div class="rtext">
+                  <div class="rt">EMOTION</div>
+                  <div class="rd">감정 일기</div>
+                </div>
+              </div>
+
+              <div class="rbox">
+                <div class="chk" data-daily="sleep"></div>
+                <div class="rtext">
+                  <div class="rt">SLEEP</div>
+                  <div class="rd">하루 수면 분석</div>
+                </div>
+              </div>
+
+              <div class="rbox">
+                <div class="chk" data-daily="morning"></div>
+                <div class="rtext">
+                  <div class="rt">MORNING</div>
+                  <div class="rd">아침 루티너리</div>
+                </div>
+              </div>
+
+              <div class="rbox">
+                <div class="chk" data-daily="future"></div>
+                <div class="rtext">
+                  <div class="rt">FUTURE</div>
+                  <div class="rd">미래 모습 실천 기록</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ✅ modal -->
+      <div class="dim" id="dim"></div>
+
+      <div class="modal" id="taskModal">
+        <div class="modalHead">
+          <div class="t" id="tasksTitle">TODAY TASKS</div>
+          <button class="btn" id="closeTasksBtn">CLOSE</button>
+        </div>
+
+        <div class="modalBody" id="taskList">
+          <!-- rows injected -->
+        </div>
+
+        <div class="modalActions">
+          <button class="btn" id="addTaskBtn">+ ADD TASK</button>
+          <button class="btn" id="clearDoneBtn">CLEAR DONE</button>
+        </div>
+      </div>
+
+      <div class="foot">
+        <div class="left">NOTION EMBED SAFE</div>
+        <div class="right">v3.1</div>
+      </div>
+
     </div>
   </div>
 
   <script>
     (function(){
       const $ = (id) => document.getElementById(id);
-
-      /* =====================
-         ✅ Auto Scaling
-         ===================== */
-      const scaleWrap = $("scaleWrap");
-      const card = $("card");
-
-function fit(){
-  // 모바일은 scale 끔
-  if (window.matchMedia("(max-width: 900px)").matches) {
-    scaleWrap.style.transform = "none";
-    return;
-  }
-
-  const baseW = Number(getComputedStyle(document.documentElement).getPropertyValue("--baseW")) || 1060;
-  const baseH = Number(getComputedStyle(document.documentElement).getPropertyValue("--baseH")) || 720;
-
-  const w = window.innerWidth;
-  const h = window.innerHeight;
-
-  // ✅ 테두리(카드 border) 보이게 최소 여백만 남김
-  const SAFE = 6; // 4~10 사이 취향
-
-  const sx = (w - SAFE * 2) / baseW;
-  const sy = (h - SAFE * 2) / baseH;
-
-  const s = Math.min(sx, sy);
-
-  const tx = (w - baseW * s) / 2;
-  const ty = (h - baseH * s) / 2;
-
-  scaleWrap.style.transform = `translate(${tx}px, ${ty}px) scale(${s})`;
-}
-
-      window.addEventListener("resize", fit);
-      fit();
 
       /* =====================
          ✅ Calendar + State
@@ -769,7 +735,6 @@ function fit(){
 
       // today routine
       const todayChip = $("todayChip");
-      const todayPanel = $("todayPanel");
       const todayList = $("todayList");
 
       // tasks modal
@@ -781,7 +746,7 @@ function fit(){
       const addTaskBtn = $("addTaskBtn");
       const clearDoneBtn = $("clearDoneBtn");
 
-      const KEY = "yohan_os_calendar_v30";
+      const KEY = "yohan_os_calendar_v31";
 
       const months = [
         "JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE",
@@ -875,7 +840,6 @@ function fit(){
       function renderTodayRoutine(){
         if(!state.picked){
           todayChip.textContent = "NO DATE";
-          // 선택 날짜 없으면 패널은 유지하되 체크는 비활성 느낌
           [...todayList.querySelectorAll('.chk[data-daily]')].forEach(chk=>{
             chk.classList.remove("on");
           });
@@ -959,7 +923,6 @@ function fit(){
           del.textContent = "X";
           del.title = "삭제";
           del.addEventListener("click", ()=>{
-            // 최소 1개는 유지
             list.splice(idx, 1);
             if(list.length === 0){
               list.push({text:"",done:false});
@@ -1049,7 +1012,6 @@ function fit(){
           grid.appendChild(cell);
         }
 
-        // ✅ 오른쪽 today routine도 최신 상태 반영
         renderTodayRoutine();
       }
 
@@ -1110,12 +1072,7 @@ function fit(){
       // init
       setRoutineUI();
       render();
-
-      // ✅ 처음 접속 시: 오늘 날짜 자동 선택하고 싶으면 아래 주석 해제
-      // openTasks(fmt(new Date()));
-
     })();
   </script>
 </body>
 </html>
-
