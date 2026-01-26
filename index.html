@@ -2,733 +2,681 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>YOHAN OS / Pixel Calendar Embed</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notion Pixel Calendar (Tasks Only)</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Silkscreen&display=swap" rel="stylesheet">
+  <!-- 픽셀 느낌 폰트(원하면 삭제 가능) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
   <style>
     :root{
-      --bg:#ffffff;
-      --ink:#111;
-      --muted:#9aa0a6;
-      --line:#e8e8e8;
-      --soft:#f7f7f7;
-      --pink:#f09ab1;
-      --pink2:#ffe2ea;
-      --shadow:rgba(0,0,0,.06);
+      --bg:#0b0c10;
+      --panel:#111319;
+      --panel2:#0f1117;
+      --line:#2a2f3a;
+      --line2:#3a4150;
+      --text:#e9eef7;
+      --muted:#a7b0c2;
+      --accent:#7cc7ff;
+      --today:#ffe08a;
+      --danger:#ff6b6b;
 
-      --border:#1d1d1d;
-      --radius:28px;
+      --w: 360px;     /* ✅ 초기 크기 유지 */
+      --h: 440px;
+      --cell: 46px;   /* 7열 * 46px = 322px + 갭/패딩 */
+      --gap: 4px;
     }
 
     *{ box-sizing:border-box; }
-
-    html, body{
+    html,body{
       margin:0;
       padding:0;
-      width:100%;
-      height:100%;
-      background:#ffffff;
-      font-family:'Silkscreen', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      color:var(--ink);
+      background:transparent;
+      color:var(--text);
+      font-family: ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace;
+    }
+
+    /* ✅ 노션 임베드에서 중앙정렬 필요 없으면 제거 가능 */
+    .wrap{
+      width:var(--w);
+      height:var(--h);
+      background:var(--panel);
+      border:2px solid var(--line2);
+      border-radius:0;              /* ✅ 사각형 */
       overflow:hidden;
-    }
-
-    /* ✅ iframe 100% 채우기 */
-    .stage{
-      width:100vw;
-      height:100vh;
-      padding:0;
-      margin:0;
-      background:#fff;
-    }
-
-    /* ✅ 카드 = 화면 꽉 채움 + 테두리 유지 */
-    .card{
-      width:100%;
-      height:100%;
-      background:#fff;
-      border:3px solid var(--border);
-      border-radius:var(--radius);
-      box-shadow:none;
-      padding:14px 14px 10px;
       position:relative;
-      overflow:hidden;
     }
 
-    /* top */
-    .topline{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:10px;
-    }
-    .brand{
-      display:flex;
-      align-items:flex-start;
-      gap:10px;
-      min-width:260px;
-    }
-    .dots{
-      display:flex;
-      gap:7px;
-      margin-top:2px;
-    }
-    .dot{
-      width:18px; height:18px;
-      border:3px solid var(--border);
-      border-radius:7px;
-      background:#fff;
-    }
-
-    .title{ line-height:1.1; }
-    .title .mini{
-      font-size:12px;
-      color:var(--muted);
-      letter-spacing:1px;
-    }
-    .title .big{
-      font-size:26px;
-      letter-spacing:2px;
-      margin-top:2px;
-    }
-
-    .controls{
+    /* 상단 바 */
+    .topbar{
       display:flex;
       align-items:center;
-      gap:10px;
+      justify-content:space-between;
+      padding:8px 8px;              /* ✅ 여백 최소화 */
+      border-bottom:2px solid var(--line2);
+      background:linear-gradient(180deg, var(--panel2), var(--panel));
+      gap:6px;
+    }
+
+    .leftBtns, .rightBtns{
+      display:flex;
+      gap:6px;
+      align-items:center;
     }
 
     .btn{
-      border:3px solid var(--border);
-      background:#fff;
-      border-radius:18px;
-      padding:10px 16px;
-      font-size:14px;
+      height:32px;
+      padding:0 10px;
+      background:#0e1016;
+      color:var(--text);
+      border:2px solid var(--line2);
+      border-radius:0;              /* ✅ 사각형 */
       cursor:pointer;
-      box-shadow:3px 4px 0 var(--shadow);
+      font-size:10px;
+      line-height:1;
+      display:flex;
+      align-items:center;
+      justify-content:center;
       user-select:none;
+      transition: transform .05s ease;
     }
-    .btn:active{ transform:translateY(1px); box-shadow:2px 3px 0 var(--shadow); }
-    .btn.icon{ width:54px; padding:10px 0; display:flex; justify-content:center; }
+    .btn:active{ transform: translateY(1px); }
+    .btn:hover{ border-color:var(--accent); }
 
-    .divider{
-      width:100%;
-      border-top:3px dashed var(--line);
-      margin:10px 0 12px;
-    }
-
-    /* ✅ 달력만 꽉 채우기 */
-    .main{
-      height: calc(100% - 112px);
-      min-height:0;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
-
-    .badge-row{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      flex:0 0 auto;
-    }
-
-    .picked{
-      border:3px solid var(--line);
-      border-radius:18px;
-      padding:10px 14px;
-      display:flex;
-      gap:10px;
-      align-items:center;
-      width:fit-content;
-      background:#fff;
-    }
-    .picked .k{
-      color:var(--muted);
-      font-size:12px;
-      letter-spacing:1px;
-    }
-    .picked .v{
-      font-size:14px;
-      letter-spacing:1px;
-    }
-
-    .mode{
-      border:3px solid var(--border);
-      border-radius:20px;
-      padding:10px 16px;
-      background:var(--pink2);
-      box-shadow:3px 4px 0 var(--shadow);
-      font-size:14px;
-      letter-spacing:1px;
-    }
-
-    .calendar{
+    .monthTitle{
       flex:1;
+      text-align:center;
+      font-size:11px;
+      color:var(--text);
+      white-space:nowrap;
       overflow:hidden;
-      padding:4px 6px 6px;
-      display:flex;
-      flex-direction:column;
-      min-height:0;
+      text-overflow:ellipsis;
     }
 
+    /* 요일 */
     .dow{
       display:grid;
-      grid-template-columns:repeat(7, 1fr);
-      gap:8px;
-      padding:4px 8px 8px;
-      color:var(--muted);
-      font-size:11px;
-      letter-spacing:2px;
+      grid-template-columns: repeat(7, 1fr);
+      gap: var(--gap);
+      padding:8px 8px 6px;
+      border-bottom:2px solid var(--line2);
+      background:#0e1016;
+    }
+    .dow div{
       text-align:center;
-      flex:0 0 auto;
+      font-size:9px;
+      color:var(--muted);
+      padding:6px 0;
+      border:2px solid var(--line);
+      border-radius:0;              /* ✅ 사각형 */
+      background:#0b0c10;
     }
 
+    /* 달력 그리드 */
     .grid{
-      flex:1;
+      padding:8px;
       display:grid;
-      grid-template-columns:repeat(7, 1fr);
-      grid-auto-rows:1fr;
-      gap:12px;
-      padding:0 10px 6px;
-      min-height:0;
+      grid-template-columns: repeat(7, 1fr);
+      gap: var(--gap);
+      background:var(--panel);
     }
 
-    .cell{
+    .day{
+      height: var(--cell);
+      border:2px solid var(--line);
+      border-radius:0;              /* ✅ 사각형 */
+      background:#0b0c10;
       position:relative;
-      border:3px solid var(--line);
-      border-radius:15px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:15px;
       cursor:pointer;
-      background:#fff;
-      transition:transform .06s ease;
+      display:flex;
+      align-items:flex-start;
+      justify-content:flex-start;
+      padding:6px;
       user-select:none;
-      min-height:42px;
+      transition: border-color .12s ease;
+      overflow:hidden;
     }
-    .cell:hover{ transform:translateY(-1px); }
+    .day:hover{
+      border-color:var(--accent);
+    }
 
-    .cell.empty{
-      border-color:transparent;
-      background:transparent;
+    .day.disabled{
+      opacity:.35;
       cursor:default;
     }
-    .cell.today{
-      border-color:var(--border);
-      background:var(--pink2);
-    }
-    .cell.selected{
-      border-color:var(--border);
-      background:var(--pink);
-      color:#fff;
-    }
-    .cell.sun{ color:#b84a5a; }
-    .cell.sat{ color:#3b66d6; }
 
-    /* ✅ 할 일 존재 점 표시 */
-    .cell.hasDot::after{
-      content:"";
-      position:absolute;
-      width:7px;
-      height:7px;
-      border-radius:50%;
-      background:var(--border);
-      bottom:7px;
-      left:50%;
-      transform:translateX(-50%);
-      opacity:.55;
-    }
-    .cell.selected.hasDot::after{
-      background:#fff;
-      opacity:.9;
+    .num{
+      font-size:10px;
+      color:var(--text);
     }
 
-    /* foot */
-    .foot{
+    .badge{
       position:absolute;
-      left:16px;
-      right:16px;
-      bottom:8px;
+      bottom:6px;
+      left:6px;
+      right:6px;
+      height:12px;
       display:flex;
-      gap:10px;
-      color:var(--muted);
-      font-size:11px;
-      letter-spacing:2px;
-      pointer-events:none;
+      gap:4px;
+      align-items:center;
+      justify-content:flex-start;
+      overflow:hidden;
     }
-    .foot .left{ flex:1; }
-    .foot .right{ text-align:right; }
 
-    /* ======================
-       ✅ TASK MODAL (CENTER)
-       ====================== */
-    .dim{
+    .dot{
+      width:6px; height:6px;
+      border:2px solid var(--accent);
+      background:transparent;
+      border-radius:0;              /* ✅ 픽셀 느낌 */
+      flex: 0 0 auto;
+    }
+
+    .today{
+      border-color: var(--today) !important;
+      box-shadow: inset 0 0 0 2px rgba(255,224,138,.25);
+    }
+
+    /* ✅ 모달 */
+    .modalBack{
       position:absolute;
       inset:0;
-      background:rgba(0,0,0,.18);
-      opacity:0;
-      pointer-events:none;
-      transition:opacity .14s ease;
-      z-index:10;
+      background: rgba(0,0,0,.55);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:10px;
     }
-    .dim.on{
-      opacity:1;
-      pointer-events:auto;
-    }
+    .modalBack.show{ display:flex; }
 
     .modal{
-      position:absolute;
-      left:50%;
-      top:50%;
-      transform:translate(-50%, -50%) scale(.98);
-      width: min(760px, calc(100% - 36px));
-      max-height: min(520px, calc(100% - 140px));
-      background:#fff;
-      border:3px solid var(--border);
-      border-radius:24px;
-      box-shadow:8px 10px 0 var(--shadow);
-      opacity:0;
-      pointer-events:none;
-      transition:opacity .14s ease, transform .14s ease;
-      overflow:hidden;
+      width: 100%;
+      max-width: 340px;
+      height: 320px;
+      background: #0e1016;
+      border: 2px solid var(--line2);
+      border-radius:0;              /* ✅ 사각형 */
       display:flex;
       flex-direction:column;
-      z-index:11;
+      overflow:hidden;
     }
 
-    .modal.open{
-      opacity:1;
-      pointer-events:auto;
-      transform:translate(-50%, -50%) scale(1);
-    }
-
-    .modalHead{
-      padding:12px 14px;
-      border-bottom:3px solid var(--line);
+    .modalHeader{
+      padding:8px;
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap:10px;
+      border-bottom:2px solid var(--line2);
+      background:#0b0c10;
+      gap:8px;
     }
-    .modalHead .t{
-      font-size:14px;
-      letter-spacing:2px;
-      overflow:hidden;
+    .modalTitle{
+      font-size:10px;
+      color:var(--text);
       white-space:nowrap;
+      overflow:hidden;
       text-overflow:ellipsis;
-      min-width:0;
     }
-
-    .modalBody{
-      padding:12px 14px;
-      overflow:auto;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      min-height:0;
-    }
-
-    .taskRow{
-      border:3px solid var(--line);
-      border-radius:18px;
-      padding:10px 12px;
-      display:flex;
-      align-items:center;
-      gap:10px;
-      background:#fff;
-    }
-
-    .chk{
-      width:24px; height:24px;
-      border:3px solid var(--border);
-      border-radius:7px;
-      background:#fff;
+    .closeBtn{
+      width:32px;
+      height:32px;
+      border:2px solid var(--line2);
+      background:#0e1016;
+      color:var(--text);
+      border-radius:0;              /* ✅ 사각형 */
+      cursor:pointer;
+      font-size:12px;
       display:flex;
       align-items:center;
       justify-content:center;
+    }
+    .closeBtn:hover{ border-color:var(--danger); }
+
+    .modalBody{
+      padding:8px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      height:100%;
+      min-height:0;
+    }
+
+    .addRow{
+      display:flex;
+      gap:6px;
+    }
+    .taskInput{
+      flex:1;
+      height:34px;
+      border:2px solid var(--line2);
+      background:#0b0c10;
+      color:var(--text);
+      border-radius:0;
+      outline:none;
+      padding:0 8px;
+      font-size:10px;
+    }
+    .taskInput::placeholder{ color:#7b8497; }
+
+    .addBtn{
+      width:70px;
+      height:34px;
+      border:2px solid var(--line2);
+      background:#0b0c10;
+      color:var(--text);
+      border-radius:0;
       cursor:pointer;
+      font-size:10px;
+    }
+    .addBtn:hover{ border-color:var(--accent); }
+
+    /* ✅ 스크롤 가능한 리스트 */
+    .taskList{
+      border:2px solid var(--line2);
+      background:#0b0c10;
+      border-radius:0;
+      padding:6px;
+      overflow:auto;
+      flex:1;
+      min-height:0;
+    }
+
+    .taskItem{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      padding:6px;
+      border:2px solid var(--line);
+      border-radius:0;
+      margin-bottom:6px;
+      background:#0e1016;
+    }
+    .taskText{
+      font-size:10px;
+      color:var(--text);
+      line-height:1.25;
+      word-break:break-word;
+      flex:1;
+    }
+    .taskActions{
+      display:flex;
+      gap:6px;
       flex:0 0 auto;
     }
-    .chk.on{
-      background:var(--pink2);
-      position:relative;
-    }
-    .chk.on::after{
-      content:"✔";
-      font-size:14px;
-      line-height:1;
-    }
-
-    .taskRow input{
-      flex:1;
-      border:none;
-      outline:none;
-      font-size:13px;
-      letter-spacing:1px;
-      background:transparent;
-      font-family:system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      min-width:0;
-    }
-
-    .taskDel{
-      border:3px solid var(--border);
-      border-radius:14px;
-      background:#fff;
-      padding:6px 10px;
+    .iconBtn{
+      width:30px;
+      height:28px;
+      border:2px solid var(--line2);
+      background:#0b0c10;
+      color:var(--text);
+      border-radius:0;
       cursor:pointer;
-      box-shadow:2px 3px 0 var(--shadow);
-      font-size:12px;
-      user-select:none;
-    }
-    .taskDel:active{ transform:translateY(1px); box-shadow:1px 2px 0 var(--shadow); }
-
-    .modalActions{
       display:flex;
-      gap:10px;
-      padding:12px 14px;
-      border-top:3px solid var(--line);
+      align-items:center;
+      justify-content:center;
+      font-size:11px;
     }
-    .modalActions .btn{
-      flex:1;
-      padding:12px 10px;
+    .iconBtn:hover{ border-color:var(--accent); }
+    .iconBtn.delete:hover{ border-color:var(--danger); }
+
+    /* 노션 임베드에서 텍스트 너무 커지면 폰트만 바꿔도 해결됨 */
+    .help{
+      font-size:9px;
+      color:var(--muted);
+      opacity:.9;
+      line-height:1.4;
     }
 
-    /* ✅ 작은 화면: 세로 스크롤 허용 */
-    @media (max-width: 980px){
-      html, body{ overflow:auto; }
-      .stage{ height:auto; }
-      .card{
-        height:auto;
-        min-height:720px;
-      }
-      .main{ height:auto; }
-      .foot{
-        position:relative;
-        left:auto; right:auto; bottom:auto;
-        margin-top:10px;
-      }
-      .modal{ position:fixed; }
+    /* 스크롤바(선택) */
+    .taskList::-webkit-scrollbar{ width:10px; }
+    .taskList::-webkit-scrollbar-thumb{
+      background:#1c2230;
+      border:2px solid var(--line2);
     }
+    .taskList::-webkit-scrollbar-track{ background:#0b0c10; }
   </style>
 </head>
 
 <body>
-  <div class="stage">
-    <div class="card" id="card">
-
-      <!-- top -->
-      <div class="topline">
-        <div class="brand">
-          <div class="dots">
-            <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-          </div>
-          <div class="title">
-            <div class="mini">YOHAN OS / DASHBOARD</div>
-            <div class="big" id="monthLabel">----</div>
-          </div>
-        </div>
-
-        <div class="controls">
-          <button class="btn icon" id="prevBtn">◀</button>
-          <button class="btn" id="todayBtn">TODAY</button>
-          <button class="btn icon" id="nextBtn">▶</button>
-        </div>
+  <div class="wrap" id="app">
+    <div class="topbar">
+      <div class="leftBtns">
+        <button class="btn" id="prevBtn">◀</button>
+        <button class="btn" id="nextBtn">▶</button>
       </div>
 
-      <div class="divider"></div>
+      <div class="monthTitle" id="monthTitle">2026-01</div>
 
-      <!-- ✅ calendar only -->
-      <div class="main">
-        <div class="badge-row">
-          <div class="picked">
-            <div class="k">PICKED:</div>
-            <div class="v" id="pickedLabel">NONE</div>
+      <div class="rightBtns">
+        <button class="btn" id="todayBtn">TODAY</button>
+      </div>
+    </div>
+
+    <div class="dow">
+      <div>일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div>
+    </div>
+
+    <div class="grid" id="grid"></div>
+
+    <!-- ✅ Task Modal -->
+    <div class="modalBack" id="modalBack" aria-hidden="true">
+      <div class="modal" role="dialog" aria-modal="true">
+        <div class="modalHeader">
+          <div class="modalTitle" id="modalTitle">TASK</div>
+          <button class="closeBtn" id="closeBtn">X</button>
+        </div>
+
+        <div class="modalBody">
+          <div class="addRow">
+            <input class="taskInput" id="taskInput" placeholder="할 일 입력" maxlength="60" />
+            <button class="addBtn" id="addBtn">추가</button>
           </div>
-          <div class="mode">MODE: YOHAN OS</div>
-        </div>
 
-        <div class="calendar">
-          <div class="dow">
-            <div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div>
-          </div>
-          <div class="grid" id="grid"></div>
+          <div class="taskList" id="taskList"></div>
+
+          <div class="help">날짜 클릭 → TASK만 뜸 / 저장은 자동(LocalStorage)</div>
         </div>
       </div>
-
-      <!-- ✅ modal -->
-      <div class="dim" id="dim"></div>
-
-      <div class="modal" id="taskModal">
-        <div class="modalHead">
-          <div class="t" id="tasksTitle">TODAY TASKS</div>
-          <button class="btn" id="closeTasksBtn">CLOSE</button>
-        </div>
-
-        <div class="modalBody" id="taskList"></div>
-
-        <div class="modalActions">
-          <button class="btn" id="addTaskBtn">+ ADD TASK</button>
-          <button class="btn" id="clearDoneBtn">CLEAR DONE</button>
-        </div>
-      </div>
-
-      <div class="foot">
-        <div class="left">NOTION EMBED SAFE</div>
-        <div class="right">v4.0</div>
-      </div>
-
     </div>
   </div>
 
   <script>
-    (function(){
-      const $ = (id) => document.getElementById(id);
+    /**
+     * ✅ Notion Embed Pixel Calendar (Tasks Only)
+     * - 날짜별 task 저장: localStorage
+     * - 클릭 시 task 모달만
+     */
 
-      const monthLabel = $("monthLabel");
-      const pickedLabel = $("pickedLabel");
-      const grid = $("grid");
+    const $ = (sel) => document.querySelector(sel);
 
-      const prevBtn = $("prevBtn");
-      const nextBtn = $("nextBtn");
-      const todayBtn = $("todayBtn");
+    const gridEl = $("#grid");
+    const monthTitleEl = $("#monthTitle");
 
-      // tasks modal
-      const dim = $("dim");
-      const taskModal = $("taskModal");
-      const tasksTitle = $("tasksTitle");
-      const closeTasksBtn = $("closeTasksBtn");
-      const taskList = $("taskList");
-      const addTaskBtn = $("addTaskBtn");
-      const clearDoneBtn = $("clearDoneBtn");
+    const prevBtn = $("#prevBtn");
+    const nextBtn = $("#nextBtn");
+    const todayBtn = $("#todayBtn");
 
-      const KEY = "yohan_os_calendar_tasks_v40";
+    const modalBack = $("#modalBack");
+    const closeBtn = $("#closeBtn");
+    const modalTitle = $("#modalTitle");
 
-      const months = [
-        "JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE",
-        "JULY","AUGUST","SEPTEMBER","OCTOBER","NOVEMBER","DECEMBER"
-      ];
+    const taskInput = $("#taskInput");
+    const addBtn = $("#addBtn");
+    const taskList = $("#taskList");
 
-      const pad2 = (n) => String(n).padStart(2,"0");
-      const fmt = (d) => `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+    // ✅ 상태
+    const state = {
+      viewDate: new Date(),       // 현재 보고 있는 달
+      selectedISO: null           // 선택한 날짜 (YYYY-MM-DD)
+    };
 
-      function load(){
-        try { return JSON.parse(localStorage.getItem(KEY)) || null; }
-        catch(e){ return null; }
+    const pad2 = (n) => String(n).padStart(2, "0");
+    const toISO = (y,m,d) => `${y}-${pad2(m)}-${pad2(d)}`;
+
+    const isSameDay = (a, b) =>
+      a.getFullYear() === b.getFullYear() &&
+      a.getMonth() === b.getMonth() &&
+      a.getDate() === b.getDate();
+
+    // ✅ 로컬 저장 구조
+    // key: "pixel_calendar_tasks_v1"
+    // value: { "YYYY-MM-DD": ["task1","task2"] }
+    const STORE_KEY = "pixel_calendar_tasks_v1";
+
+    function loadAll(){
+      try{
+        return JSON.parse(localStorage.getItem(STORE_KEY)) || {};
+      }catch(e){
+        return {};
       }
+    }
+    function saveAll(obj){
+      localStorage.setItem(STORE_KEY, JSON.stringify(obj));
+    }
 
-      function save(){
-        localStorage.setItem(KEY, JSON.stringify(state));
-      }
+    function getTasks(iso){
+      const all = loadAll();
+      return Array.isArray(all[iso]) ? all[iso] : [];
+    }
+    function setTasks(iso, list){
+      const all = loadAll();
+      all[iso] = list;
+      saveAll(all);
+    }
 
-      const now = new Date();
-      let state = load() || {
-        viewYear: now.getFullYear(),
-        viewMonth: now.getMonth(),
-        picked: null,
-        tasks: {} // {date: [{text:"",done:false}, ...]}
-      };
+    // ✅ 렌더
+    function render(){
+      gridEl.innerHTML = "";
 
-      function ensureTasks(dateStr){
-        if(!state.tasks[dateStr]){
-          state.tasks[dateStr] = [
-            { text:"", done:false },
-            { text:"", done:false },
-            { text:"", done:false }
-          ];
+      const y = state.viewDate.getFullYear();
+      const m = state.viewDate.getMonth(); // 0~11
+
+      monthTitleEl.textContent = `${y}-${pad2(m+1)}`;
+
+      // 1일 요일
+      const first = new Date(y, m, 1);
+      const firstDow = first.getDay();
+
+      // 해당 달 마지막 날짜
+      const last = new Date(y, m+1, 0);
+      const lastDay = last.getDate();
+
+      // 전달 마지막 날짜
+      const prevLast = new Date(y, m, 0).getDate();
+
+      // 총 6주(42칸) 고정 렌더 (크기 유지 안정)
+      const totalCells = 42;
+
+      for(let i=0; i<totalCells; i++){
+        const cell = document.createElement("div");
+        cell.className = "day";
+
+        // 날짜 계산
+        const dayNum = i - firstDow + 1;
+
+        let cellDate;
+        let disabled = false;
+        let displayNum;
+
+        if(dayNum < 1){
+          // 전달
+          displayNum = prevLast + dayNum;
+          cellDate = new Date(y, m-1, displayNum);
+          disabled = true;
+        }else if(dayNum > lastDay){
+          // 다음달
+          displayNum = dayNum - lastDay;
+          cellDate = new Date(y, m+1, displayNum);
+          disabled = true;
+        }else{
+          // 이번달
+          displayNum = dayNum;
+          cellDate = new Date(y, m, displayNum);
         }
-        return state.tasks[dateStr];
-      }
 
-      function hasAnyTaskContent(dateStr){
-        const t = state.tasks[dateStr];
-        return Array.isArray(t) && t.some(x => (x.text && x.text.trim()) || x.done);
-      }
+        const iso = toISO(cellDate.getFullYear(), cellDate.getMonth()+1, cellDate.getDate());
 
-      /* =====================
-         ✅ TASK MODAL
-         ===================== */
-      function openTasks(dateStr){
-        state.picked = dateStr;
-        pickedLabel.textContent = dateStr;
-        save();
+        if(disabled){
+          cell.classList.add("disabled");
+        }
 
-        tasksTitle.textContent = `TODAY TASKS / ${dateStr}`;
-        dim.classList.add("on");
-        taskModal.classList.add("open");
+        // Today 강조
+        const now = new Date();
+        if(isSameDay(cellDate, now) && !disabled){
+          cell.classList.add("today");
+        }
 
-        buildTaskList(dateStr);
-        render(); // 선택/점 반영
-      }
+        // 숫자
+        const num = document.createElement("div");
+        num.className = "num";
+        num.textContent = displayNum;
+        cell.appendChild(num);
 
-      function closeTasks(){
-        dim.classList.remove("on");
-        taskModal.classList.remove("open");
-      }
+        // task dot 표시(최대 6개)
+        const tasks = getTasks(iso);
+        if(tasks.length > 0){
+          const badge = document.createElement("div");
+          badge.className = "badge";
+          const dots = Math.min(tasks.length, 6);
+          for(let d=0; d<dots; d++){
+            const dot = document.createElement("div");
+            dot.className = "dot";
+            badge.appendChild(dot);
+          }
+          cell.appendChild(badge);
+        }
 
-      function buildTaskList(dateStr){
-        const list = ensureTasks(dateStr);
-        taskList.innerHTML = "";
-
-        list.forEach((item, idx)=>{
-          const row = document.createElement("div");
-          row.className = "taskRow";
-
-          const chk = document.createElement("div");
-          chk.className = "chk";
-          if(item.done) chk.classList.add("on");
-          chk.addEventListener("click", ()=>{
-            item.done = !item.done;
-            chk.classList.toggle("on", item.done);
-            save();
-            render();
-          });
-
-          const input = document.createElement("input");
-          input.type = "text";
-          input.value = item.text || "";
-          input.placeholder = `TASK ${idx+1}`;
-          input.addEventListener("input", ()=>{
-            item.text = input.value;
-            save();
-            render();
-          });
-
-          const del = document.createElement("button");
-          del.className = "taskDel";
-          del.textContent = "X";
-          del.title = "삭제";
-          del.addEventListener("click", ()=>{
-            list.splice(idx, 1);
-            if(list.length === 0){
-              list.push({text:"",done:false});
-            }
-            save();
-            buildTaskList(dateStr);
-            render();
-          });
-
-          row.appendChild(chk);
-          row.appendChild(input);
-          row.appendChild(del);
-
-          taskList.appendChild(row);
+        // ✅ 클릭: TASK 팝업만
+        cell.addEventListener("click", () => {
+          if(disabled) return; // 전달/다음달 클릭 비활성
+          openModal(iso);
         });
+
+        gridEl.appendChild(cell);
+      }
+    }
+
+    // ✅ 모달
+    function openModal(iso){
+      state.selectedISO = iso;
+      modalTitle.textContent = `TASK · ${iso}`;
+      taskInput.value = "";
+      renderTaskList();
+
+      modalBack.classList.add("show");
+      modalBack.setAttribute("aria-hidden", "false");
+
+      // 입력 포커스
+      setTimeout(() => taskInput.focus(), 0);
+    }
+
+    function closeModal(){
+      modalBack.classList.remove("show");
+      modalBack.setAttribute("aria-hidden", "true");
+      state.selectedISO = null;
+    }
+
+    function renderTaskList(){
+      const iso = state.selectedISO;
+      if(!iso) return;
+
+      const tasks = getTasks(iso);
+      taskList.innerHTML = "";
+
+      if(tasks.length === 0){
+        const empty = document.createElement("div");
+        empty.className = "help";
+        empty.textContent = "등록된 TASK 없음";
+        taskList.appendChild(empty);
+        return;
       }
 
-      addTaskBtn.addEventListener("click", ()=>{
-        if(!state.picked) return;
-        const list = ensureTasks(state.picked);
-        list.push({text:"", done:false});
-        save();
-        buildTaskList(state.picked);
-        render();
+      tasks.forEach((t, idx) => {
+        const item = document.createElement("div");
+        item.className = "taskItem";
+
+        const text = document.createElement("div");
+        text.className = "taskText";
+        text.textContent = t;
+
+        const actions = document.createElement("div");
+        actions.className = "taskActions";
+
+        // 수정
+        const edit = document.createElement("button");
+        edit.className = "iconBtn";
+        edit.textContent = "✎";
+        edit.title = "수정";
+        edit.addEventListener("click", () => {
+          const next = prompt("TASK 수정", t);
+          if(next === null) return;
+          const trimmed = next.trim();
+          if(!trimmed) return;
+
+          const list = getTasks(iso);
+          list[idx] = trimmed;
+          setTasks(iso, list);
+          renderTaskList();
+          render(); // dot 갱신
+        });
+
+        // 삭제
+        const del = document.createElement("button");
+        del.className = "iconBtn delete";
+        del.textContent = "⌫";
+        del.title = "삭제";
+        del.addEventListener("click", () => {
+          const list = getTasks(iso);
+          list.splice(idx, 1);
+          setTasks(iso, list);
+          renderTaskList();
+          render(); // dot 갱신
+        });
+
+        actions.appendChild(edit);
+        actions.appendChild(del);
+
+        item.appendChild(text);
+        item.appendChild(actions);
+        taskList.appendChild(item);
       });
+    }
 
-      clearDoneBtn.addEventListener("click", ()=>{
-        if(!state.picked) return;
-        const list = ensureTasks(state.picked);
-        const filtered = list.filter(x => !x.done);
-        state.tasks[state.picked] = filtered.length ? filtered : [{text:"",done:false}];
-        save();
-        buildTaskList(state.picked);
-        render();
-      });
+    function addTask(){
+      const iso = state.selectedISO;
+      if(!iso) return;
 
-      closeTasksBtn.addEventListener("click", closeTasks);
-      dim.addEventListener("click", closeTasks);
+      const val = taskInput.value.trim();
+      if(!val) return;
 
-      window.addEventListener("keydown", (e)=>{
-        if(e.key === "Escape") closeTasks();
-      });
+      const list = getTasks(iso);
+      list.unshift(val); // 최신이 위로
+      setTasks(iso, list);
 
-      /* =====================
-         ✅ Calendar Render
-         ===================== */
-      function render(){
-        monthLabel.textContent = `${state.viewYear} ${months[state.viewMonth]}`;
-        pickedLabel.textContent = state.picked ? state.picked : "NONE";
+      taskInput.value = "";
+      renderTaskList();
+      render(); // dot 갱신
+    }
 
-        const first = new Date(state.viewYear, state.viewMonth, 1);
-        const firstDay = first.getDay();
-        const lastDate = new Date(state.viewYear, state.viewMonth+1, 0).getDate();
-        const todayStr = fmt(new Date());
-
-        grid.innerHTML = "";
-
-        for(let i=0;i<firstDay;i++){
-          const e = document.createElement("div");
-          e.className = "cell empty";
-          grid.appendChild(e);
-        }
-
-        for(let d=1; d<=lastDate; d++){
-          const dateObj = new Date(state.viewYear, state.viewMonth, d);
-          const dateStr = fmt(dateObj);
-
-          const cell = document.createElement("div");
-          cell.className = "cell";
-          cell.textContent = d;
-
-          const dow = dateObj.getDay();
-          if(dow === 0) cell.classList.add("sun");
-          if(dow === 6) cell.classList.add("sat");
-
-          if(dateStr === todayStr) cell.classList.add("today");
-          if(state.picked === dateStr) cell.classList.add("selected");
-
-          if(hasAnyTaskContent(dateStr)) cell.classList.add("hasDot");
-
-          // ✅ 날짜 클릭 = 바로 tasks 팝업
-          cell.addEventListener("click", ()=>{
-            openTasks(dateStr);
-          });
-
-          grid.appendChild(cell);
-        }
-      }
-
-      /* =====================
-         ✅ Month Controls
-         ===================== */
-      prevBtn.addEventListener("click", ()=>{
-        state.viewMonth--;
-        if(state.viewMonth < 0){
-          state.viewMonth = 11;
-          state.viewYear--;
-        }
-        save();
-        render();
-      });
-
-      nextBtn.addEventListener("click", ()=>{
-        state.viewMonth++;
-        if(state.viewMonth > 11){
-          state.viewMonth = 0;
-          state.viewYear++;
-        }
-        save();
-        render();
-      });
-
-      todayBtn.addEventListener("click", ()=>{
-        const t = new Date();
-        state.viewYear = t.getFullYear();
-        state.viewMonth = t.getMonth();
-        const d = fmt(t);
-        save();
-        render();
-        openTasks(d);
-      });
-
-      // init
+    // ✅ 이벤트
+    prevBtn.addEventListener("click", () => {
+      const d = new Date(state.viewDate);
+      d.setMonth(d.getMonth() - 1);
+      state.viewDate = d;
       render();
-    })();
+    });
+
+    nextBtn.addEventListener("click", () => {
+      const d = new Date(state.viewDate);
+      d.setMonth(d.getMonth() + 1);
+      state.viewDate = d;
+      render();
+    });
+
+    todayBtn.addEventListener("click", () => {
+      state.viewDate = new Date();
+      render();
+    });
+
+    closeBtn.addEventListener("click", closeModal);
+
+    // 모달 바깥 클릭 닫기
+    modalBack.addEventListener("click", (e) => {
+      if(e.target === modalBack) closeModal();
+    });
+
+    // 엔터로 추가
+    taskInput.addEventListener("keydown", (e) => {
+      if(e.key === "Enter") addTask();
+      if(e.key === "Escape") closeModal();
+    });
+
+    addBtn.addEventListener("click", addTask);
+
+    // ✅ 최초 렌더
+    render();
   </script>
 </body>
 </html>
