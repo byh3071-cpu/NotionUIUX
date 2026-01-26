@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+\<!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
@@ -11,16 +11,20 @@
 
   <style>
     :root{
-      --bg:#0b0c10;
       --panel:#111319;
       --panel2:#0f1117;
       --line:#2a2f3a;
       --line2:#3a4150;
       --text:#e9eef7;
       --muted:#a7b0c2;
+
       --accent:#7cc7ff;
       --today:#ffe08a;
       --danger:#ff6b6b;
+
+      /* ✅ 주말 포인트(너무 튀지 않게) */
+      --sun:#ff8f8f;
+      --sat:#8fb6ff;
 
       --w: 360px;
       --h: 440px;
@@ -100,6 +104,7 @@
       border-bottom:2px solid var(--line2);
       background:#0e1016;
     }
+
     .dow div{
       text-align:center;
       font-size:9px;
@@ -108,6 +113,16 @@
       border:2px solid var(--line);
       border-radius:0;
       background:#0b0c10;
+    }
+
+    /* ✅ 주말 헤더 강조 */
+    .dow .sunHead{
+      color:var(--sun);
+      border-color:rgba(255,143,143,.45);
+    }
+    .dow .satHead{
+      color:var(--sat);
+      border-color:rgba(143,182,255,.45);
     }
 
     .grid{
@@ -140,12 +155,19 @@
       cursor:default;
     }
 
+    /* ✅ 주말 날짜칸 강조(은은하게) */
+    .day.sun:not(.disabled){
+      border-color: rgba(255,143,143,.30);
+    }
+    .day.sat:not(.disabled){
+      border-color: rgba(143,182,255,.30);
+    }
+
     .num{
       font-size:10px;
       color:var(--text);
     }
 
-    /* ✅ 개선된 날짜 표시: count 뱃지 */
     .countBadge{
       position:absolute;
       top:6px;
@@ -164,19 +186,35 @@
       line-height:1;
     }
 
-    /* ✅ 개선된 날짜 표시: 상태 점(1개) */
-    .statusDot{
+    /* ✅ 하트 마커(점 대신) */
+    .heartMarker{
       position:absolute;
-      bottom:6px;
       left:6px;
-      width:10px;
-      height:10px;
-      border:2px solid var(--accent);
-      background:transparent;
-      border-radius:0;
+      bottom:6px;
+      font-size:12px;
+      line-height:1;
+      color:var(--accent);
+      opacity:0.95;
+      user-select:none;
     }
-    .statusDot.doneAll{
-      background: var(--accent);
+    .heartMarker.doneAll{
+      color:var(--accent);
+      filter: drop-shadow(0 0 2px rgba(124,199,255,.25));
+    }
+
+    /* ✅ 1줄 미리보기(크기 고정, 잘리면 …) */
+    .previewLine{
+      position:absolute;
+      left:22px;   /* 하트 옆 공간 */
+      right:6px;
+      bottom:6px;
+      font-size:8px;
+      line-height:1.1;
+      color:rgba(233,238,247,.80);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      pointer-events:none;
     }
 
     .today{
@@ -298,7 +336,6 @@
       background:#0e1016;
     }
 
-    /* ✅ 완료 체크 버튼 */
     .checkBtn{
       width:30px;
       height:28px;
@@ -331,7 +368,6 @@
       opacity:.9;
     }
 
-    /* ✅ 인라인 수정 입력 */
     .editInput{
       flex:1;
       height:30px;
@@ -371,13 +407,6 @@
       opacity:.9;
       line-height:1.4;
     }
-
-    .taskList::-webkit-scrollbar{ width:10px; }
-    .taskList::-webkit-scrollbar-thumb{
-      background:#1c2230;
-      border:2px solid var(--line2);
-    }
-    .taskList::-webkit-scrollbar-track{ background:#0b0c10; }
   </style>
 </head>
 
@@ -396,8 +425,8 @@
       </div>
     </div>
 
-    <div class="dow">
-      <div>일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div>
+    <div class="dow" id="dow">
+      <div class="sunHead">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div class="satHead">토</div>
     </div>
 
     <div class="grid" id="grid"></div>
@@ -417,7 +446,7 @@
 
           <div class="taskList" id="taskList"></div>
 
-          <div class="help">날짜 클릭 → TASK만 / 저장 자동(LocalStorage) / ✎는 인라인 수정</div>
+          <div class="help">하트=TASK 존재 / ♡ 미완료 포함 / ♥ 전부완료</div>
         </div>
       </div>
     </div>
@@ -455,29 +484,22 @@
       a.getMonth() === b.getMonth() &&
       a.getDate() === b.getDate();
 
-    const STORE_KEY = "pixel_calendar_tasks_v1";
+    const STORE_KEY = "pixel_calendar_tasks_v2_heart_preview";
 
     function loadAll(){
-      try{
-        return JSON.parse(localStorage.getItem(STORE_KEY)) || {};
-      }catch(e){
-        return {};
-      }
+      try{ return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; }
+      catch(e){ return {}; }
     }
     function saveAll(obj){
       localStorage.setItem(STORE_KEY, JSON.stringify(obj));
     }
 
-    // ✅ 데이터 정규화: 예전 ["문자"] 형식도 {text,done}로 변환
     function normalizeList(list){
       if(!Array.isArray(list)) return [];
       return list.map(x => {
         if(typeof x === "string") return { text:x, done:false };
         if(x && typeof x === "object"){
-          return {
-            text: String(x.text ?? ""),
-            done: Boolean(x.done)
-          };
+          return { text: String(x.text ?? ""), done: Boolean(x.done) };
         }
         return { text:"", done:false };
       }).filter(t => t.text.trim().length > 0);
@@ -535,10 +557,11 @@
         }
 
         const iso = toISO(cellDate.getFullYear(), cellDate.getMonth()+1, cellDate.getDate());
+        const dow = cellDate.getDay();
 
-        if(disabled){
-          cell.classList.add("disabled");
-        }
+        if(disabled) cell.classList.add("disabled");
+        if(dow === 0) cell.classList.add("sun");
+        if(dow === 6) cell.classList.add("sat");
 
         const now = new Date();
         if(isSameDay(cellDate, now) && !disabled){
@@ -550,23 +573,31 @@
         num.textContent = displayNum;
         cell.appendChild(num);
 
-        // ✅ 날짜 표시 개선: count 뱃지 + 상태점 1개
         const tasks = getTasks(iso);
         if(tasks.length > 0){
+          // count badge
           const count = document.createElement("div");
           count.className = "countBadge";
           count.textContent = tasks.length;
           cell.appendChild(count);
 
+          // heart marker (♡ / ♥)
           const hasUndone = tasks.some(t => !t.done);
-          const dot = document.createElement("div");
-          dot.className = "statusDot";
-          if(!hasUndone) dot.classList.add("doneAll");
-          cell.appendChild(dot);
+          const heart = document.createElement("div");
+          heart.className = "heartMarker";
+          heart.textContent = hasUndone ? "♡" : "♥";
+          if(!hasUndone) heart.classList.add("doneAll");
+          cell.appendChild(heart);
+
+          // 1줄 미리보기(첫 task)
+          const preview = document.createElement("div");
+          preview.className = "previewLine";
+          preview.textContent = tasks[0].text;
+          cell.appendChild(preview);
         }
 
         cell.addEventListener("click", () => {
-          if(disabled) return; // 전/다음달 칸 클릭 막음(원하면 풀어줄 수 있음)
+          if(disabled) return; // 흐린 날짜 클릭 막음 (원하면 풀어줄 수 있음)
           openModal(iso);
         });
 
@@ -613,7 +644,6 @@
         const item = document.createElement("div");
         item.className = "taskItem";
 
-        // ✅ 완료 체크
         const check = document.createElement("button");
         check.className = "checkBtn";
         check.textContent = task.done ? "✓" : "";
@@ -624,12 +654,11 @@
           list[idx].done = !list[idx].done;
           setTasks(iso, list);
           renderTaskList();
-          render(); // 날짜 상태 갱신
+          render();
         });
 
         item.appendChild(check);
 
-        // ✅ 인라인 수정 모드
         if(state.editingIndex === idx){
           const input = document.createElement("input");
           input.className = "editInput";
@@ -669,7 +698,6 @@
           item.appendChild(input);
           item.appendChild(actions);
 
-          // 키보드 저장/취소
           setTimeout(() => input.focus(), 0);
           input.addEventListener("keydown", (e) => {
             if(e.key === "Enter") save.click();
@@ -680,7 +708,6 @@
           return;
         }
 
-        // 일반 표시
         const text = document.createElement("div");
         text.className = "taskText";
         text.textContent = task.text;
