@@ -29,17 +29,17 @@
       padding:0;
       width:100%;
       height:100%;
-      background: #ffffff; /* ✅ 여백이 보이더라도 흰색으로 */
+      background:#ffffff;
       font-family:'Silkscreen', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
       color:var(--ink);
-      overflow:hidden; /* ✅ 노션 임베드 스크롤 최소화 */
+      overflow:hidden;
     }
 
-    /* ✅ iframe을 100% 꽉 채우는 루트 */
+    /* ✅ iframe 100% */
     .stage{
       width:100vw;
       height:100vh;
-      padding:0;           /* ✅ 여백 제거 */
+      padding:0;
       margin:0;
       background:#fff;
     }
@@ -51,8 +51,8 @@
       background:#fff;
       border:3px solid var(--border);
       border-radius:var(--radius);
-      box-shadow:none; /* ✅ 꽉 찬 느낌 (원하면 다시 켜도 됨) */
-      padding:14px 14px 10px;
+      box-shadow:none;
+      padding:12px 12px 10px;   /* ✅ 전체 크기 살짝 축소 */
       position:relative;
       overflow:hidden;
     }
@@ -63,7 +63,7 @@
       align-items:flex-start;
       justify-content:space-between;
       gap:12px;
-      margin-bottom:10px;
+      margin-bottom:8px;        /* ✅ 조금 줄임 */
     }
     .brand{
       display:flex;
@@ -90,9 +90,11 @@
       letter-spacing:1px;
     }
     .title .big{
-      font-size:26px;
+      font-size:24px;           /* ✅ 26 → 24 : 전체 밸런스 다운 */
       letter-spacing:2px;
       margin-top:2px;
+      /* ✅ 축소될 때 글씨 흐림 방지용 살짝 보정 */
+      text-shadow: 0 1px 0 rgba(0,0,0,0.08);
     }
 
     .controls{
@@ -105,28 +107,28 @@
       border:3px solid var(--border);
       background:#fff;
       border-radius:18px;
-      padding:10px 16px;
-      font-size:14px;
+      padding:9px 14px;         /* ✅ 살짝 축소 */
+      font-size:13px;           /* ✅ 14 → 13 */
       cursor:pointer;
       box-shadow:3px 4px 0 var(--shadow);
       user-select:none;
     }
     .btn:active{ transform:translateY(1px); box-shadow:2px 3px 0 var(--shadow); }
-    .btn.icon{ width:54px; padding:10px 0; display:flex; justify-content:center; }
+    .btn.icon{ width:52px; padding:9px 0; display:flex; justify-content:center; }
 
     .divider{
       width:100%;
       border-top:3px dashed var(--line);
-      margin:10px 0 12px;
+      margin:8px 0 10px;        /* ✅ 줄임 */
     }
 
-    /* ✅ 남는 하단 공간 없이 메인 꽉 채우기 */
+    /* ✅ 메인 영역 “진짜 꽉 차게” */
     .main{
       display:grid;
-      grid-template-columns: 1fr 320px;
+      grid-template-columns: 1fr 310px; /* ✅ 320 → 310 : 오른쪽 살짝 컴팩트 */
       gap:12px;
       align-items:start;
-      height: calc(100% - 112px); /* ✅ top+divider 영역 */
+      height: calc(100% - 104px); /* ✅ top+divider 높이 재계산 */
       min-height:0;
     }
 
@@ -136,7 +138,7 @@
       overflow:hidden;
       display:flex;
       flex-direction:column;
-      gap:10px;
+      gap:8px;                 /* ✅ 10 → 8 */
       padding-right:2px;
       min-height:0;
     }
@@ -145,13 +147,14 @@
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap:12px;
+      gap:10px;
+      flex:0 0 auto;
     }
 
     .picked{
       border:3px solid var(--line);
       border-radius:18px;
-      padding:10px 14px;
+      padding:9px 12px;        /* ✅ 축소 */
       display:flex;
       gap:10px;
       align-items:center;
@@ -161,29 +164,28 @@
     }
     .picked .k{
       color:var(--muted);
-      font-size:12px;
+      font-size:11px;          /* ✅ 12 → 11 */
       letter-spacing:1px;
     }
     .picked .v{
-      font-size:14px;
+      font-size:13px;          /* ✅ 14 → 13 */
       letter-spacing:1px;
     }
 
     .mode{
       border:3px solid var(--border);
       border-radius:20px;
-      padding:10px 16px;
+      padding:9px 14px;        /* ✅ 축소 */
       background:var(--pink2);
       box-shadow:3px 4px 0 var(--shadow);
-      font-size:14px;
+      font-size:13px;          /* ✅ 14 → 13 */
       letter-spacing:1px;
     }
 
-    /* ✅ 달력이 남은 높이 전부를 먹고, 아래 흰 공백이 사라짐 */
     .calendar{
       flex:1;
       overflow:hidden;
-      padding:4px 6px 6px;
+      padding:2px 4px 4px;     /* ✅ 조금 줄임 */
       display:flex;
       flex-direction:column;
       min-height:0;
@@ -193,9 +195,9 @@
       display:grid;
       grid-template-columns:repeat(7, 1fr);
       gap:8px;
-      padding:4px 8px 8px;
+      padding:4px 8px 6px;
       color:var(--muted);
-      font-size:11px;
+      font-size:10px;          /* ✅ 11 → 10 */
       letter-spacing:2px;
       text-align:center;
       flex:0 0 auto;
@@ -205,25 +207,25 @@
       flex:1;
       display:grid;
       grid-template-columns:repeat(7, 1fr);
-      grid-auto-rows:1fr;  /* ✅ 행 균등 분배 */
-      gap:12px;
-      padding:0 10px 6px;
+      grid-auto-rows:1fr;
+      gap:10px;                /* ✅ 12 → 10 : 달력 셀 “덩치” 축소 */
+      padding:0 8px 4px;       /* ✅ 줄임 */
       min-height:0;
     }
 
     .cell{
       position:relative;
       border:3px solid var(--line);
-      border-radius:15px;
+      border-radius:14px;      /* ✅ 15 → 14 */
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size:15px;
+      font-size:14px;          /* ✅ 15 → 14 */
       cursor:pointer;
       background:#fff;
       transition:transform .06s ease;
       user-select:none;
-      min-height:42px; /* ✅ 너무 납작해지는 것 방지 */
+      min-height:40px;         /* ✅ 42 → 40 */
     }
     .cell:hover{ transform:translateY(-1px); }
     .cell.empty{
@@ -243,7 +245,6 @@
     .cell.sun{ color:#b84a5a; }
     .cell.sat{ color:#3b66d6; }
 
-    /* ✅ 날짜 점 표시 */
     .cell.hasDot::after{
       content:"";
       position:absolute;
@@ -251,7 +252,7 @@
       height:7px;
       border-radius:50%;
       background:var(--border);
-      bottom:7px;
+      bottom:6px;              /* ✅ 살짝 위로 */
       left:50%;
       transform:translateX(-50%);
       opacity:.55;
@@ -261,17 +262,17 @@
       opacity:.9;
     }
 
-    /* right side */
+    /* right */
     .side{
       border:3px solid var(--line);
       border-radius:24px;
-      padding:14px;
+      padding:12px;            /* ✅ 14 → 12 */
       background:#fff;
       height:100%;
       overflow:hidden;
       display:flex;
       flex-direction:column;
-      gap:12px;
+      gap:10px;                /* ✅ 12 → 10 */
       min-height:0;
     }
 
@@ -281,36 +282,40 @@
       justify-content:space-between;
       gap:10px;
       flex:0 0 auto;
+      min-width:0;
     }
     .side-head .h{
-      font-size:16px;
+      font-size:15px;          /* ✅ 16 → 15 */
       letter-spacing:2px;
+      text-shadow: 0 1px 0 rgba(0,0,0,0.08);
     }
     .weekchip{
       border:3px solid var(--line);
       border-radius:16px;
-      padding:8px 10px;
+      padding:7px 9px;         /* ✅ 축소 */
       color:var(--muted);
-      font-size:12px;
+      font-size:11px;          /* ✅ 12 → 11 */
       letter-spacing:1px;
       background:#fff;
+      flex:0 0 auto;
     }
 
     .routine{
       display:flex;
       flex-direction:column;
-      gap:10px;
+      gap:9px;                 /* ✅ 살짝 줄임 */
       flex:0 0 auto;
     }
 
     .rbox{
       border:3px solid var(--line);
       border-radius:18px;
-      padding:12px;
+      padding:11px;            /* ✅ 12 → 11 */
       display:flex;
       gap:12px;
       align-items:center;
       background:#fff;
+      min-width:0;
     }
 
     .chk{
@@ -334,29 +339,39 @@
       line-height:1;
     }
 
+    .rtext{
+      min-width:0;
+    }
     .rtext .rt{
-      font-size:13px;
+      font-size:12px;          /* ✅ 13 → 12 */
       letter-spacing:2px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
     .rtext .rd{
-      margin-top:6px;
+      margin-top:5px;
       font-size:10px;
       color:var(--muted);
       letter-spacing:1px;
       font-family:system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
 
     .side-actions{
       display:flex;
-      gap:12px;
+      gap:10px;
       flex:0 0 auto;
     }
     .side-actions .btn{
       flex:1;
-      padding:11px 10px;
+      padding:10px 10px;
+      font-size:13px;
     }
 
-    /* ✅ 오늘의 루틴(선택 날짜 기준) */
+    /* ✅ TODAY ROUTINE */
     .todayPanel{
       border:3px solid var(--border);
       border-radius:22px;
@@ -364,13 +379,14 @@
       background:#fff;
       overflow:hidden;
 
-      flex:1;            /* ✅ 밑 공간 꽉 채워서 짤림 방지 */
-      min-height:0;      /* ✅ 스크롤 컨테이너 정상 동작 */
+      flex:1;
+      min-height:0;
       display:flex;
       flex-direction:column;
       gap:10px;
     }
-     .todayPanelHead{
+
+    .todayPanelHead{
       display:flex;
       align-items:center;
       justify-content:space-between;
@@ -378,34 +394,38 @@
       flex:0 0 auto;
       min-width:0; /* ✅ 날짜칩 잘림 방지 핵심 */
     }
-    
+
     .todayPanelHead .t{
-      font-size:14px;
+      font-size:13px;          /* ✅ 14 → 13 */
       letter-spacing:2px;
+      text-shadow: 0 1px 0 rgba(0,0,0,0.08);
+      flex:0 0 auto;
     }
-    
+
+    /* ✅ 날짜칩: "가려짐" 완전 방지 세팅 */
     .todayChip{
       border:3px solid var(--line);
       border-radius:16px;
-      padding:6px 10px;
+      padding:6px 9px;
       color:var(--muted);
-      font-size:12px;
+      font-size:11px;
       letter-spacing:1px;
       background:#fff;
-    
-      flex:0 1 auto; /* ✅ 줄어들 수 있게 */
-      min-width:0;   /* ✅ overflow 적용되게 */
-      max-width:118px;
-    
+
+      flex:1 1 auto;           /* ✅ 핵심: 남는 공간만큼 확장/축소 */
+      min-width:0;             /* ✅ ellipsis 적용 */
+      max-width:140px;         /* ✅ 너무 커지지 않게 */
       overflow:hidden;
       text-overflow:ellipsis;
       white-space:nowrap;
+      text-align:right;
     }
+
     .todayList{
-      overflow:auto; /* ✅ 여기만 스크롤 */
+      overflow:auto;
       display:flex;
       flex-direction:column;
-      gap:10px;
+      gap:9px;
       padding-right:2px;
       min-height:0;
     }
@@ -413,22 +433,20 @@
     /* foot */
     .foot{
       position:absolute;
-      left:16px;
-      right:16px;
-      bottom:8px;
+      left:14px;
+      right:14px;
+      bottom:6px;             /* ✅ 하단 여백 더 줄임 */
       display:flex;
       gap:10px;
       color:var(--muted);
-      font-size:11px;
+      font-size:10px;         /* ✅ 11 → 10 */
       letter-spacing:2px;
       pointer-events:none;
     }
     .foot .left{ flex:1; }
     .foot .right{ text-align:right; }
 
-    /* ======================
-       ✅ TASK MODAL (CENTER)
-       ====================== */
+    /* dim + modal */
     .dim{
       position:absolute;
       inset:0;
@@ -448,7 +466,7 @@
       left:50%;
       top:50%;
       transform:translate(-50%, -50%) scale(.98);
-      width: min(760px, calc(100% - 36px));
+      width: min(740px, calc(100% - 34px));
       max-height: min(520px, calc(100% - 140px));
       background:#fff;
       border:3px solid var(--border);
@@ -535,7 +553,7 @@
       padding:12px 10px;
     }
 
-    /* ✅ 작은 화면 대응: 오른쪽 패널이 너무 좁아지면 한 줄로 */
+    /* ✅ 작은 화면 대응 */
     @media (max-width: 980px){
       html, body{ overflow:auto; }
       .stage{ height:auto; }
@@ -637,7 +655,7 @@
             <button class="btn" id="allRoutineBtn">ALL</button>
           </div>
 
-          <!-- ✅ today routine (선택 날짜 기준) -->
+          <!-- today routine -->
           <div class="todayPanel" id="todayPanel">
             <div class="todayPanelHead">
               <div class="t">TODAY ROUTINE</div>
@@ -686,10 +704,11 @@
               </div>
             </div>
           </div>
+
         </div>
       </div>
 
-      <!-- ✅ modal -->
+      <!-- modal -->
       <div class="dim" id="dim"></div>
 
       <div class="modal" id="taskModal">
@@ -698,9 +717,7 @@
           <button class="btn" id="closeTasksBtn">CLOSE</button>
         </div>
 
-        <div class="modalBody" id="taskList">
-          <!-- rows injected -->
-        </div>
+        <div class="modalBody" id="taskList"></div>
 
         <div class="modalActions">
           <button class="btn" id="addTaskBtn">+ ADD TASK</button>
@@ -710,7 +727,7 @@
 
       <div class="foot">
         <div class="left">NOTION EMBED SAFE</div>
-        <div class="right">v3.1</div>
+        <div class="right">v3.2</div>
       </div>
 
     </div>
@@ -720,9 +737,6 @@
     (function(){
       const $ = (id) => document.getElementById(id);
 
-      /* =====================
-         ✅ Calendar + State
-         ===================== */
       const monthLabel = $("monthLabel");
       const pickedLabel = $("pickedLabel");
       const grid = $("grid");
@@ -733,18 +747,15 @@
 
       const weekChip = $("weekChip");
 
-      // weekly routine
       const rWorkout = $("r_workout");
       const rReading = $("r_reading");
       const rBudget = $("r_budget");
       const resetRoutineBtn = $("resetRoutineBtn");
       const allRoutineBtn = $("allRoutineBtn");
 
-      // today routine
       const todayChip = $("todayChip");
       const todayList = $("todayList");
 
-      // tasks modal
       const dim = $("dim");
       const taskModal = $("taskModal");
       const tasksTitle = $("tasksTitle");
@@ -753,7 +764,7 @@
       const addTaskBtn = $("addTaskBtn");
       const clearDoneBtn = $("clearDoneBtn");
 
-      const KEY = "yohan_os_calendar_v31";
+      const KEY = "yohan_os_calendar_v32";
 
       const months = [
         "JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE",
@@ -785,14 +796,8 @@
         viewYear: now.getFullYear(),
         viewMonth: now.getMonth(),
         picked: null,
-
-        // ✅ tasks: {date: [{text:"",done:false}, ...]}
         tasks: {},
-
-        // ✅ weekly routine
         routine: { workout:false, reading:false, budget:false },
-
-        // ✅ daily routine: {date: {gratitude:false, emotion:false, sleep:false, morning:false, future:false}}
         daily: {}
       };
 
@@ -823,7 +828,6 @@
       function hasAnyContent(dateStr){
         const t = state.tasks[dateStr];
         const d = state.daily[dateStr];
-
         const hasTask = Array.isArray(t) && t.some(x => (x.text && x.text.trim()) || x.done);
         const hasDaily = d && Object.values(d).some(Boolean);
         return hasTask || hasDaily;
@@ -841,9 +845,6 @@
         weekChip.textContent = `WEEK ${pad2(w)}`;
       }
 
-      /* =====================
-         ✅ Today Routine Panel
-         ===================== */
       function renderTodayRoutine(){
         if(!state.picked){
           todayChip.textContent = "NO DATE";
@@ -872,12 +873,9 @@
         d[key] = !d[key];
         chk.classList.toggle("on", d[key]);
         save();
-        render(); // dot 업데이트
+        render();
       });
 
-      /* =====================
-         ✅ TASK MODAL
-         ===================== */
       function openTasks(dateStr){
         state.picked = dateStr;
         pickedLabel.textContent = dateStr;
@@ -889,7 +887,7 @@
 
         buildTaskList(dateStr);
         renderTodayRoutine();
-        render(); // 선택/점 반영
+        render();
       }
 
       function closeTasks(){
@@ -912,7 +910,7 @@
             item.done = !item.done;
             chk.classList.toggle("on", item.done);
             save();
-            render(); // dot update
+            render();
           });
 
           const input = document.createElement("input");
@@ -922,7 +920,7 @@
           input.addEventListener("input", ()=>{
             item.text = input.value;
             save();
-            render(); // dot update
+            render();
           });
 
           const del = document.createElement("button");
@@ -973,9 +971,6 @@
         if(e.key === "Escape") closeTasks();
       });
 
-      /* =====================
-         ✅ Calendar Render
-         ===================== */
       function render(){
         monthLabel.textContent = `${state.viewYear} ${months[state.viewMonth]}`;
         pickedLabel.textContent = state.picked ? state.picked : "NONE";
@@ -1009,7 +1004,6 @@
           if(dateStr === todayStr) cell.classList.add("today");
           if(state.picked === dateStr) cell.classList.add("selected");
 
-          // ✅ 점 표시
           if(hasAnyContent(dateStr)) cell.classList.add("hasDot");
 
           cell.addEventListener("click", ()=>{
@@ -1022,9 +1016,6 @@
         renderTodayRoutine();
       }
 
-      /* =====================
-         ✅ Month Controls
-         ===================== */
       prevBtn.addEventListener("click", ()=>{
         state.viewMonth--;
         if(state.viewMonth < 0){
@@ -1055,9 +1046,6 @@
         openTasks(d);
       });
 
-      /* =====================
-         ✅ Weekly Routine
-         ===================== */
       rWorkout.addEventListener("click", ()=>{ state.routine.workout = !state.routine.workout; setRoutineUI(); save(); });
       rReading.addEventListener("click", ()=>{ state.routine.reading = !state.routine.reading; setRoutineUI(); save(); });
       rBudget.addEventListener("click", ()=>{ state.routine.budget = !state.routine.budget; setRoutineUI(); save(); });
@@ -1076,11 +1064,9 @@
         setRoutineUI(); save();
       });
 
-      // init
       setRoutineUI();
       render();
     })();
   </script>
 </body>
 </html>
-
