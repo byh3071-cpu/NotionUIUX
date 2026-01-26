@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>Yohan OS Calendar v2.1</title>
+  <title>Yohan OS Calendar v2.1.1</title>
   <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
 
   <style>
@@ -64,7 +64,6 @@
       overflow:hidden;
     }
 
-    /* ===== Topbar ===== */
     .topbar{
       display:flex;
       align-items:center;
@@ -145,7 +144,6 @@
       min-width:74px;
     }
 
-    /* ===== Status row ===== */
     .status{
       display:flex;
       align-items:center;
@@ -185,7 +183,6 @@
       white-space:nowrap;
     }
 
-    /* ===== Mobile Tabs ===== */
     .tabs{
       display:none;
       padding: 0 8px 10px 8px;
@@ -216,7 +213,6 @@
       box-shadow: 2px 2px 0 var(--shadow);
     }
 
-    /* ===== Main Layout ===== */
     .main{
       display:flex;
       gap:10px;
@@ -229,7 +225,6 @@
       min-width: 320px;
     }
 
-    /* ===== DOW Chips ===== */
     .dowGrid{
       display:grid;
       grid-template-columns: repeat(7, 1fr);
@@ -250,7 +245,6 @@
     .dowChip.sun{ color: var(--red); border-color:#ffd7e6; background:#fff8fb; }
     .dowChip.sat{ color: var(--blue); border-color:#dbe6ff; background:#f7faff; }
 
-    /* ===== Calendar cells ===== */
     .daysGrid{
       display:grid;
       grid-template-columns: repeat(7, 1fr);
@@ -283,7 +277,6 @@
       cursor:default;
     }
 
-    /* ✅ 오늘(today) */
     .cell.today{
       border-color: var(--border);
       background: var(--pink);
@@ -291,7 +284,6 @@
       box-shadow: 2px 2px 0 rgba(0,0,0,0.12);
     }
 
-    /* ✅ 선택(selected) - 더 강하게 */
     .cell.selected{
       border-color: var(--border);
       background: var(--pinkSoft);
@@ -299,7 +291,6 @@
       transform: translateY(-1px);
     }
 
-    /* ✅ 선택 점 표시 */
     .cell.selected::after{
       content:"";
       position:absolute;
@@ -314,7 +305,6 @@
     .cell.sun{ color: var(--red); }
     .cell.sat{ color: var(--blue); }
 
-    /* ===== Side Routine Panel ===== */
     .side{
       width: 240px;
       flex: 0 0 240px;
@@ -374,7 +364,6 @@
       background:#fff8fb;
     }
 
-    /* ✅ 픽셀 체크박스 커스텀 */
     .pxCheck{
       width:18px;
       height:18px;
@@ -430,7 +419,6 @@
       text-overflow:ellipsis;
     }
 
-    /* ✅ 체크되면 카드도 핑크 강조 */
     .ritem.checked{
       border-color: var(--border);
       background: var(--pinkSoft);
@@ -463,7 +451,6 @@
       background: var(--chip);
     }
 
-    /* ===== Footer ===== */
     .foot{
       padding: 6px 8px 2px 8px;
       font-size:9px;
@@ -474,7 +461,6 @@
       gap:8px;
     }
 
-    /* ===== TODO Modal ===== */
     .todoOverlay{
       position: fixed;
       inset: 0;
@@ -570,20 +556,15 @@
       color:#c2c2c2;
     }
 
-    /* ===== Responsive ===== */
     @media (max-width: 720px){
       .tabs{ display:flex; }
-
-      /* 모바일에서는 탭으로 번갈아 보여주기 */
       .main{ flex-direction:column; }
       .side{
         width:100%;
         flex: 1 1 auto;
-        display:none; /* 기본 숨김, 탭으로 표시 */
+        display:none;
       }
-      .cal{
-        min-width: 0;
-      }
+      .cal{ min-width: 0; }
     }
 
     @media (max-width: 360px){
@@ -596,9 +577,8 @@
 </head>
 
 <body>
-  <div class="os" role="application" aria-label="Yohan OS Calendar v2.1">
+  <div class="os" role="application" aria-label="Yohan OS Calendar v2.1.1">
 
-    <!-- Topbar -->
     <div class="topbar">
       <div class="brand">
         <div class="dots" aria-hidden="true">
@@ -608,7 +588,7 @@
         </div>
         <div class="titlewrap">
           <div class="osname">YOHAN OS / DASHBOARD</div>
-          <div class="monthyear" id="monthyear">2026 JANUARY</div>
+          <div class="monthyear" id="monthyear">----</div>
         </div>
       </div>
 
@@ -619,28 +599,23 @@
       </div>
     </div>
 
-    <!-- Status -->
     <div class="status">
       <div class="chip">PICKED: <b id="pickedText">NONE</b></div>
       <div class="accent">MODE: YOHAN OS</div>
     </div>
 
-    <!-- Mobile Tabs -->
     <div class="tabs" id="tabs">
       <button class="tabBtn active" data-tab="calendar">CALENDAR</button>
       <button class="tabBtn" data-tab="routine">ROUTINE</button>
       <button class="tabBtn" data-tab="todo">TODO</button>
     </div>
 
-    <!-- Main -->
     <div class="main">
-      <!-- Calendar -->
       <section class="cal" id="calendarSection">
         <div class="dowGrid" id="dow"></div>
         <div class="daysGrid" id="days"></div>
       </section>
 
-      <!-- Routine -->
       <aside class="side" id="routineSection">
         <div class="sideTitle">
           <h3>THIS WEEK ROUTINE</h3>
@@ -691,11 +666,10 @@
 
     <div class="foot">
       <span>NOTION EMBED SAFE</span>
-      <span>v2.1</span>
+      <span>v2.1.1</span>
     </div>
   </div>
 
-  <!-- ✅ TODO Modal Overlay -->
   <div class="todoOverlay" id="todoOverlay" aria-hidden="true">
     <section class="todoModal" id="todoPanel" aria-label="Todo Modal">
       <div class="todoHead">
@@ -798,7 +772,7 @@
 
     // Tabs
     const tabs = document.getElementById("tabs");
-    const tabBtns = tabs ? Array.from(document.querySelectorAll(".tabBtn")) : [];
+    const tabBtns = Array.from(document.querySelectorAll(".tabBtn"));
     const calendarSection = document.getElementById("calendarSection");
     const routineSection  = document.getElementById("routineSection");
 
@@ -922,17 +896,14 @@
 
     closeTodoBtn.addEventListener("click", closeTodo);
 
-    // overlay 바깥 클릭 닫기
     todoOverlay.addEventListener("click", (e) => {
       if(e.target === todoOverlay) closeTodo();
     });
 
-    // ESC 닫기
     window.addEventListener("keydown", (e) => {
       if(e.key === "Escape" && todoOverlay.style.display === "flex"){
         closeTodo();
       }
-      // 월 이동 단축키
       if(e.key === "ArrowLeft"){
         view.setMonth(view.getMonth() - 1);
         renderCalendar();
@@ -960,7 +931,7 @@
 
     function renderCalendar(){
       const y = view.getFullYear();
-      const = view.getMonth();
+      const m = view.getMonth(); // ✅ 버그 수정: const m
 
       monthyearEl.textContent = `${y} ${MONTHS[m]}`;
 
@@ -969,14 +940,12 @@
 
       daysEl.innerHTML = "";
 
-      // blanks
       for(let i=0;i<firstDay;i++){
         const div = document.createElement("div");
         div.className = "cell empty";
         daysEl.appendChild(div);
       }
 
-      // days
       for(let d=1; d<=lastDate; d++){
         const dateObj = new Date(y, m, d);
         const div = document.createElement("div");
@@ -1002,7 +971,6 @@
           renderCalendar();
           openTodoFor(k);
 
-          // 모바일 탭이 TODO로 자동 전환되게(원하면)
           if(window.matchMedia("(max-width: 720px)").matches){
             setActiveTab("todo");
           }
@@ -1036,9 +1004,8 @@
       }
     });
 
-    // ========= Mobile Tabs Logic =========
+    // ========= Mobile Tabs =========
     function setActiveTab(tabName){
-      // tabName: calendar | routine | todo
       tabBtns.forEach(b => b.classList.toggle("active", b.dataset.tab === tabName));
 
       if(tabName === "calendar"){
@@ -1052,13 +1019,11 @@
         closeTodo();
       }
       if(tabName === "todo"){
-        // 캘린더는 보조로 숨기고, TODO는 모달을 열어주기
         calendarSection.style.display = "block";
         routineSection.style.display  = "none";
         if(selectedKey){
           openTodoFor(selectedKey);
         }else{
-          // 선택 없으면 오늘로 자동 선택
           selectedKey = keyOf(realToday.getFullYear(), realToday.getMonth(), realToday.getDate());
           pickedText.textContent = selectedKey;
           view.setFullYear(realToday.getFullYear());
@@ -1076,13 +1041,11 @@
     function syncLayoutForScreen(){
       const isMobile = window.matchMedia("(max-width: 720px)").matches;
       if(isMobile){
-        // 탭 UI 활성화, 기본은 calendar
         setActiveTab("calendar");
       }else{
-        // 데스크탑: 둘 다 표시
         calendarSection.style.display = "block";
         routineSection.style.display  = "block";
-        // 탭 버튼 상태 초기화
+        closeTodo();
         tabBtns.forEach(b => b.classList.remove("active"));
         if(tabBtns[0]) tabBtns[0].classList.add("active");
       }
