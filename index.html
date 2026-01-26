@@ -5,6 +5,14 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>Yohan OS Calendar v2.1.1</title>
   <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+  <script>
+  // Notion embed cache busting
+  if (location.pathname === "/embed") {
+    const t = Date.now();
+    location.replace("/?v=" + t);
+  }
+</script>
+
 
   <style>
     :root{
@@ -1062,3 +1070,4 @@
   </script>
 </body>
 </html>
+
