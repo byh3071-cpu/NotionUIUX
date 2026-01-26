@@ -1,4 +1,4 @@
-\<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
@@ -168,29 +168,24 @@
       color:var(--text);
     }
 
-/* ✅ 우상단: 총 개수(대각선) */
-.countBadge{
-  position:absolute;
-  top:0px;
-  right:0px;
-  width:18px;
-  height:18px;
-
-  clip-path: polygon(100% 0, 0 0, 100% 100%);
-
-  background: var(--accent);
-  color:#0b0c10;
-
-  display:flex;
-  align-items:flex-start;
-  justify-content:flex-end;
-
-  font-size:9px;
-  line-height:1;
-  padding:2px 3px 0 0;
-
-  box-shadow: inset 0 0 0 2px rgba(11,12,16,.25);
-}
+    /* ✅ 우상단: 총 개수(대각선) */
+    .countBadge{
+      position:absolute;
+      top:0px;
+      right:0px;
+      width:18px;
+      height:18px;
+      clip-path: polygon(100% 0, 0 0, 100% 100%);
+      background: var(--accent);
+      color:#0b0c10;
+      display:flex;
+      align-items:flex-start;
+      justify-content:flex-end;
+      font-size:9px;
+      line-height:1;
+      padding:2px 3px 0 0;
+      box-shadow: inset 0 0 0 2px rgba(11,12,16,.25);
+    }
 
     /* ✅ 좌상단: 완료 개수(대각선) */
     .doneBadge{
@@ -199,25 +194,19 @@
       left:0px;
       width:18px;
       height:18px;
-    
       clip-path: polygon(0 0, 100% 0, 0 100%);
-    
-      /* ✅ 톤 유지: 총 배지보다 살짝 덜 튀게 */
       background: rgba(124,199,255,.22);
       color: var(--accent);
-    
       display:flex;
       align-items:flex-start;
       justify-content:flex-start;
-    
       font-size:9px;
       line-height:1;
       padding:2px 0 0 3px;
-    
       box-shadow: inset 0 0 0 2px rgba(124,199,255,.25);
     }
 
-    /* ✅ 하트 마커(점 대신) */
+    /* ✅ 하트 마커 */
     .heartMarker{
       position:absolute;
       left:6px;
@@ -229,14 +218,13 @@
       user-select:none;
     }
     .heartMarker.doneAll{
-      color:var(--accent);
       filter: drop-shadow(0 0 2px rgba(124,199,255,.25));
     }
 
-    /* ✅ 1줄 미리보기(크기 고정, 잘리면 …) */
+    /* ✅ 1줄 미리보기 */
     .previewLine{
       position:absolute;
-      left:22px;   /* 하트 옆 공간 */
+      left:22px;
       right:6px;
       bottom:6px;
       font-size:8px;
@@ -477,7 +465,7 @@
 
           <div class="taskList" id="taskList"></div>
 
-          <div class="help">하트=TASK 존재 / ♡ 미완료 포함 / ♥ 전부완료</div>
+          <div class="help">우상단=총 / 좌상단=완료 / ♡미완료 / ♥올완료</div>
         </div>
       </div>
     </div>
@@ -604,56 +592,35 @@
         num.textContent = displayNum;
         cell.appendChild(num);
 
-       const tasks = getTasks(iso);
-if(tasks.length > 0){
+        const tasks = getTasks(iso);
+        if (tasks.length > 0) {
+          const total = tasks.length;
+          const done = tasks.filter(t => t.done).length;
+          const fmt = (n) => (n > 9 ? "9+" : String(n));
 
-  const total = tasks.length;
-  const done = tasks.filter(t => t.done).length;
+          // ✅ 우상단: 총 개수
+          const totalBadge = document.createElement("div");
+          totalBadge.className = "countBadge";
+          totalBadge.textContent = fmt(total);
+          cell.appendChild(totalBadge);
 
-  const fmt = (n) => (n > 9 ? "9+" : String(n));
+          // ✅ 좌상단: 완료 개수 (done이 1개 이상일 때만 표시)
+          if (done > 0) {
+            const doneBadge = document.createElement("div");
+            doneBadge.className = "doneBadge";
+            doneBadge.textContent = fmt(done);
+            cell.appendChild(doneBadge);
+          }
 
-  // ✅ 우상단: 총 개수
-  const totalBadge = document.createElement("div");
-  totalBadge.className = "countBadge";
-  totalBadge.textContent = fmt(total);
-  cell.appendChild(totalBadge);
-
-  // ✅ 좌상단: 완료 개수 (완료가 1개 이상일 때만 표시하고 싶으면 조건 걸어도 됨)
-  if(done > 0){
-    const doneBadge = document.createElement("div");
-    doneBadge.className = "doneBadge";
-    doneBadge.textContent = fmt(done);
-    cell.appendChild(doneBadge);
-  }
-
-  // ✅ 하트 (미완료 있으면 ♡ / 전부 완료면 ♥)
-  const hasUndone = tasks.some(t => !t.done);
-  const heart = document.createElement("div");
-  heart.className = "heartMarker";
-  heart.textContent = hasUndone ? "♡" : "♥";
-  if(!hasUndone) heart.classList.add("doneAll");
-  cell.appendChild(heart);
-
-  // ✅ 1줄 미리보기
-  const preview = document.createElement("div");
-  preview.className = "previewLine";
-  preview.textContent = tasks[0].text;
-  cell.appendChild(preview);
-}
-
-        
-          const count = document.createElement("div");
-          count.className = "countBadge";
-          count.textContent = tasks.length > 9 ? "9+" : String(tasks.length);
-          cell.appendChild(count);
-        
+          // ✅ 하트
           const hasUndone = tasks.some(t => !t.done);
           const heart = document.createElement("div");
           heart.className = "heartMarker";
           heart.textContent = hasUndone ? "♡" : "♥";
-          if(!hasUndone) heart.classList.add("doneAll");
+          if (!hasUndone) heart.classList.add("doneAll");
           cell.appendChild(heart);
-        
+
+          // ✅ 1줄 미리보기
           const preview = document.createElement("div");
           preview.className = "previewLine";
           preview.textContent = tasks[0].text;
@@ -661,7 +628,7 @@ if(tasks.length > 0){
         }
 
         cell.addEventListener("click", () => {
-          if(disabled) return; // 흐린 날짜 클릭 막음 (원하면 풀어줄 수 있음)
+          if(disabled) return; // 흐린 날짜 클릭 막음(원하면 풀 수 있음)
           openModal(iso);
         });
 
@@ -863,5 +830,3 @@ if(tasks.length > 0){
   </script>
 </body>
 </html>
-
-
