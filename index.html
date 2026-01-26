@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Notion Pixel Calendar (Tasks Only)</title>
 
-  <!-- 픽셀 느낌 폰트(원하면 삭제 가능) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -23,9 +22,9 @@
       --today:#ffe08a;
       --danger:#ff6b6b;
 
-      --w: 360px;     /* ✅ 초기 크기 유지 */
+      --w: 360px;
       --h: 440px;
-      --cell: 46px;   /* 7열 * 46px = 322px + 갭/패딩 */
+      --cell: 46px;
       --gap: 4px;
     }
 
@@ -38,23 +37,21 @@
       font-family: ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace;
     }
 
-    /* ✅ 노션 임베드에서 중앙정렬 필요 없으면 제거 가능 */
     .wrap{
       width:var(--w);
       height:var(--h);
       background:var(--panel);
       border:2px solid var(--line2);
-      border-radius:0;              /* ✅ 사각형 */
+      border-radius:0;
       overflow:hidden;
       position:relative;
     }
 
-    /* 상단 바 */
     .topbar{
       display:flex;
       align-items:center;
       justify-content:space-between;
-      padding:8px 8px;              /* ✅ 여백 최소화 */
+      padding:8px 8px;
       border-bottom:2px solid var(--line2);
       background:linear-gradient(180deg, var(--panel2), var(--panel));
       gap:6px;
@@ -72,7 +69,7 @@
       background:#0e1016;
       color:var(--text);
       border:2px solid var(--line2);
-      border-radius:0;              /* ✅ 사각형 */
+      border-radius:0;
       cursor:pointer;
       font-size:10px;
       line-height:1;
@@ -95,7 +92,6 @@
       text-overflow:ellipsis;
     }
 
-    /* 요일 */
     .dow{
       display:grid;
       grid-template-columns: repeat(7, 1fr);
@@ -110,11 +106,10 @@
       color:var(--muted);
       padding:6px 0;
       border:2px solid var(--line);
-      border-radius:0;              /* ✅ 사각형 */
+      border-radius:0;
       background:#0b0c10;
     }
 
-    /* 달력 그리드 */
     .grid{
       padding:8px;
       display:grid;
@@ -126,7 +121,7 @@
     .day{
       height: var(--cell);
       border:2px solid var(--line);
-      border-radius:0;              /* ✅ 사각형 */
+      border-radius:0;
       background:#0b0c10;
       position:relative;
       cursor:pointer;
@@ -138,9 +133,7 @@
       transition: border-color .12s ease;
       overflow:hidden;
     }
-    .day:hover{
-      border-color:var(--accent);
-    }
+    .day:hover{ border-color:var(--accent); }
 
     .day.disabled{
       opacity:.35;
@@ -152,25 +145,38 @@
       color:var(--text);
     }
 
-    .badge{
+    /* ✅ 개선된 날짜 표시: count 뱃지 */
+    .countBadge{
+      position:absolute;
+      top:6px;
+      right:6px;
+      min-width:18px;
+      height:16px;
+      padding:0 5px;
+      border:2px solid var(--accent);
+      background:#0e1016;
+      color:var(--text);
+      font-size:9px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:0;
+      line-height:1;
+    }
+
+    /* ✅ 개선된 날짜 표시: 상태 점(1개) */
+    .statusDot{
       position:absolute;
       bottom:6px;
       left:6px;
-      right:6px;
-      height:12px;
-      display:flex;
-      gap:4px;
-      align-items:center;
-      justify-content:flex-start;
-      overflow:hidden;
-    }
-
-    .dot{
-      width:6px; height:6px;
+      width:10px;
+      height:10px;
       border:2px solid var(--accent);
       background:transparent;
-      border-radius:0;              /* ✅ 픽셀 느낌 */
-      flex: 0 0 auto;
+      border-radius:0;
+    }
+    .statusDot.doneAll{
+      background: var(--accent);
     }
 
     .today{
@@ -178,7 +184,6 @@
       box-shadow: inset 0 0 0 2px rgba(255,224,138,.25);
     }
 
-    /* ✅ 모달 */
     .modalBack{
       position:absolute;
       inset:0;
@@ -193,10 +198,10 @@
     .modal{
       width: 100%;
       max-width: 340px;
-      height: 320px;
+      height: 330px;
       background: #0e1016;
       border: 2px solid var(--line2);
-      border-radius:0;              /* ✅ 사각형 */
+      border-radius:0;
       display:flex;
       flex-direction:column;
       overflow:hidden;
@@ -224,7 +229,7 @@
       border:2px solid var(--line2);
       background:#0e1016;
       color:var(--text);
-      border-radius:0;              /* ✅ 사각형 */
+      border-radius:0;
       cursor:pointer;
       font-size:12px;
       display:flex;
@@ -271,7 +276,6 @@
     }
     .addBtn:hover{ border-color:var(--accent); }
 
-    /* ✅ 스크롤 가능한 리스트 */
     .taskList{
       border:2px solid var(--line2);
       background:#0b0c10;
@@ -293,6 +297,27 @@
       margin-bottom:6px;
       background:#0e1016;
     }
+
+    /* ✅ 완료 체크 버튼 */
+    .checkBtn{
+      width:30px;
+      height:28px;
+      border:2px solid var(--accent);
+      background:transparent;
+      color:var(--text);
+      border-radius:0;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:11px;
+      flex:0 0 auto;
+    }
+    .checkBtn.done{
+      background: var(--accent);
+      color:#0b0c10;
+    }
+
     .taskText{
       font-size:10px;
       color:var(--text);
@@ -300,6 +325,25 @@
       word-break:break-word;
       flex:1;
     }
+    .taskText.done{
+      color: var(--muted);
+      text-decoration: line-through;
+      opacity:.9;
+    }
+
+    /* ✅ 인라인 수정 입력 */
+    .editInput{
+      flex:1;
+      height:30px;
+      border:2px solid var(--line2);
+      background:#0b0c10;
+      color:var(--text);
+      border-radius:0;
+      outline:none;
+      padding:0 8px;
+      font-size:10px;
+    }
+
     .taskActions{
       display:flex;
       gap:6px;
@@ -321,7 +365,6 @@
     .iconBtn:hover{ border-color:var(--accent); }
     .iconBtn.delete:hover{ border-color:var(--danger); }
 
-    /* 노션 임베드에서 텍스트 너무 커지면 폰트만 바꿔도 해결됨 */
     .help{
       font-size:9px;
       color:var(--muted);
@@ -329,7 +372,6 @@
       line-height:1.4;
     }
 
-    /* 스크롤바(선택) */
     .taskList::-webkit-scrollbar{ width:10px; }
     .taskList::-webkit-scrollbar-thumb{
       background:#1c2230;
@@ -360,7 +402,6 @@
 
     <div class="grid" id="grid"></div>
 
-    <!-- ✅ Task Modal -->
     <div class="modalBack" id="modalBack" aria-hidden="true">
       <div class="modal" role="dialog" aria-modal="true">
         <div class="modalHeader">
@@ -376,19 +417,13 @@
 
           <div class="taskList" id="taskList"></div>
 
-          <div class="help">날짜 클릭 → TASK만 뜸 / 저장은 자동(LocalStorage)</div>
+          <div class="help">날짜 클릭 → TASK만 / 저장 자동(LocalStorage) / ✎는 인라인 수정</div>
         </div>
       </div>
     </div>
   </div>
 
   <script>
-    /**
-     * ✅ Notion Embed Pixel Calendar (Tasks Only)
-     * - 날짜별 task 저장: localStorage
-     * - 클릭 시 task 모달만
-     */
-
     const $ = (sel) => document.querySelector(sel);
 
     const gridEl = $("#grid");
@@ -406,10 +441,10 @@
     const addBtn = $("#addBtn");
     const taskList = $("#taskList");
 
-    // ✅ 상태
     const state = {
-      viewDate: new Date(),       // 현재 보고 있는 달
-      selectedISO: null           // 선택한 날짜 (YYYY-MM-DD)
+      viewDate: new Date(),
+      selectedISO: null,
+      editingIndex: null
     };
 
     const pad2 = (n) => String(n).padStart(2, "0");
@@ -420,9 +455,6 @@
       a.getMonth() === b.getMonth() &&
       a.getDate() === b.getDate();
 
-    // ✅ 로컬 저장 구조
-    // key: "pixel_calendar_tasks_v1"
-    // value: { "YYYY-MM-DD": ["task1","task2"] }
     const STORE_KEY = "pixel_calendar_tasks_v1";
 
     function loadAll(){
@@ -436,44 +468,53 @@
       localStorage.setItem(STORE_KEY, JSON.stringify(obj));
     }
 
+    // ✅ 데이터 정규화: 예전 ["문자"] 형식도 {text,done}로 변환
+    function normalizeList(list){
+      if(!Array.isArray(list)) return [];
+      return list.map(x => {
+        if(typeof x === "string") return { text:x, done:false };
+        if(x && typeof x === "object"){
+          return {
+            text: String(x.text ?? ""),
+            done: Boolean(x.done)
+          };
+        }
+        return { text:"", done:false };
+      }).filter(t => t.text.trim().length > 0);
+    }
+
     function getTasks(iso){
       const all = loadAll();
-      return Array.isArray(all[iso]) ? all[iso] : [];
+      return normalizeList(all[iso]);
     }
     function setTasks(iso, list){
       const all = loadAll();
-      all[iso] = list;
+      all[iso] = normalizeList(list);
       saveAll(all);
     }
 
-    // ✅ 렌더
     function render(){
       gridEl.innerHTML = "";
 
       const y = state.viewDate.getFullYear();
-      const m = state.viewDate.getMonth(); // 0~11
+      const m = state.viewDate.getMonth();
 
       monthTitleEl.textContent = `${y}-${pad2(m+1)}`;
 
-      // 1일 요일
       const first = new Date(y, m, 1);
       const firstDow = first.getDay();
 
-      // 해당 달 마지막 날짜
       const last = new Date(y, m+1, 0);
       const lastDay = last.getDate();
 
-      // 전달 마지막 날짜
       const prevLast = new Date(y, m, 0).getDate();
 
-      // 총 6주(42칸) 고정 렌더 (크기 유지 안정)
       const totalCells = 42;
 
       for(let i=0; i<totalCells; i++){
         const cell = document.createElement("div");
         cell.className = "day";
 
-        // 날짜 계산
         const dayNum = i - firstDow + 1;
 
         let cellDate;
@@ -481,17 +522,14 @@
         let displayNum;
 
         if(dayNum < 1){
-          // 전달
           displayNum = prevLast + dayNum;
           cellDate = new Date(y, m-1, displayNum);
           disabled = true;
         }else if(dayNum > lastDay){
-          // 다음달
           displayNum = dayNum - lastDay;
           cellDate = new Date(y, m+1, displayNum);
           disabled = true;
         }else{
-          // 이번달
           displayNum = dayNum;
           cellDate = new Date(y, m, displayNum);
         }
@@ -502,35 +540,33 @@
           cell.classList.add("disabled");
         }
 
-        // Today 강조
         const now = new Date();
         if(isSameDay(cellDate, now) && !disabled){
           cell.classList.add("today");
         }
 
-        // 숫자
         const num = document.createElement("div");
         num.className = "num";
         num.textContent = displayNum;
         cell.appendChild(num);
 
-        // task dot 표시(최대 6개)
+        // ✅ 날짜 표시 개선: count 뱃지 + 상태점 1개
         const tasks = getTasks(iso);
         if(tasks.length > 0){
-          const badge = document.createElement("div");
-          badge.className = "badge";
-          const dots = Math.min(tasks.length, 6);
-          for(let d=0; d<dots; d++){
-            const dot = document.createElement("div");
-            dot.className = "dot";
-            badge.appendChild(dot);
-          }
-          cell.appendChild(badge);
+          const count = document.createElement("div");
+          count.className = "countBadge";
+          count.textContent = tasks.length;
+          cell.appendChild(count);
+
+          const hasUndone = tasks.some(t => !t.done);
+          const dot = document.createElement("div");
+          dot.className = "statusDot";
+          if(!hasUndone) dot.classList.add("doneAll");
+          cell.appendChild(dot);
         }
 
-        // ✅ 클릭: TASK 팝업만
         cell.addEventListener("click", () => {
-          if(disabled) return; // 전달/다음달 클릭 비활성
+          if(disabled) return; // 전/다음달 칸 클릭 막음(원하면 풀어줄 수 있음)
           openModal(iso);
         });
 
@@ -538,17 +574,16 @@
       }
     }
 
-    // ✅ 모달
     function openModal(iso){
       state.selectedISO = iso;
+      state.editingIndex = null;
+
       modalTitle.textContent = `TASK · ${iso}`;
       taskInput.value = "";
       renderTaskList();
 
       modalBack.classList.add("show");
       modalBack.setAttribute("aria-hidden", "false");
-
-      // 입력 포커스
       setTimeout(() => taskInput.focus(), 0);
     }
 
@@ -556,6 +591,7 @@
       modalBack.classList.remove("show");
       modalBack.setAttribute("aria-hidden", "true");
       state.selectedISO = null;
+      state.editingIndex = null;
     }
 
     function renderTaskList(){
@@ -573,36 +609,95 @@
         return;
       }
 
-      tasks.forEach((t, idx) => {
+      tasks.forEach((task, idx) => {
         const item = document.createElement("div");
         item.className = "taskItem";
 
+        // ✅ 완료 체크
+        const check = document.createElement("button");
+        check.className = "checkBtn";
+        check.textContent = task.done ? "✓" : "";
+        if(task.done) check.classList.add("done");
+        check.title = "완료 체크";
+        check.addEventListener("click", () => {
+          const list = getTasks(iso);
+          list[idx].done = !list[idx].done;
+          setTasks(iso, list);
+          renderTaskList();
+          render(); // 날짜 상태 갱신
+        });
+
+        item.appendChild(check);
+
+        // ✅ 인라인 수정 모드
+        if(state.editingIndex === idx){
+          const input = document.createElement("input");
+          input.className = "editInput";
+          input.value = task.text;
+          input.maxLength = 60;
+
+          const actions = document.createElement("div");
+          actions.className = "taskActions";
+
+          const save = document.createElement("button");
+          save.className = "iconBtn";
+          save.textContent = "✔";
+          save.title = "저장";
+          save.addEventListener("click", () => {
+            const v = input.value.trim();
+            if(!v) return;
+            const list = getTasks(iso);
+            list[idx].text = v;
+            setTasks(iso, list);
+            state.editingIndex = null;
+            renderTaskList();
+            render();
+          });
+
+          const cancel = document.createElement("button");
+          cancel.className = "iconBtn delete";
+          cancel.textContent = "↩";
+          cancel.title = "취소";
+          cancel.addEventListener("click", () => {
+            state.editingIndex = null;
+            renderTaskList();
+          });
+
+          actions.appendChild(save);
+          actions.appendChild(cancel);
+
+          item.appendChild(input);
+          item.appendChild(actions);
+
+          // 키보드 저장/취소
+          setTimeout(() => input.focus(), 0);
+          input.addEventListener("keydown", (e) => {
+            if(e.key === "Enter") save.click();
+            if(e.key === "Escape") cancel.click();
+          });
+
+          taskList.appendChild(item);
+          return;
+        }
+
+        // 일반 표시
         const text = document.createElement("div");
         text.className = "taskText";
-        text.textContent = t;
+        text.textContent = task.text;
+        if(task.done) text.classList.add("done");
 
         const actions = document.createElement("div");
         actions.className = "taskActions";
 
-        // 수정
         const edit = document.createElement("button");
         edit.className = "iconBtn";
         edit.textContent = "✎";
         edit.title = "수정";
         edit.addEventListener("click", () => {
-          const next = prompt("TASK 수정", t);
-          if(next === null) return;
-          const trimmed = next.trim();
-          if(!trimmed) return;
-
-          const list = getTasks(iso);
-          list[idx] = trimmed;
-          setTasks(iso, list);
+          state.editingIndex = idx;
           renderTaskList();
-          render(); // dot 갱신
         });
 
-        // 삭제
         const del = document.createElement("button");
         del.className = "iconBtn delete";
         del.textContent = "⌫";
@@ -612,7 +707,7 @@
           list.splice(idx, 1);
           setTasks(iso, list);
           renderTaskList();
-          render(); // dot 갱신
+          render();
         });
 
         actions.appendChild(edit);
@@ -620,6 +715,7 @@
 
         item.appendChild(text);
         item.appendChild(actions);
+
         taskList.appendChild(item);
       });
     }
@@ -632,15 +728,14 @@
       if(!val) return;
 
       const list = getTasks(iso);
-      list.unshift(val); // 최신이 위로
+      list.unshift({ text: val, done: false });
       setTasks(iso, list);
 
       taskInput.value = "";
       renderTaskList();
-      render(); // dot 갱신
+      render();
     }
 
-    // ✅ 이벤트
     prevBtn.addEventListener("click", () => {
       const d = new Date(state.viewDate);
       d.setMonth(d.getMonth() - 1);
@@ -662,12 +757,10 @@
 
     closeBtn.addEventListener("click", closeModal);
 
-    // 모달 바깥 클릭 닫기
     modalBack.addEventListener("click", (e) => {
       if(e.target === modalBack) closeModal();
     });
 
-    // 엔터로 추가
     taskInput.addEventListener("keydown", (e) => {
       if(e.key === "Enter") addTask();
       if(e.key === "Escape") closeModal();
@@ -675,7 +768,6 @@
 
     addBtn.addEventListener("click", addTask);
 
-    // ✅ 최초 렌더
     render();
   </script>
 </body>
