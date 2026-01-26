@@ -3,1071 +3,783 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>Yohan OS Calendar v2.1.1</title>
-  <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
-  <script>
-  // Notion embed cache busting
-  if (location.pathname === "/embed") {
-    const t = Date.now();
-    location.replace("/?v=" + t);
-  }
-</script>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+  <title>YOHAN OS / Pixel Calendar Embed</title>
 
+  <link href="https://fonts.googleapis.com/css2?family=Silkscreen&display=swap" rel="stylesheet">
 
   <style>
     :root{
       --bg:#ffffff;
-      --ink:#1f1f1f;
+      --ink:#111;
       --muted:#9aa0a6;
-
-      --panel:#ffffff;
-      --border:#202124;
-      --shadow:#e9e9e9;
-
-      --pink:#ff6fa4;
-      --pinkSoft:#ffe3ee;
-      --chip:#f7f7f7;
-
-      --cellBorder:#ececec;
-      --cellHover:#fff3f8;
-
-      --radius:16px;
-      --radiusSm:12px;
-
-      --pad:10px;
-
-      --blue:#3c66b4;
-      --red:#b43c64;
-      --gridGap:8px;
-
-      --glow: 0 0 0 2px rgba(255,111,164,0.30), 0 0 0 6px rgba(255,111,164,0.14);
+      --line:#e8e8e8;
+      --soft:#f7f7f7;
+      --pink:#f09ab1;
+      --pink2:#ffe2ea;
+      --shadow:rgba(0,0,0,.06);
+      --radius:22px;
     }
 
-    /* ✅ 노션 임베드 내부 스크롤 방지 */
+    *{ box-sizing:border-box; }
     html, body{
-      width:100%;
-      height:100%;
       margin:0;
       padding:0;
-      overflow:hidden;
-      background: var(--bg);
-      color: var(--ink);
-      font-family:'Silkscreen', cursive;
+      background:var(--bg);
+      font-family:'Silkscreen', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      color:var(--ink);
+      overflow:hidden; /* ✅ 노션 임베드 스크롤 최소화 */
     }
 
-    body{
+    .wrap{
+      width:100%;
+      height:100vh;
       display:flex;
       align-items:center;
       justify-content:center;
+      padding:14px;
     }
 
-    .os{
-      width:min(760px, 100%);
-      background: var(--panel);
-      border: 2px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: 6px 6px 0 var(--shadow);
-      padding: var(--pad);
+    .card{
+      width:min(1060px, 100%);
+      background:#fff;
+      border:3px solid #1d1d1d;
+      border-radius:28px;
+      box-shadow:8px 10px 0 var(--shadow);
+      padding:18px 18px 14px;
       position:relative;
+
+      /* ✅ 바텀 패널 때문에 카드가 너무 커지지 않게 */
+      height: min(720px, calc(100vh - 28px));
       overflow:hidden;
     }
 
-    .topbar{
+    /* top label */
+    .topline{
       display:flex;
-      align-items:center;
+      align-items:flex-start;
       justify-content:space-between;
-      gap:10px;
-      padding: 8px 8px 10px 8px;
-      border-bottom: 2px dashed #efefef;
-      margin-bottom: 10px;
+      gap:12px;
+      margin-bottom:10px;
     }
-
     .brand{
       display:flex;
-      align-items:center;
+      align-items:flex-start;
       gap:10px;
-      min-width:0;
+      min-width:260px;
     }
-
-    .dots{ display:flex; gap:6px; }
-    .dot{
-      width:10px; height:10px;
-      border:2px solid var(--border);
-      border-radius: 4px;
-      background:#fff;
-      box-shadow:2px 2px 0 var(--shadow);
-    }
-    .dot.pink{ background: var(--pinkSoft); }
-
-    .titlewrap{
+    .dots{
       display:flex;
-      flex-direction:column;
-      line-height:1.05;
-      min-width:0;
+      gap:7px;
+      margin-top:2px;
     }
-
-    .osname{
+    .dot{
+      width:18px; height:18px;
+      border:3px solid #1d1d1d;
+      border-radius:7px;
+      background:#fff;
+    }
+    .title{
+      line-height:1.1;
+    }
+    .title .mini{
       font-size:12px;
       color:var(--muted);
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
+      letter-spacing:1px;
     }
-
-    .monthyear{
-      font-size:18px;
-      letter-spacing:0.6px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
+    .title .big{
+      font-size:26px;
+      letter-spacing:2px;
+      margin-top:2px;
     }
 
     .controls{
       display:flex;
-      gap:8px;
-      flex-shrink:0;
+      align-items:center;
+      gap:10px;
     }
 
     .btn{
-      border:2px solid var(--border);
+      border:3px solid #1d1d1d;
       background:#fff;
-      border-radius: 14px;
-      padding: 7px 10px;
-      font-family:'Silkscreen', cursive;
-      font-size:12px;
+      border-radius:18px;
+      padding:10px 16px;
+      font-size:14px;
       cursor:pointer;
-      box-shadow: 3px 3px 0 var(--shadow);
+      box-shadow:3px 4px 0 var(--shadow);
       user-select:none;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      min-width:44px;
     }
-    .btn:active{
-      transform: translate(1px,1px);
-      box-shadow: 2px 2px 0 var(--shadow);
-    }
-    .btn.today{
-      background: var(--chip);
-      min-width:74px;
-    }
+    .btn:active{ transform:translateY(1px); box-shadow:2px 3px 0 var(--shadow); }
+    .btn.icon{ width:54px; padding:10px 0; display:flex; justify-content:center; }
 
-    .status{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      padding: 0 8px 10px 8px;
-      flex-wrap:wrap;
-    }
-
-    .chip{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      border:2px solid #efefef;
-      background:#fff;
-      padding:7px 10px;
-      border-radius: 999px;
-      font-size:11px;
-      color:var(--muted);
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-    .chip b{ color:var(--ink); font-weight:700; }
-
-    .accent{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      padding:7px 10px;
-      border-radius: 999px;
-      border:2px solid var(--border);
-      background: var(--pinkSoft);
-      box-shadow: 3px 3px 0 var(--shadow);
-      font-size:11px;
-      color:#6b1b39;
-      white-space:nowrap;
-    }
-
-    .tabs{
-      display:none;
-      padding: 0 8px 10px 8px;
-      gap:8px;
-    }
-    .tabBtn{
-      flex:1;
-      border:2px solid var(--border);
-      background:#fff;
-      border-radius: 14px;
-      padding: 8px 10px;
-      font-family:'Silkscreen', cursive;
-      font-size:11px;
-      cursor:pointer;
-      box-shadow: 3px 3px 0 var(--shadow);
-      user-select:none;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:6px;
-    }
-    .tabBtn.active{
-      background: var(--pinkSoft);
-      box-shadow: 3px 3px 0 var(--shadow), var(--glow);
-    }
-    .tabBtn:active{
-      transform: translate(1px,1px);
-      box-shadow: 2px 2px 0 var(--shadow);
+    .divider{
+      width:100%;
+      border-top:3px dashed var(--line);
+      margin:10px 0 12px;
     }
 
     .main{
+      display:grid;
+      grid-template-columns: 1fr 340px;
+      gap:14px;
+      align-items:start;
+      height: calc(100% - 110px); /* ✅ 상단+divider 공간 제외 */
+      overflow:hidden;
+    }
+
+    .leftcol{
+      height:100%;
+      overflow:hidden;
+      padding-bottom: 10px;
+    }
+
+    .badge-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:10px;
+    }
+
+    .picked{
+      border:3px solid var(--line);
+      border-radius:18px;
+      padding:10px 14px;
       display:flex;
       gap:10px;
-      padding: 0 6px 6px 6px;
-      align-items:flex-start;
-    }
-
-    .cal{
-      flex: 1 1 420px;
-      min-width: 320px;
-    }
-
-    .dowGrid{
-      display:grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: var(--gridGap);
-      margin-bottom: 8px;
-    }
-    .dowChip{
-      border:2px solid #f0f0f0;
+      align-items:center;
+      width:fit-content;
       background:#fff;
-      border-radius: 999px;
-      padding: 6px 0;
-      text-align:center;
-      font-size:10px;
-      color: var(--muted);
-      user-select:none;
-      box-shadow: 2px 2px 0 var(--shadow);
     }
-    .dowChip.sun{ color: var(--red); border-color:#ffd7e6; background:#fff8fb; }
-    .dowChip.sat{ color: var(--blue); border-color:#dbe6ff; background:#f7faff; }
+    .picked .k{
+      color:var(--muted);
+      font-size:12px;
+      letter-spacing:1px;
+    }
+    .picked .v{
+      font-size:14px;
+      letter-spacing:1px;
+    }
 
-    .daysGrid{
+    .mode{
+      border:3px solid #1d1d1d;
+      border-radius:20px;
+      padding:10px 16px;
+      background:var(--pink2);
+      box-shadow:3px 4px 0 var(--shadow);
+      font-size:14px;
+      letter-spacing:1px;
+    }
+
+    .calendar{
+      padding:8px 6px 6px;
+      height: calc(100% - 54px);
+      overflow:hidden;
+    }
+
+    .dow{
       display:grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: var(--gridGap);
+      grid-template-columns:repeat(7, 1fr);
+      gap:10px;
+      padding:6px 10px 10px;
+      color:var(--muted);
+      font-size:12px;
+      letter-spacing:2px;
+      text-align:center;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(7, 1fr);
+      gap:12px;
+      padding:0 10px 10px;
     }
 
     .cell{
-      height:36px;
-      border:2px solid var(--cellBorder);
-      border-radius: var(--radiusSm);
+      height:58px;
+      border:3px solid var(--line);
+      border-radius:16px;
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size:12px;
+      font-size:16px;
       cursor:pointer;
-      user-select:none;
       background:#fff;
-      transition: 0.08s;
-      position:relative;
+      transition:transform .06s ease;
+      user-select:none;
     }
-    .cell:hover{
-      background: var(--cellHover);
-      border-color:#ffd1e2;
-      transform: translateY(-1px);
-    }
-
+    .cell:hover{ transform:translateY(-1px); }
     .cell.empty{
       border-color:transparent;
       background:transparent;
       cursor:default;
     }
-
     .cell.today{
-      border-color: var(--border);
-      background: var(--pink);
-      color:#fff;
-      box-shadow: 2px 2px 0 rgba(0,0,0,0.12);
+      border-color:#1d1d1d;
+      background:var(--pink2);
     }
-
     .cell.selected{
-      border-color: var(--border);
-      background: var(--pinkSoft);
-      box-shadow: 2px 2px 0 var(--shadow), var(--glow);
-      transform: translateY(-1px);
+      border-color:#1d1d1d;
+      background:var(--pink);
+      color:#fff;
     }
+    .cell.weekend{ color:#7b7b7b; }
+    .cell.sun{ color:#b84a5a; }
+    .cell.sat{ color:#3b66d6; }
 
-    .cell.selected::after{
-      content:"";
-      position:absolute;
-      bottom:6px;
-      width:6px;
-      height:6px;
-      border-radius:2px;
-      background: var(--pink);
-      box-shadow: 1px 1px 0 rgba(0,0,0,0.10);
-    }
-
-    .cell.sun{ color: var(--red); }
-    .cell.sat{ color: var(--blue); }
-
+    /* side panel */
     .side{
-      width: 240px;
-      flex: 0 0 240px;
-      border:2px solid #efefef;
-      border-radius: var(--radius);
-      padding:10px;
+      border:3px solid var(--line);
+      border-radius:24px;
+      padding:14px;
       background:#fff;
-      box-shadow: 2px 2px 0 var(--shadow);
     }
 
-    .sideTitle{
+    .side-head{
       display:flex;
       align-items:center;
       justify-content:space-between;
-      margin-bottom:10px;
       gap:10px;
+      margin-bottom:10px;
     }
-
-    .sideTitle h3{
-      margin:0;
-      font-size:12px;
-      color: var(--ink);
-      letter-spacing:0.3px;
-      white-space:nowrap;
+    .side-head .h{
+      font-size:16px;
+      letter-spacing:2px;
     }
-
-    .weekBadge{
-      font-size:10px;
+    .weekchip{
+      border:3px solid var(--line);
+      border-radius:16px;
+      padding:8px 10px;
       color:var(--muted);
-      border:2px solid #f0f0f0;
-      border-radius:999px;
-      padding:5px 8px;
+      font-size:12px;
+      letter-spacing:1px;
       background:#fff;
-      white-space:nowrap;
-      box-shadow: 2px 2px 0 var(--shadow);
     }
 
-    .rlist{
+    .routine{
       display:flex;
       flex-direction:column;
       gap:10px;
+      margin-top:6px;
     }
 
-    .ritem{
+    .rbox{
+      border:3px solid var(--line);
+      border-radius:20px;
+      padding:14px;
       display:flex;
+      gap:12px;
       align-items:center;
-      gap:10px;
-      border:2px solid #f3f3f3;
       background:#fff;
-      padding:10px 10px;
-      border-radius:14px;
-      position:relative;
-      transition: 0.08s;
-    }
-    .ritem:hover{
-      border-color:#ffd7e6;
-      background:#fff8fb;
     }
 
-    .pxCheck{
-      width:18px;
-      height:18px;
-      border:2px solid var(--border);
-      border-radius:5px;
-      display:inline-flex;
+    .chk{
+      width:26px; height:26px;
+      border:3px solid #1d1d1d;
+      border-radius:7px;
+      background:#fff;
+      display:flex;
       align-items:center;
       justify-content:center;
       cursor:pointer;
-      box-shadow: 2px 2px 0 var(--shadow);
-      background:#fff;
-      flex-shrink:0;
+      flex:0 0 auto;
+    }
+    .chk.on{
+      background:var(--pink2);
       position:relative;
     }
-    .pxCheck input{
-      position:absolute;
-      inset:0;
-      opacity:0;
-      margin:0;
-      cursor:pointer;
-    }
-    .pxCheck .mark{
-      width:10px;
-      height:10px;
-      border-radius:3px;
-      background: transparent;
-      transition: 0.08s;
-    }
-    .pxCheck input:checked + .mark{
-      background: var(--pink);
-      box-shadow: 0 0 0 2px rgba(255,111,164,0.18);
+    .chk.on::after{
+      content:"✔";
+      font-size:14px;
+      line-height:1;
     }
 
-    .rlabel{
-      display:flex;
-      flex-direction:column;
-      gap:2px;
-      min-width:0;
+    .rtext .rt{
+      font-size:14px;
+      letter-spacing:2px;
     }
-    .rlabel b{
+    .rtext .rd{
+      margin-top:6px;
       font-size:11px;
-      color:var(--ink);
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      letter-spacing:0.2px;
-    }
-    .rlabel span{
-      font-size:9px;
       color:var(--muted);
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
+      letter-spacing:1px;
+      font-family:system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
     }
 
-    .ritem.checked{
-      border-color: var(--border);
-      background: var(--pinkSoft);
-      box-shadow: 2px 2px 0 var(--shadow), var(--glow);
-    }
-
-    .miniBtnRow{
+    .side-actions{
       display:flex;
-      gap:10px;
+      gap:12px;
       margin-top:12px;
     }
-
-    .miniBtn{
+    .side-actions .btn{
       flex:1;
-      border:2px solid var(--border);
-      background:#fff;
-      border-radius:14px;
-      padding:8px 10px;
-      font-family:'Silkscreen', cursive;
-      font-size:11px;
-      cursor:pointer;
-      box-shadow: 3px 3px 0 var(--shadow);
-      user-select:none;
-    }
-    .miniBtn:active{
-      transform: translate(1px,1px);
-      box-shadow: 2px 2px 0 var(--shadow);
-    }
-    .miniBtn.primary{
-      background: var(--chip);
+      padding:12px 10px;
     }
 
+    /* ✅ footer */
     .foot{
-      padding: 6px 8px 2px 8px;
-      font-size:9px;
-      color:#c0c0c0;
-      user-select:none;
+      position:absolute;
+      left:18px;
+      right:18px;
+      bottom:10px;
       display:flex;
-      justify-content:space-between;
-      gap:8px;
-    }
-
-    .todoOverlay{
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.35);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      z-index: 9999;
-      padding: 14px;
-    }
-
-    .todoModal{
-      width: min(560px, 100%);
-      background:#fff;
-      border: 2px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: 6px 6px 0 var(--shadow);
-      padding: 12px;
-      max-height: min(520px, 90vh);
-      overflow:auto;
-    }
-
-    .todoHead{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
       gap:10px;
-      margin-bottom:10px;
-      padding-bottom:10px;
-      border-bottom: 2px dashed #efefef;
-    }
-
-    .todoHead h3{
-      margin:0;
-      font-size:12px;
-      color:var(--ink);
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      letter-spacing:0.3px;
-    }
-
-    .closeBtn{
-      border:2px solid var(--border);
-      background:#fff;
-      border-radius:14px;
-      padding:7px 10px;
-      font-family:'Silkscreen', cursive;
+      color:var(--muted);
       font-size:11px;
-      cursor:pointer;
-      box-shadow: 3px 3px 0 var(--shadow);
-      user-select:none;
-      white-space:nowrap;
+      letter-spacing:2px;
+      pointer-events:none;
     }
-    .closeBtn:active{
-      transform: translate(1px,1px);
-      box-shadow: 2px 2px 0 var(--shadow);
+    .foot .left{ flex:1; }
+    .foot .right{ text-align:right; }
+
+    /* ==============================
+       ✅ Bottom Tasks Sheet (Overlay)
+       ============================== */
+
+    .sheet-dim{
+      position:absolute;
+      inset:0;
+      background:rgba(0,0,0,.12);
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .14s ease;
+    }
+    .sheet-dim.on{
+      opacity:1;
+      pointer-events:auto;
     }
 
-    .tlist{
+.tasks-sheet{
+  left:18px;
+  right:18px;
+  bottom:80px;               /* ✅ footer랑 거리 줄임 */
+  border:2px solid #1d1d1d;  /* ✅ 덜 무겁게 */
+  border-radius:22px;
+
+  max-height:180px;          /* ✅ 더 작게 */
+  height:180px;
+
+  box-shadow:6px 8px 0 var(--shadow);
+
+  transform:translateY(120%);
+  opacity:0;
+  pointer-events:none;
+  transition:transform .18s ease, opacity .18s ease;
+  overflow:hidden;
+}
+
+.tasks-head{
+  padding:10px 12px;
+}
+
+.tasks-head .t{
+  font-size:13px;            /* ✅ 헤더 크기 조금 다운 */
+  letter-spacing:2px;
+}
+
+.tasks-body{
+  padding:10px 12px 12px;
+  height: calc(180px - 48px); /* ✅ 헤더 높이 맞춤 */
+  overflow:auto;
+}
+
+    .tasklist{
       display:flex;
       flex-direction:column;
       gap:10px;
-      margin-top: 10px;
     }
+.task{
+  border:2px solid var(--line);
+  border-radius:16px;
+  padding:8px 10px;     /* ✅ 더 얇게 */
+  gap:10px;
+}
 
-    .titem{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      border:2px solid #f3f3f3;
-      border-radius:14px;
-      padding:10px 10px;
-      background:#fff;
-      transition: 0.08s;
-    }
-    .titem:hover{
-      border-color:#ffd7e6;
-      background:#fff8fb;
-    }
+.task input[type="text"]{
+  font-size:12px;       /* ✅ 폰트 살짝 작게 */
+}
+.chk{
+  width:22px;
+  height:22px;
+  border:2px solid #1d1d1d;
+  border-radius:6px;
+}
 
-    .titem input[type="text"]{
-      border:none;
-      outline:none;
-      width:100%;
-      font-family:'Silkscreen', cursive;
-      font-size:11px;
-      background:transparent;
-      color:var(--ink);
-      min-width:0;
-    }
-    .titem input[type="text"]::placeholder{
-      color:#c2c2c2;
-    }
+    /* responsive */
+    @media (max-width: 940px){
+      html, body{ overflow:auto; } /* 모바일에선 스크롤 허용 */
+      .wrap{ height:auto; }
+      .card{ height:auto; overflow:visible; }
+      .main{ grid-template-columns:1fr; height:auto; overflow:visible; }
+      .side{ order:2; }
 
-    @media (max-width: 720px){
-      .tabs{ display:flex; }
-      .main{ flex-direction:column; }
-      .side{
-        width:100%;
-        flex: 1 1 auto;
-        display:none;
+      .tasks-sheet{
+        position:relative;
+        left:auto; right:auto; bottom:auto;
+        transform:none;
+        opacity:1;
+        pointer-events:auto;
+        margin-top:12px;
       }
-      .cal{ min-width: 0; }
-    }
-
-    @media (max-width: 360px){
-      .monthyear{ font-size:16px; }
-      .cell{ height:34px; font-size:11px; }
-      .btn{ padding:6px 8px; min-width:40px; }
-      .btn.today{ min-width:68px; }
+      .sheet-dim{ display:none; }
+      .foot{ position:relative; left:auto; right:auto; bottom:auto; margin-top:10px; }
     }
   </style>
 </head>
 
 <body>
-  <div class="os" role="application" aria-label="Yohan OS Calendar v2.1.1">
+  <div class="wrap">
+    <div class="card">
 
-    <div class="topbar">
-      <div class="brand">
-        <div class="dots" aria-hidden="true">
-          <div class="dot pink"></div>
-          <div class="dot"></div>
-          <div class="dot"></div>
-        </div>
-        <div class="titlewrap">
-          <div class="osname">YOHAN OS / DASHBOARD</div>
-          <div class="monthyear" id="monthyear">----</div>
-        </div>
-      </div>
-
-      <div class="controls">
-        <button class="btn" id="prev" aria-label="Previous Month">◀</button>
-        <button class="btn today" id="todayBtn" aria-label="Go Today">TODAY</button>
-        <button class="btn" id="next" aria-label="Next Month">▶</button>
-      </div>
-    </div>
-
-    <div class="status">
-      <div class="chip">PICKED: <b id="pickedText">NONE</b></div>
-      <div class="accent">MODE: YOHAN OS</div>
-    </div>
-
-    <div class="tabs" id="tabs">
-      <button class="tabBtn active" data-tab="calendar">CALENDAR</button>
-      <button class="tabBtn" data-tab="routine">ROUTINE</button>
-      <button class="tabBtn" data-tab="todo">TODO</button>
-    </div>
-
-    <div class="main">
-      <section class="cal" id="calendarSection">
-        <div class="dowGrid" id="dow"></div>
-        <div class="daysGrid" id="days"></div>
-      </section>
-
-      <aside class="side" id="routineSection">
-        <div class="sideTitle">
-          <h3>THIS WEEK ROUTINE</h3>
-          <div class="weekBadge" id="weekBadge">WEEK --</div>
-        </div>
-
-        <div class="rlist">
-          <div class="ritem" id="card_workout">
-            <label class="pxCheck" aria-label="workout checkbox">
-              <input type="checkbox" id="wk_workout">
-              <span class="mark"></span>
-            </label>
-            <div class="rlabel">
-              <b>WORKOUT</b>
-              <span>운동 1회 이상</span>
-            </div>
+      <div class="topline">
+        <div class="brand">
+          <div class="dots">
+            <div class="dot"></div><div class="dot"></div><div class="dot"></div>
           </div>
-
-          <div class="ritem" id="card_reading">
-            <label class="pxCheck" aria-label="reading checkbox">
-              <input type="checkbox" id="wk_reading">
-              <span class="mark"></span>
-            </label>
-            <div class="rlabel">
-              <b>READING</b>
-              <span>독서 10p 이상</span>
-            </div>
-          </div>
-
-          <div class="ritem" id="card_budget">
-            <label class="pxCheck" aria-label="budget checkbox">
-              <input type="checkbox" id="wk_budget">
-              <span class="mark"></span>
-            </label>
-            <div class="rlabel">
-              <b>BUDGET</b>
-              <span>가계부 기록</span>
-            </div>
+          <div class="title">
+            <div class="mini">YOHAN OS / DASHBOARD</div>
+            <div class="big" id="monthLabel">----</div>
           </div>
         </div>
 
-        <div class="miniBtnRow">
-          <button class="miniBtn" id="resetWeek">RESET</button>
-          <button class="miniBtn primary" id="fillWeek">ALL</button>
-        </div>
-      </aside>
-    </div>
-
-    <div class="foot">
-      <span>NOTION EMBED SAFE</span>
-      <span>v2.1.1</span>
-    </div>
-  </div>
-
-  <div class="todoOverlay" id="todoOverlay" aria-hidden="true">
-    <section class="todoModal" id="todoPanel" aria-label="Todo Modal">
-      <div class="todoHead">
-        <h3 id="todoTitle">TODAY TASKS</h3>
-        <button class="closeBtn" id="closeTodo">CLOSE</button>
-      </div>
-
-      <div class="tlist">
-        <div class="titem">
-          <label class="pxCheck" aria-label="todo 1 checkbox">
-            <input type="checkbox" id="t1_done">
-            <span class="mark"></span>
-          </label>
-          <input type="text" id="t1_text" placeholder="Task 1 (클릭해서 입력)" maxlength="40">
-        </div>
-
-        <div class="titem">
-          <label class="pxCheck" aria-label="todo 2 checkbox">
-            <input type="checkbox" id="t2_done">
-            <span class="mark"></span>
-          </label>
-          <input type="text" id="t2_text" placeholder="Task 2" maxlength="40">
-        </div>
-
-        <div class="titem">
-          <label class="pxCheck" aria-label="todo 3 checkbox">
-            <input type="checkbox" id="t3_done">
-            <span class="mark"></span>
-          </label>
-          <input type="text" id="t3_text" placeholder="Task 3" maxlength="40">
+        <div class="controls">
+          <button class="btn icon" id="prevBtn">◀</button>
+          <button class="btn" id="todayBtn">TODAY</button>
+          <button class="btn icon" id="nextBtn">▶</button>
         </div>
       </div>
-    </section>
+
+      <div class="divider"></div>
+
+      <div class="main">
+        <!-- left -->
+        <div class="leftcol">
+          <div class="badge-row">
+            <div class="picked">
+              <div class="k">PICKED:</div>
+              <div class="v" id="pickedLabel">NONE</div>
+            </div>
+            <div class="mode">MODE: YOHAN OS</div>
+          </div>
+
+          <div class="calendar">
+            <div class="dow">
+              <div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div>
+            </div>
+            <div class="grid" id="grid"></div>
+          </div>
+        </div>
+
+        <!-- right -->
+        <div class="side">
+          <div class="side-head">
+            <div class="h">THIS WEEK ROUTINE</div>
+            <div class="weekchip" id="weekChip">WEEK --</div>
+          </div>
+
+          <div class="routine">
+            <div class="rbox">
+              <div class="chk" id="r_workout"></div>
+              <div class="rtext">
+                <div class="rt">WORKOUT</div>
+                <div class="rd">운동 1회 이상</div>
+              </div>
+            </div>
+
+            <div class="rbox">
+              <div class="chk" id="r_reading"></div>
+              <div class="rtext">
+                <div class="rt">READING</div>
+                <div class="rd">독서 10P 이상</div>
+              </div>
+            </div>
+
+            <div class="rbox">
+              <div class="chk" id="r_budget"></div>
+              <div class="rtext">
+                <div class="rt">BUDGET</div>
+                <div class="rd">가계부 기록</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="side-actions">
+            <button class="btn" id="resetRoutineBtn">RESET</button>
+            <button class="btn" id="allRoutineBtn">ALL</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ✅ Dim -->
+      <div class="sheet-dim" id="dim"></div>
+
+      <!-- ✅ Bottom Sheet -->
+      <div class="tasks-sheet" id="tasksPanel">
+        <div class="tasks-head">
+          <div class="t" id="tasksTitle">TODAY TASKS</div>
+          <button class="btn" id="closeTasksBtn">CLOSE</button>
+        </div>
+
+        <div class="tasks-body">
+          <div class="tasklist">
+            <div class="task">
+              <div class="chk" data-taskcheck="0"></div>
+              <input type="text" id="task1" placeholder="TASK 1 (클릭해서 입력)" />
+            </div>
+            <div class="task">
+              <div class="chk" data-taskcheck="1"></div>
+              <input type="text" id="task2" placeholder="TASK 2" />
+            </div>
+            <div class="task">
+              <div class="chk" data-taskcheck="2"></div>
+              <input type="text" id="task3" placeholder="TASK 3" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="foot">
+        <div class="left">NOTION EMBED SAFE</div>
+        <div class="right">v2.3</div>
+      </div>
+
+    </div>
   </div>
 
   <script>
-    // ========= Helpers =========
-    const pad2 = (n) => String(n).padStart(2,"0");
-    const keyOf = (y,m,d) => `${y}-${pad2(m+1)}-${pad2(d)}`;
+    (function(){
+      const $ = (id) => document.getElementById(id);
 
-    function isSameDay(a, b){
-      return a.getFullYear()===b.getFullYear() &&
-        a.getMonth()===b.getMonth() &&
-        a.getDate()===b.getDate();
-    }
+      const monthLabel = $("monthLabel");
+      const pickedLabel = $("pickedLabel");
+      const grid = $("grid");
 
-    // ISO Week Number
-    function getISOWeek(date){
-      const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-      const dayNum = d.getUTCDay() || 7;
-      d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-      const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-      const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-      return { year: d.getUTCFullYear(), week: weekNo };
-    }
+      const prevBtn = $("prevBtn");
+      const nextBtn = $("nextBtn");
+      const todayBtn = $("todayBtn");
 
-    // localStorage wrapper
-    const store = {
-      get(k, fallback=null){
-        try{
-          const v = localStorage.getItem(k);
-          return v ? JSON.parse(v) : fallback;
-        }catch(e){
-          return fallback;
-        }
-      },
-      set(k, v){
-        localStorage.setItem(k, JSON.stringify(v));
+      const tasksPanel = $("tasksPanel");
+      const tasksTitle = $("tasksTitle");
+      const closeTasksBtn = $("closeTasksBtn");
+      const dim = $("dim");
+
+      const taskInputs = [ $("task1"), $("task2"), $("task3") ];
+
+      const rWorkout = $("r_workout");
+      const rReading = $("r_reading");
+      const rBudget = $("r_budget");
+      const resetRoutineBtn = $("resetRoutineBtn");
+      const allRoutineBtn = $("allRoutineBtn");
+      const weekChip = $("weekChip");
+
+      const KEY = "yohan_os_calendar_v23";
+
+      const months = [
+        "JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE",
+        "JULY","AUGUST","SEPTEMBER","OCTOBER","NOVEMBER","DECEMBER"
+      ];
+
+      const pad2 = (n) => String(n).padStart(2,"0");
+      const fmt = (d) => `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+
+      function getWeekNumber(date){
+        const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+        const dayNum = d.getUTCDay() || 7;
+        d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+        const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+        return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
       }
-    };
 
-    // ========= Elements =========
-    const monthyearEl = document.getElementById("monthyear");
-    const pickedText = document.getElementById("pickedText");
+      function load(){
+        try{ return JSON.parse(localStorage.getItem(KEY)) || null; }
+        catch(e){ return null; }
+      }
 
-    const dowEl = document.getElementById("dow");
-    const daysEl = document.getElementById("days");
+      function save(){
+        localStorage.setItem(KEY, JSON.stringify(state));
+      }
 
-    const todoOverlay = document.getElementById("todoOverlay");
-    const todoTitle = document.getElementById("todoTitle");
-    const closeTodoBtn = document.getElementById("closeTodo");
-
-    const t1_done = document.getElementById("t1_done");
-    const t2_done = document.getElementById("t2_done");
-    const t3_done = document.getElementById("t3_done");
-    const t1_text = document.getElementById("t1_text");
-    const t2_text = document.getElementById("t2_text");
-    const t3_text = document.getElementById("t3_text");
-
-    const weekBadge = document.getElementById("weekBadge");
-    const wk_workout = document.getElementById("wk_workout");
-    const wk_reading = document.getElementById("wk_reading");
-    const wk_budget  = document.getElementById("wk_budget");
-    const resetWeekBtn = document.getElementById("resetWeek");
-    const fillWeekBtn  = document.getElementById("fillWeek");
-
-    const card_workout = document.getElementById("card_workout");
-    const card_reading = document.getElementById("card_reading");
-    const card_budget  = document.getElementById("card_budget");
-
-    // Tabs
-    const tabs = document.getElementById("tabs");
-    const tabBtns = Array.from(document.querySelectorAll(".tabBtn"));
-    const calendarSection = document.getElementById("calendarSection");
-    const routineSection  = document.getElementById("routineSection");
-
-    // ========= Calendar state =========
-    const DOW = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
-    const MONTHS = ["JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE","JULY","AUGUST","SEPTEMBER","OCTOBER","NOVEMBER","DECEMBER"];
-
-    const view = new Date();
-    const realToday = new Date();
-    let selectedKey = "";
-
-    // ========= Weekly Routine =========
-    function getWeekKey(){
-      const w = getISOWeek(new Date());
-      return `yohan_week_${w.year}_W${pad2(w.week)}`;
-    }
-
-    function applyRoutineCardStates(){
-      card_workout.classList.toggle("checked", wk_workout.checked);
-      card_reading.classList.toggle("checked", wk_reading.checked);
-      card_budget.classList.toggle("checked", wk_budget.checked);
-    }
-
-    function loadWeeklyRoutine(){
-      const w = getISOWeek(new Date());
-      weekBadge.textContent = `WEEK ${pad2(w.week)}`;
-
-      const wkKey = getWeekKey();
-      const data = store.get(wkKey, { workout:false, reading:false, budget:false });
-
-      wk_workout.checked = !!data.workout;
-      wk_reading.checked = !!data.reading;
-      wk_budget.checked  = !!data.budget;
-
-      applyRoutineCardStates();
-    }
-
-    function saveWeeklyRoutine(){
-      const wkKey = getWeekKey();
-      store.set(wkKey, {
-        workout: wk_workout.checked,
-        reading: wk_reading.checked,
-        budget: wk_budget.checked
-      });
-      applyRoutineCardStates();
-    }
-
-    wk_workout.addEventListener("change", saveWeeklyRoutine);
-    wk_reading.addEventListener("change", saveWeeklyRoutine);
-    wk_budget.addEventListener("change", saveWeeklyRoutine);
-
-    resetWeekBtn.addEventListener("click", () => {
-      wk_workout.checked = false;
-      wk_reading.checked = false;
-      wk_budget.checked  = false;
-      saveWeeklyRoutine();
-    });
-
-    fillWeekBtn.addEventListener("click", () => {
-      wk_workout.checked = true;
-      wk_reading.checked = true;
-      wk_budget.checked  = true;
-      saveWeeklyRoutine();
-    });
-
-    // ========= Todo (per date) =========
-    function todoStorageKey(dateKey){
-      return `yohan_todo_${dateKey}`;
-    }
-
-    function loadTodo(dateKey){
-      const data = store.get(todoStorageKey(dateKey), {
-        t1:{done:false,text:""},
-        t2:{done:false,text:""},
-        t3:{done:false,text:""}
-      });
-
-      t1_done.checked = !!data.t1.done;
-      t2_done.checked = !!data.t2.done;
-      t3_done.checked = !!data.t3.done;
-
-      t1_text.value = data.t1.text || "";
-      t2_text.value = data.t2.text || "";
-      t3_text.value = data.t3.text || "";
-    }
-
-    function saveTodo(dateKey){
-      store.set(todoStorageKey(dateKey), {
-        t1:{ done: t1_done.checked, text: t1_text.value.trim() },
-        t2:{ done: t2_done.checked, text: t2_text.value.trim() },
-        t3:{ done: t3_done.checked, text: t3_text.value.trim() }
-      });
-    }
-
-    function bindTodoAutosave(){
-      const handler = () => {
-        if(!selectedKey) return;
-        saveTodo(selectedKey);
+      const now = new Date();
+      let state = load() || {
+        viewYear: now.getFullYear(),
+        viewMonth: now.getMonth(),
+        picked: null,
+        tasks: {},
+        routine: { workout:false, reading:false, budget:false }
       };
 
-      t1_done.addEventListener("change", handler);
-      t2_done.addEventListener("change", handler);
-      t3_done.addEventListener("change", handler);
-
-      t1_text.addEventListener("input", handler);
-      t2_text.addEventListener("input", handler);
-      t3_text.addEventListener("input", handler);
-    }
-
-    function openTodoFor(dateKey){
-      todoTitle.textContent = `TODAY TASKS / ${dateKey}`;
-      todoOverlay.style.display = "flex";
-      todoOverlay.setAttribute("aria-hidden", "false");
-      loadTodo(dateKey);
-    }
-
-    function closeTodo(){
-      todoOverlay.style.display = "none";
-      todoOverlay.setAttribute("aria-hidden", "true");
-    }
-
-    closeTodoBtn.addEventListener("click", closeTodo);
-
-    todoOverlay.addEventListener("click", (e) => {
-      if(e.target === todoOverlay) closeTodo();
-    });
-
-    window.addEventListener("keydown", (e) => {
-      if(e.key === "Escape" && todoOverlay.style.display === "flex"){
-        closeTodo();
+      function setRoutineUI(){
+        rWorkout.classList.toggle("on", !!state.routine.workout);
+        rReading.classList.toggle("on", !!state.routine.reading);
+        rBudget.classList.toggle("on", !!state.routine.budget);
       }
-      if(e.key === "ArrowLeft"){
-        view.setMonth(view.getMonth() - 1);
-        renderCalendar();
+
+      function setWeekChip(){
+        const ref = state.picked ? new Date(state.picked) : new Date(state.viewYear, state.viewMonth, 1);
+        const w = getWeekNumber(ref);
+        weekChip.textContent = `WEEK ${pad2(w)}`;
       }
-      if(e.key === "ArrowRight"){
-        view.setMonth(view.getMonth() + 1);
-        renderCalendar();
+
+      function render(){
+        monthLabel.textContent = `${state.viewYear} ${months[state.viewMonth]}`;
+        pickedLabel.textContent = state.picked ? state.picked : "NONE";
+        setWeekChip();
+
+        const first = new Date(state.viewYear, state.viewMonth, 1);
+        const firstDay = first.getDay();
+        const lastDate = new Date(state.viewYear, state.viewMonth+1, 0).getDate();
+
+        const todayStr = fmt(new Date());
+        grid.innerHTML = "";
+
+        for(let i=0;i<firstDay;i++){
+          const e = document.createElement("div");
+          e.className = "cell empty";
+          grid.appendChild(e);
+        }
+
+        for(let d=1; d<=lastDate; d++){
+          const dateObj = new Date(state.viewYear, state.viewMonth, d);
+          const dateStr = fmt(dateObj);
+
+          const cell = document.createElement("div");
+          cell.className = "cell";
+          cell.textContent = d;
+
+          const dow = dateObj.getDay();
+          if(dow === 0) cell.classList.add("sun");
+          if(dow === 6) cell.classList.add("sat");
+          if(dow === 0 || dow === 6) cell.classList.add("weekend");
+
+          if(dateStr === todayStr) cell.classList.add("today");
+          if(state.picked === dateStr) cell.classList.add("selected");
+
+          cell.addEventListener("click", ()=>{
+            state.picked = dateStr;
+            pickedLabel.textContent = dateStr;
+
+            openTasks(dateStr);
+            save();
+            render();
+          });
+
+          grid.appendChild(cell);
+        }
       }
-    });
 
-    // ========= Render =========
-    function renderDOW(){
-      dowEl.innerHTML = "";
-      DOW.forEach((d, idx) => {
-        const div = document.createElement("div");
-        div.className = "dowChip";
-        div.textContent = d;
+      function ensureTask(dateStr){
+        if(!state.tasks[dateStr]){
+          state.tasks[dateStr] = { text:["","",""], done:[false,false,false] };
+        }
+        return state.tasks[dateStr];
+      }
 
-        if(idx === 0) div.classList.add("sun");
-        if(idx === 6) div.classList.add("sat");
+      function openTasks(dateStr){
+        const t = ensureTask(dateStr);
 
-        dowEl.appendChild(div);
+        tasksTitle.textContent = `TODAY TASKS / ${dateStr}`;
+        tasksPanel.classList.add("open");
+        dim.classList.add("on");
+
+        for(let i=0;i<3;i++){
+          taskInputs[i].value = t.text[i] || "";
+          const chk = tasksPanel.querySelector(`.chk[data-taskcheck="${i}"]`);
+          chk.classList.toggle("on", !!t.done[i]);
+        }
+      }
+
+      function closeTasks(){
+        tasksPanel.classList.remove("open");
+        dim.classList.remove("on");
+      }
+
+      // month controls
+      prevBtn.addEventListener("click", ()=>{
+        state.viewMonth--;
+        if(state.viewMonth < 0){ state.viewMonth = 11; state.viewYear--; }
+        save(); render();
       });
-    }
 
-    function renderCalendar(){
-      const y = view.getFullYear();
-      const m = view.getMonth(); // ✅ 버그 수정: const m
+      nextBtn.addEventListener("click", ()=>{
+        state.viewMonth++;
+        if(state.viewMonth > 11){ state.viewMonth = 0; state.viewYear++; }
+        save(); render();
+      });
 
-      monthyearEl.textContent = `${y} ${MONTHS[m]}`;
+      todayBtn.addEventListener("click", ()=>{
+        const t = new Date();
+        state.viewYear = t.getFullYear();
+        state.viewMonth = t.getMonth();
+        state.picked = fmt(t);
+        save();
+        render();
+        openTasks(state.picked);
+      });
 
-      const firstDay = new Date(y, m, 1).getDay();
-      const lastDate = new Date(y, m + 1, 0).getDate();
+      closeTasksBtn.addEventListener("click", closeTasks);
+      dim.addEventListener("click", closeTasks);
 
-      daysEl.innerHTML = "";
+      window.addEventListener("keydown", (e)=>{
+        if(e.key === "Escape") closeTasks();
+      });
 
-      for(let i=0;i<firstDay;i++){
-        const div = document.createElement("div");
-        div.className = "cell empty";
-        daysEl.appendChild(div);
-      }
-
-      for(let d=1; d<=lastDate; d++){
-        const dateObj = new Date(y, m, d);
-        const div = document.createElement("div");
-        div.className = "cell";
-        div.textContent = d;
-
-        const dow = dateObj.getDay();
-        if(dow===0) div.classList.add("sun");
-        if(dow===6) div.classList.add("sat");
-
-        if(isSameDay(dateObj, realToday)){
-          div.classList.add("today");
-        }
-
-        const k = keyOf(y,m,d);
-        if(k === selectedKey){
-          div.classList.add("selected");
-        }
-
-        div.addEventListener("click", () => {
-          selectedKey = k;
-          pickedText.textContent = k;
-          renderCalendar();
-          openTodoFor(k);
-
-          if(window.matchMedia("(max-width: 720px)").matches){
-            setActiveTab("todo");
-          }
+      // task save
+      taskInputs.forEach((inp, idx)=>{
+        inp.addEventListener("input", ()=>{
+          if(!state.picked) return;
+          const t = ensureTask(state.picked);
+          t.text[idx] = inp.value;
+          save();
         });
+      });
 
-        daysEl.appendChild(div);
-      }
-    }
+      // task checkbox
+      tasksPanel.addEventListener("click", (e)=>{
+        const chk = e.target.closest(".chk");
+        if(!chk) return;
 
-    // ========= Buttons =========
-    document.getElementById("prev").addEventListener("click", () => {
-      view.setMonth(view.getMonth() - 1);
-      renderCalendar();
-    });
+        const i = chk.getAttribute("data-taskcheck");
+        if(i === null) return;
+        if(!state.picked) return;
 
-    document.getElementById("next").addEventListener("click", () => {
-      view.setMonth(view.getMonth() + 1);
-      renderCalendar();
-    });
+        const t = ensureTask(state.picked);
+        const n = Number(i);
 
-    document.getElementById("todayBtn").addEventListener("click", () => {
-      view.setFullYear(realToday.getFullYear());
-      view.setMonth(realToday.getMonth());
-      selectedKey = keyOf(realToday.getFullYear(), realToday.getMonth(), realToday.getDate());
-      pickedText.textContent = selectedKey;
-      renderCalendar();
-      openTodoFor(selectedKey);
+        t.done[n] = !t.done[n];
+        chk.classList.toggle("on", t.done[n]);
+        save();
+      });
 
-      if(window.matchMedia("(max-width: 720px)").matches){
-        setActiveTab("todo");
-      }
-    });
+      // routine toggles
+      rWorkout.addEventListener("click", ()=>{ state.routine.workout = !state.routine.workout; setRoutineUI(); save(); });
+      rReading.addEventListener("click", ()=>{ state.routine.reading = !state.routine.reading; setRoutineUI(); save(); });
+      rBudget.addEventListener("click", ()=>{ state.routine.budget = !state.routine.budget; setRoutineUI(); save(); });
 
-    // ========= Mobile Tabs =========
-    function setActiveTab(tabName){
-      tabBtns.forEach(b => b.classList.toggle("active", b.dataset.tab === tabName));
+      resetRoutineBtn.addEventListener("click", ()=>{
+        state.routine.workout=false;
+        state.routine.reading=false;
+        state.routine.budget=false;
+        setRoutineUI(); save();
+      });
 
-      if(tabName === "calendar"){
-        calendarSection.style.display = "block";
-        routineSection.style.display  = "none";
-        closeTodo();
-      }
-      if(tabName === "routine"){
-        calendarSection.style.display = "none";
-        routineSection.style.display  = "block";
-        closeTodo();
-      }
-      if(tabName === "todo"){
-        calendarSection.style.display = "block";
-        routineSection.style.display  = "none";
-        if(selectedKey){
-          openTodoFor(selectedKey);
-        }else{
-          selectedKey = keyOf(realToday.getFullYear(), realToday.getMonth(), realToday.getDate());
-          pickedText.textContent = selectedKey;
-          view.setFullYear(realToday.getFullYear());
-          view.setMonth(realToday.getMonth());
-          renderCalendar();
-          openTodoFor(selectedKey);
-        }
-      }
-    }
+      allRoutineBtn.addEventListener("click", ()=>{
+        state.routine.workout=true;
+        state.routine.reading=true;
+        state.routine.budget=true;
+        setRoutineUI(); save();
+      });
 
-    tabBtns.forEach(btn => {
-      btn.addEventListener("click", () => setActiveTab(btn.dataset.tab));
-    });
+      // init
+      setRoutineUI();
+      render();
 
-    function syncLayoutForScreen(){
-      const isMobile = window.matchMedia("(max-width: 720px)").matches;
-      if(isMobile){
-        setActiveTab("calendar");
-      }else{
-        calendarSection.style.display = "block";
-        routineSection.style.display  = "block";
-        closeTodo();
-        tabBtns.forEach(b => b.classList.remove("active"));
-        if(tabBtns[0]) tabBtns[0].classList.add("active");
-      }
-    }
-
-    window.addEventListener("resize", syncLayoutForScreen);
-
-    // ========= Init =========
-    renderDOW();
-    renderCalendar();
-    loadWeeklyRoutine();
-    bindTodoAutosave();
-    syncLayoutForScreen();
+    })();
   </script>
 </body>
 </html>
+
+
+
 
