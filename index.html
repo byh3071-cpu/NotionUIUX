@@ -165,38 +165,67 @@
       color:var(--text);
     }
 
-    /* ✅ 하단 배지(사각형) - 완료/총 개수 */
-    .badgeBase{
+    /* =========================
+       ✅ 하단 코너 "대각선 세모 배지" (겹침 해결)
+       - 좌하단: 완료
+       - 우하단: 총
+    ========================= */
+
+    /* ✅ 우하단: 총 개수(세모) */
+    .countBadge{
       position:absolute;
-      bottom:6px;
+      bottom:0;
+      right:0;
       width:18px;
-      height:16px;
+      height:18px;
+
+      /* 우하단 코너 삼각형 */
+      clip-path: polygon(100% 100%, 0 100%, 100% 0);
+
+      background: var(--accent);
+      color:#0b0c10;
+
       display:flex;
-      align-items:center;
-      justify-content:center;
+      align-items:flex-end;
+      justify-content:flex-end;
+
       font-size:9px;
       line-height:1;
-      border-radius:0;
+      padding:0 3px 2px 0;
+
+      box-shadow: inset 0 0 0 2px rgba(11,12,16,.25);
       user-select:none;
+      pointer-events:none;
     }
 
-    /* ✅ 좌하단: 완료 개수 */
+    /* ✅ 좌하단: 완료 개수(세모) */
     .doneBadge{
-      left:6px;
-      border:2px solid rgba(124,199,255,.45);
-      background: rgba(124,199,255,.12);
+      position:absolute;
+      bottom:0;
+      left:0;
+      width:18px;
+      height:18px;
+
+      /* 좌하단 코너 삼각형 */
+      clip-path: polygon(0 100%, 0 0, 100% 100%);
+
+      background: rgba(124,199,255,.22);
       color: var(--accent);
+
+      display:flex;
+      align-items:flex-end;
+      justify-content:flex-start;
+
+      font-size:9px;
+      line-height:1;
+      padding:0 0 2px 3px;
+
+      box-shadow: inset 0 0 0 2px rgba(124,199,255,.25);
+      user-select:none;
+      pointer-events:none;
     }
 
-    /* ✅ 우하단: 총 개수 */
-    .countBadge{
-      right:6px;
-      border:2px solid var(--accent);
-      background:#0e1016;
-      color: var(--text);
-    }
-
-    /* ✅ 하트는 하단 중앙 */
+    /* ✅ 하트는 하단 중앙 (완료 상태만 표시) */
     .heartMarker{
       position:absolute;
       left:50%;
@@ -477,7 +506,7 @@
       a.getMonth() === b.getMonth() &&
       a.getDate() === b.getDate();
 
-    const STORE_KEY = "pixel_calendar_tasks_v3_bottomBadges";
+    const STORE_KEY = "pixel_calendar_tasks_v4_bottomTriangles";
 
     function loadAll(){
       try{ return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; }
@@ -570,21 +599,22 @@
         if(tasks.length > 0){
           const total = tasks.length;
           const done = tasks.filter(t => t.done).length;
+
           const fmt = (n) => (n > 9 ? "9+" : String(n));
 
-          // ✅ 좌하단: 완료 개수
+          // ✅ 좌하단: 완료 개수(세모)
           const doneBadge = document.createElement("div");
-          doneBadge.className = "badgeBase doneBadge";
+          doneBadge.className = "doneBadge";
           doneBadge.textContent = fmt(done);
           cell.appendChild(doneBadge);
 
-          // ✅ 우하단: 총 개수
+          // ✅ 우하단: 총 개수(세모)
           const totalBadge = document.createElement("div");
-          totalBadge.className = "badgeBase countBadge";
+          totalBadge.className = "countBadge";
           totalBadge.textContent = fmt(total);
           cell.appendChild(totalBadge);
 
-          // ✅ 하트(전부 완료면 ♥, 아니면 ♡)
+          // ✅ 하트: 전부 완료면 ♥ / 미완료 포함이면 ♡
           const allDone = done === total;
           const heart = document.createElement("div");
           heart.className = "heartMarker";
