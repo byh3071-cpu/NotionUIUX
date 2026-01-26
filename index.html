@@ -2,8 +2,8 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Yohan OS Calendar v2</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Yohan OS Calendar v2.1</title>
   <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
 
   <style>
@@ -27,9 +27,15 @@
       --radiusSm:12px;
 
       --pad:10px;
+
+      --blue:#3c66b4;
+      --red:#b43c64;
+      --gridGap:8px;
+
+      --glow: 0 0 0 2px rgba(255,111,164,0.30), 0 0 0 6px rgba(255,111,164,0.14);
     }
 
-    /* ✅ 노션/임베드에서 내부 스크롤 금지 */
+    /* ✅ 노션 임베드 내부 스크롤 방지 */
     html, body{
       width:100%;
       height:100%;
@@ -55,10 +61,10 @@
       box-shadow: 6px 6px 0 var(--shadow);
       padding: var(--pad);
       position:relative;
-      overflow:hidden; /* 내부에서도 스크롤 금지 */
+      overflow:hidden;
     }
 
-    /* ✅ 상단 OS 바 */
+    /* ===== Topbar ===== */
     .topbar{
       display:flex;
       align-items:center;
@@ -139,13 +145,14 @@
       min-width:74px;
     }
 
-    /* ✅ 상태바 */
+    /* ===== Status row ===== */
     .status{
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:10px;
       padding: 0 8px 10px 8px;
+      flex-wrap:wrap;
     }
 
     .chip{
@@ -178,7 +185,38 @@
       white-space:nowrap;
     }
 
-    /* ✅ 메인 레이아웃: 달력 + 주간루틴 */
+    /* ===== Mobile Tabs ===== */
+    .tabs{
+      display:none;
+      padding: 0 8px 10px 8px;
+      gap:8px;
+    }
+    .tabBtn{
+      flex:1;
+      border:2px solid var(--border);
+      background:#fff;
+      border-radius: 14px;
+      padding: 8px 10px;
+      font-family:'Silkscreen', cursive;
+      font-size:11px;
+      cursor:pointer;
+      box-shadow: 3px 3px 0 var(--shadow);
+      user-select:none;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+    }
+    .tabBtn.active{
+      background: var(--pinkSoft);
+      box-shadow: 3px 3px 0 var(--shadow), var(--glow);
+    }
+    .tabBtn:active{
+      transform: translate(1px,1px);
+      box-shadow: 2px 2px 0 var(--shadow);
+    }
+
+    /* ===== Main Layout ===== */
     .main{
       display:flex;
       gap:10px;
@@ -186,28 +224,41 @@
       align-items:flex-start;
     }
 
-    /* 왼쪽: 달력 */
     .cal{
       flex: 1 1 420px;
       min-width: 320px;
     }
 
-    .grid{
+    /* ===== DOW Chips ===== */
+    .dowGrid{
       display:grid;
       grid-template-columns: repeat(7, 1fr);
-      gap: 6px;
+      gap: var(--gridGap);
+      margin-bottom: 8px;
     }
-
-    .dow{
+    .dowChip{
+      border:2px solid #f0f0f0;
+      background:#fff;
+      border-radius: 999px;
+      padding: 6px 0;
+      text-align:center;
       font-size:10px;
       color: var(--muted);
-      text-align:center;
-      padding:6px 0;
       user-select:none;
+      box-shadow: 2px 2px 0 var(--shadow);
+    }
+    .dowChip.sun{ color: var(--red); border-color:#ffd7e6; background:#fff8fb; }
+    .dowChip.sat{ color: var(--blue); border-color:#dbe6ff; background:#f7faff; }
+
+    /* ===== Calendar cells ===== */
+    .daysGrid{
+      display:grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: var(--gridGap);
     }
 
     .cell{
-      height:34px;
+      height:36px;
       border:2px solid var(--cellBorder);
       border-radius: var(--radiusSm);
       display:flex;
@@ -225,26 +276,45 @@
       border-color:#ffd1e2;
       transform: translateY(-1px);
     }
+
     .cell.empty{
       border-color:transparent;
       background:transparent;
       cursor:default;
     }
+
+    /* ✅ 오늘(today) */
     .cell.today{
       border-color: var(--border);
       background: var(--pink);
       color:#fff;
       box-shadow: 2px 2px 0 rgba(0,0,0,0.12);
     }
+
+    /* ✅ 선택(selected) - 더 강하게 */
     .cell.selected{
       border-color: var(--border);
       background: var(--pinkSoft);
-      box-shadow: 2px 2px 0 var(--shadow);
+      box-shadow: 2px 2px 0 var(--shadow), var(--glow);
+      transform: translateY(-1px);
     }
-    .cell.sun{ color:#b43c64; }
-    .cell.sat{ color:#3c66b4; }
 
-    /* ✅ 오른쪽: 이번 주 루틴 체크 */
+    /* ✅ 선택 점 표시 */
+    .cell.selected::after{
+      content:"";
+      position:absolute;
+      bottom:6px;
+      width:6px;
+      height:6px;
+      border-radius:2px;
+      background: var(--pink);
+      box-shadow: 1px 1px 0 rgba(0,0,0,0.10);
+    }
+
+    .cell.sun{ color: var(--red); }
+    .cell.sat{ color: var(--blue); }
+
+    /* ===== Side Routine Panel ===== */
     .side{
       width: 240px;
       flex: 0 0 240px;
@@ -252,13 +322,14 @@
       border-radius: var(--radius);
       padding:10px;
       background:#fff;
+      box-shadow: 2px 2px 0 var(--shadow);
     }
 
     .sideTitle{
       display:flex;
       align-items:center;
       justify-content:space-between;
-      margin-bottom:8px;
+      margin-bottom:10px;
       gap:10px;
     }
 
@@ -278,12 +349,13 @@
       padding:5px 8px;
       background:#fff;
       white-space:nowrap;
+      box-shadow: 2px 2px 0 var(--shadow);
     }
 
     .rlist{
       display:flex;
       flex-direction:column;
-      gap:8px;
+      gap:10px;
     }
 
     .ritem{
@@ -292,15 +364,48 @@
       gap:10px;
       border:2px solid #f3f3f3;
       background:#fff;
-      padding:8px 10px;
+      padding:10px 10px;
       border-radius:14px;
+      position:relative;
+      transition: 0.08s;
+    }
+    .ritem:hover{
+      border-color:#ffd7e6;
+      background:#fff8fb;
     }
 
-    .ritem input[type="checkbox"]{
+    /* ✅ 픽셀 체크박스 커스텀 */
+    .pxCheck{
       width:18px;
       height:18px;
-      accent-color: var(--pink);
+      border:2px solid var(--border);
+      border-radius:5px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
       cursor:pointer;
+      box-shadow: 2px 2px 0 var(--shadow);
+      background:#fff;
+      flex-shrink:0;
+      position:relative;
+    }
+    .pxCheck input{
+      position:absolute;
+      inset:0;
+      opacity:0;
+      margin:0;
+      cursor:pointer;
+    }
+    .pxCheck .mark{
+      width:10px;
+      height:10px;
+      border-radius:3px;
+      background: transparent;
+      transition: 0.08s;
+    }
+    .pxCheck input:checked + .mark{
+      background: var(--pink);
+      box-shadow: 0 0 0 2px rgba(255,111,164,0.18);
     }
 
     .rlabel{
@@ -309,15 +414,14 @@
       gap:2px;
       min-width:0;
     }
-
     .rlabel b{
       font-size:11px;
       color:var(--ink);
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
+      letter-spacing:0.2px;
     }
-
     .rlabel span{
       font-size:9px;
       color:var(--muted);
@@ -326,10 +430,17 @@
       text-overflow:ellipsis;
     }
 
+    /* ✅ 체크되면 카드도 핑크 강조 */
+    .ritem.checked{
+      border-color: var(--border);
+      background: var(--pinkSoft);
+      box-shadow: 2px 2px 0 var(--shadow), var(--glow);
+    }
+
     .miniBtnRow{
       display:flex;
-      gap:8px;
-      margin-top:10px;
+      gap:10px;
+      margin-top:12px;
     }
 
     .miniBtn{
@@ -337,7 +448,7 @@
       border:2px solid var(--border);
       background:#fff;
       border-radius:14px;
-      padding:7px 10px;
+      padding:8px 10px;
       font-family:'Silkscreen', cursive;
       font-size:11px;
       cursor:pointer;
@@ -348,15 +459,42 @@
       transform: translate(1px,1px);
       box-shadow: 2px 2px 0 var(--shadow);
     }
+    .miniBtn.primary{
+      background: var(--chip);
+    }
 
-    /* ✅ 아래: 오늘의 할 일 3개 패널 */
-    .todoPanel{
-      margin: 6px 6px 0 6px;
-      border:2px solid #efefef;
-      border-radius: var(--radius);
-      padding:10px;
+    /* ===== Footer ===== */
+    .foot{
+      padding: 6px 8px 2px 8px;
+      font-size:9px;
+      color:#c0c0c0;
+      user-select:none;
+      display:flex;
+      justify-content:space-between;
+      gap:8px;
+    }
+
+    /* ===== TODO Modal ===== */
+    .todoOverlay{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index: 9999;
+      padding: 14px;
+    }
+
+    .todoModal{
+      width: min(560px, 100%);
       background:#fff;
-      display:none; /* 날짜 클릭하면 열림 */
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 6px 6px 0 var(--shadow);
+      padding: 12px;
+      max-height: min(520px, 90vh);
+      overflow:auto;
     }
 
     .todoHead{
@@ -364,7 +502,9 @@
       align-items:center;
       justify-content:space-between;
       gap:10px;
-      margin-bottom:8px;
+      margin-bottom:10px;
+      padding-bottom:10px;
+      border-bottom: 2px dashed #efefef;
     }
 
     .todoHead h3{
@@ -374,13 +514,14 @@
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
+      letter-spacing:0.3px;
     }
 
-    .todoHead .closeBtn{
+    .closeBtn{
       border:2px solid var(--border);
       background:#fff;
       border-radius:14px;
-      padding:6px 10px;
+      padding:7px 10px;
       font-family:'Silkscreen', cursive;
       font-size:11px;
       cursor:pointer;
@@ -388,7 +529,7 @@
       user-select:none;
       white-space:nowrap;
     }
-    .todoHead .closeBtn:active{
+    .closeBtn:active{
       transform: translate(1px,1px);
       box-shadow: 2px 2px 0 var(--shadow);
     }
@@ -396,7 +537,8 @@
     .tlist{
       display:flex;
       flex-direction:column;
-      gap:8px;
+      gap:10px;
+      margin-top: 10px;
     }
 
     .titem{
@@ -405,16 +547,13 @@
       gap:10px;
       border:2px solid #f3f3f3;
       border-radius:14px;
-      padding:8px 10px;
+      padding:10px 10px;
       background:#fff;
+      transition: 0.08s;
     }
-
-    .titem input[type="checkbox"]{
-      width:18px;
-      height:18px;
-      accent-color: var(--pink);
-      cursor:pointer;
-      flex-shrink:0;
+    .titem:hover{
+      border-color:#ffd7e6;
+      background:#fff8fb;
     }
 
     .titem input[type="text"]{
@@ -427,30 +566,29 @@
       color:var(--ink);
       min-width:0;
     }
-
     .titem input[type="text"]::placeholder{
       color:#c2c2c2;
     }
 
-    .foot{
-      padding: 6px 8px 2px 8px;
-      font-size:9px;
-      color:#c0c0c0;
-      user-select:none;
-      display:flex;
-      justify-content:space-between;
-      gap:8px;
-    }
-
-    /* ✅ 작아지면 사이드가 아래로 내려가게 */
+    /* ===== Responsive ===== */
     @media (max-width: 720px){
+      .tabs{ display:flex; }
+
+      /* 모바일에서는 탭으로 번갈아 보여주기 */
       .main{ flex-direction:column; }
-      .side{ width:100%; flex: 1 1 auto; }
+      .side{
+        width:100%;
+        flex: 1 1 auto;
+        display:none; /* 기본 숨김, 탭으로 표시 */
+      }
+      .cal{
+        min-width: 0;
+      }
     }
 
     @media (max-width: 360px){
       .monthyear{ font-size:16px; }
-      .cell{ height:32px; font-size:11px; }
+      .cell{ height:34px; font-size:11px; }
       .btn{ padding:6px 8px; min-width:40px; }
       .btn.today{ min-width:68px; }
     }
@@ -458,8 +596,9 @@
 </head>
 
 <body>
-  <div class="os" role="application" aria-label="Yohan OS Calendar v2">
+  <div class="os" role="application" aria-label="Yohan OS Calendar v2.1">
 
+    <!-- Topbar -->
     <div class="topbar">
       <div class="brand">
         <div class="dots" aria-hidden="true">
@@ -480,62 +619,85 @@
       </div>
     </div>
 
+    <!-- Status -->
     <div class="status">
-      <div class="chip">
-        PICKED: <b id="pickedText">NONE</b>
-      </div>
+      <div class="chip">PICKED: <b id="pickedText">NONE</b></div>
       <div class="accent">MODE: YOHAN OS</div>
     </div>
 
+    <!-- Mobile Tabs -->
+    <div class="tabs" id="tabs">
+      <button class="tabBtn active" data-tab="calendar">CALENDAR</button>
+      <button class="tabBtn" data-tab="routine">ROUTINE</button>
+      <button class="tabBtn" data-tab="todo">TODO</button>
+    </div>
+
+    <!-- Main -->
     <div class="main">
-      <!-- 왼쪽: 달력 -->
-      <section class="cal">
-        <div class="grid" id="dow"></div>
-        <div class="grid" id="days"></div>
+      <!-- Calendar -->
+      <section class="cal" id="calendarSection">
+        <div class="dowGrid" id="dow"></div>
+        <div class="daysGrid" id="days"></div>
       </section>
 
-      <!-- 오른쪽: 이번 주 루틴 -->
-      <aside class="side">
+      <!-- Routine -->
+      <aside class="side" id="routineSection">
         <div class="sideTitle">
           <h3>THIS WEEK ROUTINE</h3>
           <div class="weekBadge" id="weekBadge">WEEK --</div>
         </div>
 
         <div class="rlist">
-          <label class="ritem">
-            <input type="checkbox" id="wk_workout">
+          <div class="ritem" id="card_workout">
+            <label class="pxCheck" aria-label="workout checkbox">
+              <input type="checkbox" id="wk_workout">
+              <span class="mark"></span>
+            </label>
             <div class="rlabel">
               <b>WORKOUT</b>
               <span>운동 1회 이상</span>
             </div>
-          </label>
+          </div>
 
-          <label class="ritem">
-            <input type="checkbox" id="wk_reading">
+          <div class="ritem" id="card_reading">
+            <label class="pxCheck" aria-label="reading checkbox">
+              <input type="checkbox" id="wk_reading">
+              <span class="mark"></span>
+            </label>
             <div class="rlabel">
               <b>READING</b>
               <span>독서 10p 이상</span>
             </div>
-          </label>
+          </div>
 
-          <label class="ritem">
-            <input type="checkbox" id="wk_budget">
+          <div class="ritem" id="card_budget">
+            <label class="pxCheck" aria-label="budget checkbox">
+              <input type="checkbox" id="wk_budget">
+              <span class="mark"></span>
+            </label>
             <div class="rlabel">
               <b>BUDGET</b>
               <span>가계부 기록</span>
             </div>
-          </label>
+          </div>
         </div>
 
         <div class="miniBtnRow">
           <button class="miniBtn" id="resetWeek">RESET</button>
-          <button class="miniBtn" id="fillWeek">ALL</button>
+          <button class="miniBtn primary" id="fillWeek">ALL</button>
         </div>
       </aside>
     </div>
 
-    <!-- 아래: 오늘의 할 일 3개 -->
-    <section class="todoPanel" id="todoPanel">
+    <div class="foot">
+      <span>NOTION EMBED SAFE</span>
+      <span>v2.1</span>
+    </div>
+  </div>
+
+  <!-- ✅ TODO Modal Overlay -->
+  <div class="todoOverlay" id="todoOverlay" aria-hidden="true">
+    <section class="todoModal" id="todoPanel" aria-label="Todo Modal">
       <div class="todoHead">
         <h3 id="todoTitle">TODAY TASKS</h3>
         <button class="closeBtn" id="closeTodo">CLOSE</button>
@@ -543,32 +705,34 @@
 
       <div class="tlist">
         <div class="titem">
-          <input type="checkbox" id="t1_done">
+          <label class="pxCheck" aria-label="todo 1 checkbox">
+            <input type="checkbox" id="t1_done">
+            <span class="mark"></span>
+          </label>
           <input type="text" id="t1_text" placeholder="Task 1 (클릭해서 입력)" maxlength="40">
         </div>
 
         <div class="titem">
-          <input type="checkbox" id="t2_done">
+          <label class="pxCheck" aria-label="todo 2 checkbox">
+            <input type="checkbox" id="t2_done">
+            <span class="mark"></span>
+          </label>
           <input type="text" id="t2_text" placeholder="Task 2" maxlength="40">
         </div>
 
         <div class="titem">
-          <input type="checkbox" id="t3_done">
+          <label class="pxCheck" aria-label="todo 3 checkbox">
+            <input type="checkbox" id="t3_done">
+            <span class="mark"></span>
+          </label>
           <input type="text" id="t3_text" placeholder="Task 3" maxlength="40">
         </div>
       </div>
     </section>
-
-    <div class="foot">
-      <span>NOTION EMBED SAFE</span>
-      <span>v2.0</span>
-    </div>
   </div>
 
   <script>
-    // -----------------------------
-    // Helpers
-    // -----------------------------
+    // ========= Helpers =========
     const pad2 = (n) => String(n).padStart(2,"0");
     const keyOf = (y,m,d) => `${y}-${pad2(m+1)}-${pad2(d)}`;
 
@@ -578,7 +742,7 @@
         a.getDate()===b.getDate();
     }
 
-    // ISO Week Number (간단 구현)
+    // ISO Week Number
     function getISOWeek(date){
       const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
       const dayNum = d.getUTCDay() || 7;
@@ -603,15 +767,14 @@
       }
     };
 
-    // -----------------------------
-    // Elements
-    // -----------------------------
+    // ========= Elements =========
     const monthyearEl = document.getElementById("monthyear");
-    const dowEl = document.getElementById("dow");
-    const daysEl = document.getElementById("days");
     const pickedText = document.getElementById("pickedText");
 
-    const todoPanel = document.getElementById("todoPanel");
+    const dowEl = document.getElementById("dow");
+    const daysEl = document.getElementById("days");
+
+    const todoOverlay = document.getElementById("todoOverlay");
     const todoTitle = document.getElementById("todoTitle");
     const closeTodoBtn = document.getElementById("closeTodo");
 
@@ -629,22 +792,34 @@
     const resetWeekBtn = document.getElementById("resetWeek");
     const fillWeekBtn  = document.getElementById("fillWeek");
 
-    // -----------------------------
-    // Calendar state
-    // -----------------------------
+    const card_workout = document.getElementById("card_workout");
+    const card_reading = document.getElementById("card_reading");
+    const card_budget  = document.getElementById("card_budget");
+
+    // Tabs
+    const tabs = document.getElementById("tabs");
+    const tabBtns = tabs ? Array.from(document.querySelectorAll(".tabBtn")) : [];
+    const calendarSection = document.getElementById("calendarSection");
+    const routineSection  = document.getElementById("routineSection");
+
+    // ========= Calendar state =========
     const DOW = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
     const MONTHS = ["JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE","JULY","AUGUST","SEPTEMBER","OCTOBER","NOVEMBER","DECEMBER"];
 
     const view = new Date();
     const realToday = new Date();
-    let selectedKey = ""; // YYYY-MM-DD
+    let selectedKey = "";
 
-    // -----------------------------
-    // Routine (weekly) storage
-    // -----------------------------
+    // ========= Weekly Routine =========
     function getWeekKey(){
       const w = getISOWeek(new Date());
       return `yohan_week_${w.year}_W${pad2(w.week)}`;
+    }
+
+    function applyRoutineCardStates(){
+      card_workout.classList.toggle("checked", wk_workout.checked);
+      card_reading.classList.toggle("checked", wk_reading.checked);
+      card_budget.classList.toggle("checked", wk_budget.checked);
     }
 
     function loadWeeklyRoutine(){
@@ -657,6 +832,8 @@
       wk_workout.checked = !!data.workout;
       wk_reading.checked = !!data.reading;
       wk_budget.checked  = !!data.budget;
+
+      applyRoutineCardStates();
     }
 
     function saveWeeklyRoutine(){
@@ -666,6 +843,7 @@
         reading: wk_reading.checked,
         budget: wk_budget.checked
       });
+      applyRoutineCardStates();
     }
 
     wk_workout.addEventListener("change", saveWeeklyRoutine);
@@ -686,9 +864,7 @@
       saveWeeklyRoutine();
     });
 
-    // -----------------------------
-    // Todo (per date) storage
-    // -----------------------------
+    // ========= Todo (per date) =========
     function todoStorageKey(dateKey){
       return `yohan_todo_${dateKey}`;
     }
@@ -734,30 +910,57 @@
 
     function openTodoFor(dateKey){
       todoTitle.textContent = `TODAY TASKS / ${dateKey}`;
-      todoPanel.style.display = "block";
+      todoOverlay.style.display = "flex";
+      todoOverlay.setAttribute("aria-hidden", "false");
       loadTodo(dateKey);
     }
 
-    closeTodoBtn.addEventListener("click", () => {
-      todoPanel.style.display = "none";
+    function closeTodo(){
+      todoOverlay.style.display = "none";
+      todoOverlay.setAttribute("aria-hidden", "true");
+    }
+
+    closeTodoBtn.addEventListener("click", closeTodo);
+
+    // overlay 바깥 클릭 닫기
+    todoOverlay.addEventListener("click", (e) => {
+      if(e.target === todoOverlay) closeTodo();
     });
 
-    // -----------------------------
-    // Render Calendar
-    // -----------------------------
+    // ESC 닫기
+    window.addEventListener("keydown", (e) => {
+      if(e.key === "Escape" && todoOverlay.style.display === "flex"){
+        closeTodo();
+      }
+      // 월 이동 단축키
+      if(e.key === "ArrowLeft"){
+        view.setMonth(view.getMonth() - 1);
+        renderCalendar();
+      }
+      if(e.key === "ArrowRight"){
+        view.setMonth(view.getMonth() + 1);
+        renderCalendar();
+      }
+    });
+
+    // ========= Render =========
     function renderDOW(){
       dowEl.innerHTML = "";
-      DOW.forEach(d => {
+      DOW.forEach((d, idx) => {
         const div = document.createElement("div");
-        div.className = "dow";
+        div.className = "dowChip";
         div.textContent = d;
+
+        if(idx === 0) div.classList.add("sun");
+        if(idx === 6) div.classList.add("sat");
+
         dowEl.appendChild(div);
       });
     }
 
     function renderCalendar(){
       const y = view.getFullYear();
-      const m = view.getMonth();
+      const = view.getMonth();
 
       monthyearEl.textContent = `${y} ${MONTHS[m]}`;
 
@@ -766,19 +969,21 @@
 
       daysEl.innerHTML = "";
 
+      // blanks
       for(let i=0;i<firstDay;i++){
         const div = document.createElement("div");
         div.className = "cell empty";
         daysEl.appendChild(div);
       }
 
+      // days
       for(let d=1; d<=lastDate; d++){
         const dateObj = new Date(y, m, d);
         const div = document.createElement("div");
         div.className = "cell";
         div.textContent = d;
 
-        const dow = new Date(y, m, d).getDay();
+        const dow = dateObj.getDay();
         if(dow===0) div.classList.add("sun");
         if(dow===6) div.classList.add("sat");
 
@@ -795,16 +1000,19 @@
           selectedKey = k;
           pickedText.textContent = k;
           renderCalendar();
-          openTodoFor(k); // ✅ 날짜 클릭하면 아래 패널 열림
+          openTodoFor(k);
+
+          // 모바일 탭이 TODO로 자동 전환되게(원하면)
+          if(window.matchMedia("(max-width: 720px)").matches){
+            setActiveTab("todo");
+          }
         });
 
         daysEl.appendChild(div);
       }
     }
 
-    // -----------------------------
-    // Buttons
-    // -----------------------------
+    // ========= Buttons =========
     document.getElementById("prev").addEventListener("click", () => {
       view.setMonth(view.getMonth() - 1);
       renderCalendar();
@@ -822,15 +1030,72 @@
       pickedText.textContent = selectedKey;
       renderCalendar();
       openTodoFor(selectedKey);
+
+      if(window.matchMedia("(max-width: 720px)").matches){
+        setActiveTab("todo");
+      }
     });
 
-    // -----------------------------
-    // Init
-    // -----------------------------
+    // ========= Mobile Tabs Logic =========
+    function setActiveTab(tabName){
+      // tabName: calendar | routine | todo
+      tabBtns.forEach(b => b.classList.toggle("active", b.dataset.tab === tabName));
+
+      if(tabName === "calendar"){
+        calendarSection.style.display = "block";
+        routineSection.style.display  = "none";
+        closeTodo();
+      }
+      if(tabName === "routine"){
+        calendarSection.style.display = "none";
+        routineSection.style.display  = "block";
+        closeTodo();
+      }
+      if(tabName === "todo"){
+        // 캘린더는 보조로 숨기고, TODO는 모달을 열어주기
+        calendarSection.style.display = "block";
+        routineSection.style.display  = "none";
+        if(selectedKey){
+          openTodoFor(selectedKey);
+        }else{
+          // 선택 없으면 오늘로 자동 선택
+          selectedKey = keyOf(realToday.getFullYear(), realToday.getMonth(), realToday.getDate());
+          pickedText.textContent = selectedKey;
+          view.setFullYear(realToday.getFullYear());
+          view.setMonth(realToday.getMonth());
+          renderCalendar();
+          openTodoFor(selectedKey);
+        }
+      }
+    }
+
+    tabBtns.forEach(btn => {
+      btn.addEventListener("click", () => setActiveTab(btn.dataset.tab));
+    });
+
+    function syncLayoutForScreen(){
+      const isMobile = window.matchMedia("(max-width: 720px)").matches;
+      if(isMobile){
+        // 탭 UI 활성화, 기본은 calendar
+        setActiveTab("calendar");
+      }else{
+        // 데스크탑: 둘 다 표시
+        calendarSection.style.display = "block";
+        routineSection.style.display  = "block";
+        // 탭 버튼 상태 초기화
+        tabBtns.forEach(b => b.classList.remove("active"));
+        if(tabBtns[0]) tabBtns[0].classList.add("active");
+      }
+    }
+
+    window.addEventListener("resize", syncLayoutForScreen);
+
+    // ========= Init =========
     renderDOW();
     renderCalendar();
     loadWeeklyRoutine();
     bindTodoAutosave();
+    syncLayoutForScreen();
   </script>
 </body>
 </html>
