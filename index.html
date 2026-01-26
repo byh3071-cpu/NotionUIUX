@@ -12,51 +12,58 @@
       --bg:#ffffff;
       --ink:#111;
       --muted:#9aa0a6;
-      --line:#e7e7e7;
+      --line:#e8e8e8;
+      --soft:#f7f7f7;
       --pink:#f09ab1;
       --pink2:#ffe2ea;
       --shadow:rgba(0,0,0,.06);
+
+      --border:#1d1d1d;
+      --radius:28px;
+
+      /* ✅ base size (이 크기를 기준으로 자동 스케일) */
+      --baseW:1060;
+      --baseH:720;
     }
 
     *{ box-sizing:border-box; }
+
     html, body{
       margin:0;
       padding:0;
-      background:var(--bg);
+      width:100%;
+      height:100%;
+      background:transparent; /* ✅ 노션 임베드 배경 */
       font-family:'Silkscreen', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
       color:var(--ink);
       overflow:hidden;
     }
 
-    /* =========================================
-       ✅ 노션 임베드 "자동 스케일링" 핵심 구조
-       - stage는 고정 디자인 사이즈
-       - viewport에 맞춰 JS가 scale 조정
-       ========================================= */
-    #viewport{
+    /* ✅ stage: iframe 안에서 꽉차게 + scale 대상 */
+    .stage{
       width:100vw;
       height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
       overflow:hidden;
-      position:relative;
-      background:var(--bg);
+      background:transparent;
     }
-    #stage{
-      position:absolute;
-      left:0; top:0;
+
+    /* ✅ scale wrapper */
+    .scaleWrap{
       transform-origin: top left;
       will-change: transform;
     }
 
-    /* ✅ 고정 디자인 원본 크기 (여기 기준으로 스케일됨) */
     .card{
-      width: 1020px;
-      height: 680px;
-
+      width: calc(var(--baseW) * 1px);
+      height: calc(var(--baseH) * 1px);
       background:#fff;
-      border:3px solid #1d1d1d;
-      border-radius:28px;
+      border:3px solid var(--border);
+      border-radius:var(--radius);
       box-shadow:8px 10px 0 var(--shadow);
-      padding:12px 12px 10px;
+      padding:16px 16px 12px;
       position:relative;
       overflow:hidden;
     }
@@ -66,8 +73,8 @@
       display:flex;
       align-items:flex-start;
       justify-content:space-between;
-      gap:10px;
-      margin-bottom:8px;
+      gap:12px;
+      margin-bottom:10px;
     }
     .brand{
       display:flex;
@@ -82,10 +89,11 @@
     }
     .dot{
       width:18px; height:18px;
-      border:3px solid #1d1d1d;
+      border:3px solid var(--border);
       border-radius:7px;
       background:#fff;
     }
+
     .title{ line-height:1.1; }
     .title .mini{
       font-size:12px;
@@ -93,7 +101,7 @@
       letter-spacing:1px;
     }
     .title .big{
-      font-size:24px;
+      font-size:26px;
       letter-spacing:2px;
       margin-top:2px;
     }
@@ -101,43 +109,34 @@
     .controls{
       display:flex;
       align-items:center;
-      gap:8px;
+      gap:10px;
     }
 
     .btn{
-      border:3px solid #1d1d1d;
+      border:3px solid var(--border);
       background:#fff;
       border-radius:18px;
-      padding:9px 14px;
+      padding:10px 16px;
       font-size:14px;
       cursor:pointer;
       box-shadow:3px 4px 0 var(--shadow);
       user-select:none;
     }
-    .btn:active{
-      transform:translateY(1px);
-      box-shadow:2px 3px 0 var(--shadow);
-    }
-    .btn.icon{
-      width:52px;
-      padding:9px 0;
-      display:flex;
-      justify-content:center;
-    }
+    .btn:active{ transform:translateY(1px); box-shadow:2px 3px 0 var(--shadow); }
+    .btn.icon{ width:54px; padding:10px 0; display:flex; justify-content:center; }
 
     .divider{
       width:100%;
       border-top:3px dashed var(--line);
-      margin:8px 0 10px;
+      margin:10px 0 12px;
     }
 
     .main{
       display:grid;
-      grid-template-columns: 1fr 320px;
-      gap:10px;
+      grid-template-columns: 1fr 340px;
+      gap:14px;
       align-items:start;
-      height: calc(100% - 104px);
-      overflow:hidden;
+      height: calc(100% - 110px);
     }
 
     /* left */
@@ -146,18 +145,21 @@
       overflow:hidden;
       display:flex;
       flex-direction:column;
+      gap:10px;
+      padding-right:2px;
     }
+
     .badge-row{
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap:10px;
-      margin-bottom:8px;
+      gap:12px;
     }
+
     .picked{
       border:3px solid var(--line);
       border-radius:18px;
-      padding:8px 12px;
+      padding:10px 14px;
       display:flex;
       gap:10px;
       align-items:center;
@@ -175,27 +177,26 @@
     }
 
     .mode{
-      border:3px solid #1d1d1d;
+      border:3px solid var(--border);
       border-radius:20px;
-      padding:8px 14px;
+      padding:10px 16px;
       background:var(--pink2);
       box-shadow:3px 4px 0 var(--shadow);
       font-size:14px;
       letter-spacing:1px;
-      white-space:nowrap;
     }
 
     .calendar{
-      padding:6px 4px 4px;
       flex:1;
       overflow:hidden;
+      padding:4px 6px 6px;
     }
 
     .dow{
       display:grid;
       grid-template-columns:repeat(7, 1fr);
-      gap:8px;
-      padding:6px 8px 8px;
+      gap:10px;
+      padding:6px 10px 10px;
       color:var(--muted);
       font-size:12px;
       letter-spacing:2px;
@@ -205,74 +206,71 @@
     .grid{
       display:grid;
       grid-template-columns:repeat(7, 1fr);
-      gap:8px;
-      padding:0 8px 8px;
+      gap:12px;
+      padding:0 10px 6px;
     }
 
-    /* ✅ 날짜칸 */
     .cell{
-      height:50px;
+      position:relative;
+      height:56px;
       border:3px solid var(--line);
       border-radius:16px;
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size:15px;
+      font-size:16px;
       cursor:pointer;
       background:#fff;
       transition:transform .06s ease;
       user-select:none;
-      position:relative; /* ✅ 점 표시용 */
     }
     .cell:hover{ transform:translateY(-1px); }
-
     .cell.empty{
       border-color:transparent;
       background:transparent;
       cursor:default;
     }
     .cell.today{
-      border-color:#1d1d1d;
+      border-color:var(--border);
       background:var(--pink2);
     }
     .cell.selected{
-      border-color:#1d1d1d;
+      border-color:var(--border);
       background:var(--pink);
       color:#fff;
     }
-    .cell.weekend{ color:#7b7b7b; }
     .cell.sun{ color:#b84a5a; }
     .cell.sat{ color:#3b66d6; }
 
-    /* ✅ 할 일 존재하면 작은 점 표시 */
+    /* ✅ 날짜 점 표시 */
     .cell.hasDot::after{
       content:"";
       position:absolute;
-      bottom:6px;
-      left:50%;
-      transform:translateX(-50%);
       width:7px;
       height:7px;
       border-radius:50%;
-      background:#111;
-      opacity:.35;
+      background:var(--border);
+      bottom:7px;
+      left:50%;
+      transform:translateX(-50%);
+      opacity:.55;
     }
-    /* 선택된 날짜는 점이 더 잘 보이게 */
     .cell.selected.hasDot::after{
-      opacity:.6;
       background:#fff;
+      opacity:.9;
     }
 
-    /* right */
+    /* right side */
     .side{
       border:3px solid var(--line);
       border-radius:24px;
-      padding:12px;
+      padding:14px;
       background:#fff;
+      height:100%;
       overflow:hidden;
       display:flex;
       flex-direction:column;
-      gap:10px;
+      gap:12px;
     }
 
     .side-head{
@@ -280,16 +278,15 @@
       align-items:center;
       justify-content:space-between;
       gap:10px;
-      margin-bottom:6px;
     }
     .side-head .h{
-      font-size:15px;
+      font-size:16px;
       letter-spacing:2px;
     }
     .weekchip{
       border:3px solid var(--line);
       border-radius:16px;
-      padding:7px 10px;
+      padding:8px 10px;
       color:var(--muted);
       font-size:12px;
       letter-spacing:1px;
@@ -305,7 +302,7 @@
     .rbox{
       border:3px solid var(--line);
       border-radius:20px;
-      padding:12px;
+      padding:14px;
       display:flex;
       gap:12px;
       align-items:center;
@@ -314,7 +311,7 @@
 
     .chk{
       width:24px; height:24px;
-      border:3px solid #1d1d1d;
+      border:3px solid var(--border);
       border-radius:7px;
       background:#fff;
       display:flex;
@@ -322,7 +319,6 @@
       justify-content:center;
       cursor:pointer;
       flex:0 0 auto;
-      user-select:none;
     }
     .chk.on{
       background:var(--pink2);
@@ -348,49 +344,63 @@
 
     .side-actions{
       display:flex;
-      gap:10px;
-      margin-top:2px;
+      gap:12px;
     }
     .side-actions .btn{
       flex:1;
-      padding:11px 10px;
+      padding:12px 10px;
     }
 
-    /* ✅ 오늘의 루틴 박스(선택 날짜 있을 때만 표시) */
-    .todayBox{
-      border:3px solid #1d1d1d;
-      border-radius:24px;
+    /* ✅ 오늘의 루틴(선택 날짜 기준) */
+    .todayPanel{
+      border:3px solid var(--border);
+      border-radius:22px;
       padding:12px;
       background:#fff;
-      display:none;
+      overflow:hidden;
+      flex:1; /* ✅ 밑 공간 꽉 채워서 짤림 방지 */
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      min-height:0;
     }
-    .todayBox.show{ display:block; }
-
-    .todayHead{
+    .todayPanelHead{
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:10px;
-      margin-bottom:10px;
     }
-    .todayHead .t{
+    .todayPanelHead .t{
       font-size:14px;
       letter-spacing:2px;
     }
-    .todayDate{
+    .todayChip{
       border:3px solid var(--line);
       border-radius:16px;
       padding:6px 10px;
       color:var(--muted);
       font-size:12px;
       letter-spacing:1px;
+      background:#fff;
+      max-width:130px;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    .todayList{
+      overflow:auto; /* ✅ 여기만 스크롤 */
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      padding-right:2px;
+      min-height:0;
     }
 
-    /* footer */
+    /* foot */
     .foot{
       position:absolute;
-      left:12px;
-      right:12px;
+      left:16px;
+      right:16px;
       bottom:8px;
       display:flex;
       gap:10px;
@@ -402,132 +412,140 @@
     .foot .left{ flex:1; }
     .foot .right{ text-align:right; }
 
-    /* =========================
-       ✅ TODAY TASKS 중앙 모달
-       ========================= */
+    /* ======================
+       ✅ TASK MODAL (CENTER)
+       ====================== */
     .dim{
       position:absolute;
       inset:0;
-      background:rgba(0,0,0,.14);
+      background:rgba(0,0,0,.18);
       opacity:0;
       pointer-events:none;
-      transition:opacity .15s ease;
-      z-index:4;
+      transition:opacity .14s ease;
     }
     .dim.on{
       opacity:1;
       pointer-events:auto;
     }
 
-    .tasks-modal{
+    .modal{
       position:absolute;
       left:50%;
       top:50%;
-      transform:translate(-50%,-50%) scale(.98);
-      width:900px;
-      max-height:420px;
+      transform:translate(-50%, -44%) scale(.98);
+      width: min(760px, calc(100% - 36px));
+      max-height: min(520px, calc(100% - 140px));
       background:#fff;
-      border:3px solid #1d1d1d;
+      border:3px solid var(--border);
       border-radius:24px;
-      box-shadow:10px 12px 0 var(--shadow);
+      box-shadow:8px 10px 0 var(--shadow);
       opacity:0;
       pointer-events:none;
-      transition:opacity .16s ease, transform .16s ease;
+      transition:opacity .14s ease, transform .14s ease;
       overflow:hidden;
-      z-index:5;
-    }
-    .tasks-modal.open{
-      opacity:1;
-      pointer-events:auto;
-      transform:translate(-50%,-50%) scale(1);
+      display:flex;
+      flex-direction:column;
     }
 
-    .tasks-head{
+    .modal.open{
+      opacity:1;
+      pointer-events:auto;
+      transform:translate(-50%, -50%) scale(1);
+    }
+
+    .modalHead{
+      padding:12px 14px;
+      border-bottom:3px solid var(--line);
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:10px;
-      padding:12px;
-      border-bottom:3px solid var(--line);
     }
-
-    .tasks-left{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      min-width:0;
-    }
-
-    .tasks-head .t{
+    .modalHead .t{
       font-size:14px;
       letter-spacing:2px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      max-width:420px;
     }
 
-    /* ✅ TASK 추가/삭제 버튼 */
-    .miniBtns{
-      display:flex;
-      gap:8px;
-      align-items:center;
-    }
-    .miniBtn{
-      border:3px solid #1d1d1d;
-      background:#fff;
-      border-radius:14px;
-      padding:7px 10px;
-      font-size:12px;
-      cursor:pointer;
-      box-shadow:3px 4px 0 var(--shadow);
-      user-select:none;
-      white-space:nowrap;
-    }
-    .miniBtn:active{
-      transform:translateY(1px);
-      box-shadow:2px 3px 0 var(--shadow);
-    }
-
-    .tasks-body{
-      padding:12px;
+    .modalBody{
+      padding:12px 14px;
       overflow:auto;
-      max-height:340px;
-    }
-
-    .tasklist{
       display:flex;
       flex-direction:column;
       gap:10px;
     }
 
-    .task{
+    .taskRow{
       border:3px solid var(--line);
       border-radius:18px;
       padding:10px 12px;
       display:flex;
       align-items:center;
-      gap:12px;
+      gap:10px;
       background:#fff;
     }
 
-    .task input[type="text"]{
-      width:100%;
+    .taskRow input{
+      flex:1;
       border:none;
       outline:none;
       font-size:13px;
       letter-spacing:1px;
       background:transparent;
       font-family:system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      min-width:0;
+    }
+
+    .taskDel{
+      border:3px solid var(--border);
+      border-radius:14px;
+      background:#fff;
+      padding:6px 10px;
+      cursor:pointer;
+      box-shadow:2px 3px 0 var(--shadow);
+      font-size:12px;
+      user-select:none;
+    }
+    .taskDel:active{ transform:translateY(1px); box-shadow:1px 2px 0 var(--shadow); }
+
+    .modalActions{
+      display:flex;
+      gap:10px;
+      padding:12px 14px;
+      border-top:3px solid var(--line);
+    }
+    .modalActions .btn{
+      flex:1;
+      padding:12px 10px;
+    }
+
+    /* ✅ 모바일: 스케일 대신 그냥 세로 스크롤 */
+    @media (max-width: 900px){
+      html, body{ overflow:auto; }
+      .stage{ height:auto; }
+      .scaleWrap{ transform:none !important; }
+      .card{
+        width:100%;
+        height:auto;
+        min-height:720px;
+      }
+      .main{ grid-template-columns:1fr; height:auto; }
+      .side{ height:auto; }
+      .foot{ position:relative; left:auto; right:auto; bottom:auto; margin-top:10px; }
+      .modal{
+        position:fixed;
+        left:50%;
+        top:50%;
+      }
     }
   </style>
 </head>
 
 <body>
-  <div id="viewport">
-    <div id="stage">
-      <div class="card">
+  <div class="stage">
+    <div class="scaleWrap" id="scaleWrap">
+      <div class="card" id="card">
 
+        <!-- top -->
         <div class="topline">
           <div class="brand">
             <div class="dots">
@@ -569,54 +587,53 @@
 
           <!-- right -->
           <div class="side">
-            <div>
-              <div class="side-head">
-                <div class="h">THIS WEEK ROUTINE</div>
-                <div class="weekchip" id="weekChip">WEEK --</div>
-              </div>
+            <div class="side-head">
+              <div class="h">THIS WEEK ROUTINE</div>
+              <div class="weekchip" id="weekChip">WEEK --</div>
+            </div>
 
-              <div class="routine">
-                <div class="rbox">
-                  <div class="chk" id="r_workout"></div>
-                  <div class="rtext">
-                    <div class="rt">WORKOUT</div>
-                    <div class="rd">운동 1회 이상</div>
-                  </div>
-                </div>
-
-                <div class="rbox">
-                  <div class="chk" id="r_reading"></div>
-                  <div class="rtext">
-                    <div class="rt">READING</div>
-                    <div class="rd">독서 10P 이상</div>
-                  </div>
-                </div>
-
-                <div class="rbox">
-                  <div class="chk" id="r_budget"></div>
-                  <div class="rtext">
-                    <div class="rt">BUDGET</div>
-                    <div class="rd">가계부 기록</div>
-                  </div>
+            <!-- weekly routine -->
+            <div class="routine">
+              <div class="rbox">
+                <div class="chk" id="r_workout"></div>
+                <div class="rtext">
+                  <div class="rt">WORKOUT</div>
+                  <div class="rd">운동 1회 이상</div>
                 </div>
               </div>
 
-              <div class="side-actions">
-                <button class="btn" id="resetRoutineBtn">RESET</button>
-                <button class="btn" id="allRoutineBtn">ALL</button>
+              <div class="rbox">
+                <div class="chk" id="r_reading"></div>
+                <div class="rtext">
+                  <div class="rt">READING</div>
+                  <div class="rd">독서 10P 이상</div>
+                </div>
+              </div>
+
+              <div class="rbox">
+                <div class="chk" id="r_budget"></div>
+                <div class="rtext">
+                  <div class="rt">BUDGET</div>
+                  <div class="rd">가계부 기록</div>
+                </div>
               </div>
             </div>
 
-            <!-- ✅ 선택한 날짜일 때만 보이는 "오늘의 루틴(5개)" -->
-            <div class="todayBox" id="todayBox">
-              <div class="todayHead">
+            <div class="side-actions">
+              <button class="btn" id="resetRoutineBtn">RESET</button>
+              <button class="btn" id="allRoutineBtn">ALL</button>
+            </div>
+
+            <!-- ✅ today routine (선택 날짜 기준) -->
+            <div class="todayPanel" id="todayPanel">
+              <div class="todayPanelHead">
                 <div class="t">TODAY ROUTINE</div>
-                <div class="todayDate" id="todayDateChip">----</div>
+                <div class="todayChip" id="todayChip">NO DATE</div>
               </div>
 
-              <div class="routine">
+              <div class="todayList" id="todayList">
                 <div class="rbox">
-                  <div class="chk" data-today="gratitude"></div>
+                  <div class="chk" data-daily="gratitude"></div>
                   <div class="rtext">
                     <div class="rt">GRATITUDE</div>
                     <div class="rd">감사 일기</div>
@@ -624,7 +641,7 @@
                 </div>
 
                 <div class="rbox">
-                  <div class="chk" data-today="emotion"></div>
+                  <div class="chk" data-daily="emotion"></div>
                   <div class="rtext">
                     <div class="rt">EMOTION</div>
                     <div class="rd">감정 일기</div>
@@ -632,7 +649,7 @@
                 </div>
 
                 <div class="rbox">
-                  <div class="chk" data-today="sleep"></div>
+                  <div class="chk" data-daily="sleep"></div>
                   <div class="rtext">
                     <div class="rt">SLEEP</div>
                     <div class="rd">하루 수면 분석</div>
@@ -640,7 +657,7 @@
                 </div>
 
                 <div class="rbox">
-                  <div class="chk" data-today="morning"></div>
+                  <div class="chk" data-daily="morning"></div>
                   <div class="rtext">
                     <div class="rt">MORNING</div>
                     <div class="rd">아침 루티너리</div>
@@ -648,7 +665,7 @@
                 </div>
 
                 <div class="rbox">
-                  <div class="chk" data-today="future"></div>
+                  <div class="chk" data-daily="future"></div>
                   <div class="rtext">
                     <div class="rt">FUTURE</div>
                     <div class="rd">미래 모습 실천 기록</div>
@@ -656,36 +673,31 @@
                 </div>
               </div>
             </div>
-
           </div>
         </div>
 
-        <!-- dim + modal -->
+        <!-- ✅ modal -->
         <div class="dim" id="dim"></div>
 
-        <div class="tasks-modal" id="tasksPanel">
-          <div class="tasks-head">
-            <div class="tasks-left">
-              <div class="t" id="tasksTitle">TODAY TASKS</div>
-
-              <!-- ✅ 사용자가 직접 TASK 입력칸을 늘리고 줄일 수 있게 -->
-              <div class="miniBtns">
-                <button class="miniBtn" id="addTaskBtn">+ TASK</button>
-                <button class="miniBtn" id="removeTaskBtn">- TASK</button>
-              </div>
-            </div>
-
+        <div class="modal" id="taskModal">
+          <div class="modalHead">
+            <div class="t" id="tasksTitle">TODAY TASKS</div>
             <button class="btn" id="closeTasksBtn">CLOSE</button>
           </div>
 
-          <div class="tasks-body">
-            <div class="tasklist" id="taskList"></div>
+          <div class="modalBody" id="taskList">
+            <!-- rows injected -->
+          </div>
+
+          <div class="modalActions">
+            <button class="btn" id="addTaskBtn">+ ADD TASK</button>
+            <button class="btn" id="clearDoneBtn">CLEAR DONE</button>
           </div>
         </div>
 
         <div class="foot">
           <div class="left">NOTION EMBED SAFE</div>
-          <div class="right">v2.8</div>
+          <div class="right">v3.0</div>
         </div>
 
       </div>
@@ -694,38 +706,40 @@
 
   <script>
     (function(){
-      /* ================================
-         ✅ 1) 자동 스케일링 (노션 임베드 꽉 차게)
-         ================================ */
-      const BASE_W = 1020;
-      const BASE_H = 680;
-
-      const viewport = document.getElementById("viewport");
-      const stage = document.getElementById("stage");
-
-      function fitStage(){
-        const vw = viewport.clientWidth;
-        const vh = viewport.clientHeight;
-
-        // 꽉 차게 하되, 비율 유지
-        const scale = Math.min(vw / BASE_W, vh / BASE_H);
-
-        // 가운데 정렬 (남는 공간 중앙)
-        const x = (vw - BASE_W * scale) / 2;
-        const y = (vh - BASE_H * scale) / 2;
-
-        stage.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
-      }
-
-      window.addEventListener("resize", fitStage);
-      fitStage();
-
-
-      /* ================================
-         ✅ 2) 앱 로직
-         ================================ */
       const $ = (id) => document.getElementById(id);
 
+      /* =====================
+         ✅ Auto Scaling
+         ===================== */
+      const scaleWrap = $("scaleWrap");
+      const card = $("card");
+
+      function fit(){
+        // 모바일은 scale 끔
+        if (window.matchMedia("(max-width: 900px)").matches) {
+          scaleWrap.style.transform = "none";
+          return;
+        }
+
+        const baseW = Number(getComputedStyle(document.documentElement).getPropertyValue("--baseW")) || 1060;
+        const baseH = Number(getComputedStyle(document.documentElement).getPropertyValue("--baseH")) || 720;
+
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+
+        const s = Math.min(w / baseW, h / baseH);
+        const tx = (w - baseW * s) / 2;
+        const ty = (h - baseH * s) / 2;
+
+        scaleWrap.style.transform = `translate(${tx}px, ${ty}px) scale(${s})`;
+      }
+
+      window.addEventListener("resize", fit);
+      fit();
+
+      /* =====================
+         ✅ Calendar + State
+         ===================== */
       const monthLabel = $("monthLabel");
       const pickedLabel = $("pickedLabel");
       const grid = $("grid");
@@ -734,26 +748,30 @@
       const nextBtn = $("nextBtn");
       const todayBtn = $("todayBtn");
 
-      const tasksPanel = $("tasksPanel");
-      const tasksTitle = $("tasksTitle");
-      const closeTasksBtn = $("closeTasksBtn");
-      const dim = $("dim");
+      const weekChip = $("weekChip");
 
-      const addTaskBtn = $("addTaskBtn");
-      const removeTaskBtn = $("removeTaskBtn");
-      const taskListEl = $("taskList");
-
+      // weekly routine
       const rWorkout = $("r_workout");
       const rReading = $("r_reading");
       const rBudget = $("r_budget");
       const resetRoutineBtn = $("resetRoutineBtn");
       const allRoutineBtn = $("allRoutineBtn");
-      const weekChip = $("weekChip");
 
-      const todayBox = $("todayBox");
-      const todayDateChip = $("todayDateChip");
+      // today routine
+      const todayChip = $("todayChip");
+      const todayPanel = $("todayPanel");
+      const todayList = $("todayList");
 
-      const KEY = "yohan_os_calendar_v28";
+      // tasks modal
+      const dim = $("dim");
+      const taskModal = $("taskModal");
+      const tasksTitle = $("tasksTitle");
+      const closeTasksBtn = $("closeTasksBtn");
+      const taskList = $("taskList");
+      const addTaskBtn = $("addTaskBtn");
+      const clearDoneBtn = $("clearDoneBtn");
+
+      const KEY = "yohan_os_calendar_v30";
 
       const months = [
         "JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE",
@@ -772,34 +790,63 @@
       }
 
       function load(){
-        try{ return JSON.parse(localStorage.getItem(KEY)) || null; }
+        try { return JSON.parse(localStorage.getItem(KEY)) || null; }
         catch(e){ return null; }
       }
 
-      function save(){ localStorage.setItem(KEY, JSON.stringify(state)); }
+      function save(){
+        localStorage.setItem(KEY, JSON.stringify(state));
+      }
 
       const now = new Date();
-
       let state = load() || {
         viewYear: now.getFullYear(),
         viewMonth: now.getMonth(),
         picked: null,
 
-        // ✅ 날짜별 TASK: 배열 길이가 유동 (사용자가 직접 늘림)
-        tasks: {
-          // "YYYY-MM-DD": { text:[], done:[] }
-        },
+        // ✅ tasks: {date: [{text:"",done:false}, ...]}
+        tasks: {},
 
-        // 주간 루틴(공통)
+        // ✅ weekly routine
         routine: { workout:false, reading:false, budget:false },
 
-        // ✅ 날짜별 오늘의 루틴 5개
-        todayRoutine: {
-          // "YYYY-MM-DD": { gratitude:false, emotion:false, sleep:false, morning:false, future:false }
-        }
+        // ✅ daily routine: {date: {gratitude:false, emotion:false, sleep:false, morning:false, future:false}}
+        daily: {}
       };
 
-      /* ====== UI helpers ====== */
+      function ensureDaily(dateStr){
+        if(!state.daily[dateStr]){
+          state.daily[dateStr] = {
+            gratitude:false,
+            emotion:false,
+            sleep:false,
+            morning:false,
+            future:false
+          };
+        }
+        return state.daily[dateStr];
+      }
+
+      function ensureTasks(dateStr){
+        if(!state.tasks[dateStr]){
+          state.tasks[dateStr] = [
+            { text:"", done:false },
+            { text:"", done:false },
+            { text:"", done:false }
+          ];
+        }
+        return state.tasks[dateStr];
+      }
+
+      function hasAnyContent(dateStr){
+        const t = state.tasks[dateStr];
+        const d = state.daily[dateStr];
+
+        const hasTask = Array.isArray(t) && t.some(x => (x.text && x.text.trim()) || x.done);
+        const hasDaily = d && Object.values(d).some(Boolean);
+        return hasTask || hasDaily;
+      }
+
       function setRoutineUI(){
         rWorkout.classList.toggle("on", !!state.routine.workout);
         rReading.classList.toggle("on", !!state.routine.reading);
@@ -812,40 +859,143 @@
         weekChip.textContent = `WEEK ${pad2(w)}`;
       }
 
-      function ensureTask(dateStr){
-        if(!state.tasks[dateStr]){
-          // 기본 3칸
-          state.tasks[dateStr] = { text:["","",""], done:[false,false,false] };
+      /* =====================
+         ✅ Today Routine Panel
+         ===================== */
+      function renderTodayRoutine(){
+        if(!state.picked){
+          todayChip.textContent = "NO DATE";
+          // 선택 날짜 없으면 패널은 유지하되 체크는 비활성 느낌
+          [...todayList.querySelectorAll('.chk[data-daily]')].forEach(chk=>{
+            chk.classList.remove("on");
+          });
+          return;
         }
-        // 안정성: 길이 맞추기
-        if(!Array.isArray(state.tasks[dateStr].text)) state.tasks[dateStr].text = ["","",""];
-        if(!Array.isArray(state.tasks[dateStr].done)) state.tasks[dateStr].done = state.tasks[dateStr].text.map(()=>false);
 
-        // text/done 길이 동기화
-        while(state.tasks[dateStr].done.length < state.tasks[dateStr].text.length) state.tasks[dateStr].done.push(false);
-        while(state.tasks[dateStr].done.length > state.tasks[dateStr].text.length) state.tasks[dateStr].done.pop();
+        todayChip.textContent = state.picked;
+        const d = ensureDaily(state.picked);
 
-        return state.tasks[dateStr];
+        [...todayList.querySelectorAll('.chk[data-daily]')].forEach(chk=>{
+          const key = chk.getAttribute("data-daily");
+          chk.classList.toggle("on", !!d[key]);
+        });
       }
 
-      function ensureTodayRoutine(dateStr){
-        if(!state.todayRoutine[dateStr]){
-          state.todayRoutine[dateStr] = {
-            gratitude:false, emotion:false, sleep:false, morning:false, future:false
-          };
-        }
-        return state.todayRoutine[dateStr];
+      todayList.addEventListener("click", (e)=>{
+        const chk = e.target.closest('.chk[data-daily]');
+        if(!chk) return;
+        if(!state.picked) return;
+
+        const key = chk.getAttribute("data-daily");
+        const d = ensureDaily(state.picked);
+        d[key] = !d[key];
+        chk.classList.toggle("on", d[key]);
+        save();
+        render(); // dot 업데이트
+      });
+
+      /* =====================
+         ✅ TASK MODAL
+         ===================== */
+      function openTasks(dateStr){
+        state.picked = dateStr;
+        pickedLabel.textContent = dateStr;
+        save();
+
+        tasksTitle.textContent = `TODAY TASKS / ${dateStr}`;
+        dim.classList.add("on");
+        taskModal.classList.add("open");
+
+        buildTaskList(dateStr);
+        renderTodayRoutine();
+        render(); // 선택/점 반영
       }
 
-      function hasAnyTask(dateStr){
-        const t = state.tasks[dateStr];
-        if(!t) return false;
-        const anyText = (t.text || []).some(v => String(v || "").trim().length > 0);
-        const anyDone = (t.done || []).some(Boolean);
-        return anyText || anyDone;
+      function closeTasks(){
+        dim.classList.remove("on");
+        taskModal.classList.remove("open");
       }
 
-      /* ====== Calendar render ====== */
+      function buildTaskList(dateStr){
+        const list = ensureTasks(dateStr);
+        taskList.innerHTML = "";
+
+        list.forEach((item, idx)=>{
+          const row = document.createElement("div");
+          row.className = "taskRow";
+
+          const chk = document.createElement("div");
+          chk.className = "chk";
+          if(item.done) chk.classList.add("on");
+          chk.addEventListener("click", ()=>{
+            item.done = !item.done;
+            chk.classList.toggle("on", item.done);
+            save();
+            render(); // dot update
+          });
+
+          const input = document.createElement("input");
+          input.type = "text";
+          input.value = item.text || "";
+          input.placeholder = `TASK ${idx+1}`;
+          input.addEventListener("input", ()=>{
+            item.text = input.value;
+            save();
+            render(); // dot update
+          });
+
+          const del = document.createElement("button");
+          del.className = "taskDel";
+          del.textContent = "X";
+          del.title = "삭제";
+          del.addEventListener("click", ()=>{
+            // 최소 1개는 유지
+            list.splice(idx, 1);
+            if(list.length === 0){
+              list.push({text:"",done:false});
+            }
+            save();
+            buildTaskList(dateStr);
+            render();
+          });
+
+          row.appendChild(chk);
+          row.appendChild(input);
+          row.appendChild(del);
+
+          taskList.appendChild(row);
+        });
+      }
+
+      addTaskBtn.addEventListener("click", ()=>{
+        if(!state.picked) return;
+        const list = ensureTasks(state.picked);
+        list.push({text:"", done:false});
+        save();
+        buildTaskList(state.picked);
+        render();
+      });
+
+      clearDoneBtn.addEventListener("click", ()=>{
+        if(!state.picked) return;
+        const list = ensureTasks(state.picked);
+        const filtered = list.filter(x => !x.done);
+        state.tasks[state.picked] = filtered.length ? filtered : [{text:"",done:false}];
+        save();
+        buildTaskList(state.picked);
+        render();
+      });
+
+      closeTasksBtn.addEventListener("click", closeTasks);
+      dim.addEventListener("click", closeTasks);
+
+      window.addEventListener("keydown", (e)=>{
+        if(e.key === "Escape") closeTasks();
+      });
+
+      /* =====================
+         ✅ Calendar Render
+         ===================== */
       function render(){
         monthLabel.textContent = `${state.viewYear} ${months[state.viewMonth]}`;
         pickedLabel.textContent = state.picked ? state.picked : "NONE";
@@ -854,8 +1004,8 @@
         const first = new Date(state.viewYear, state.viewMonth, 1);
         const firstDay = first.getDay();
         const lastDate = new Date(state.viewYear, state.viewMonth+1, 0).getDate();
-
         const todayStr = fmt(new Date());
+
         grid.innerHTML = "";
 
         for(let i=0;i<firstDay;i++){
@@ -875,172 +1025,60 @@
           const dow = dateObj.getDay();
           if(dow === 0) cell.classList.add("sun");
           if(dow === 6) cell.classList.add("sat");
-          if(dow === 0 || dow === 6) cell.classList.add("weekend");
 
           if(dateStr === todayStr) cell.classList.add("today");
           if(state.picked === dateStr) cell.classList.add("selected");
 
-          // ✅ 할 일 점 표시
-          if(hasAnyTask(dateStr)) cell.classList.add("hasDot");
+          // ✅ 점 표시
+          if(hasAnyContent(dateStr)) cell.classList.add("hasDot");
 
           cell.addEventListener("click", ()=>{
-            state.picked = dateStr;
-            save();
-            render();
             openTasks(dateStr);
-            showTodayRoutine(dateStr);
           });
 
           grid.appendChild(cell);
         }
 
-        // 선택 날짜 없으면 todayRoutine 숨김
-        if(!state.picked){
-          todayBox.classList.remove("show");
-        }else{
-          showTodayRoutine(state.picked);
-        }
+        // ✅ 오른쪽 today routine도 최신 상태 반영
+        renderTodayRoutine();
       }
 
-      /* ====== Today Routine Panel (Right) ====== */
-      function showTodayRoutine(dateStr){
-        if(!dateStr){
-          todayBox.classList.remove("show");
-          return;
-        }
-        todayBox.classList.add("show");
-        todayDateChip.textContent = dateStr;
-
-        const r = ensureTodayRoutine(dateStr);
-
-        // 체크 상태 반영
-        todayBox.querySelectorAll(".chk[data-today]").forEach(chk=>{
-          const key = chk.getAttribute("data-today");
-          chk.classList.toggle("on", !!r[key]);
-        });
-      }
-
-      todayBox.addEventListener("click", (e)=>{
-        const chk = e.target.closest(".chk[data-today]");
-        if(!chk) return;
-        if(!state.picked) return;
-
-        const key = chk.getAttribute("data-today");
-        const r = ensureTodayRoutine(state.picked);
-        r[key] = !r[key];
-        chk.classList.toggle("on", r[key]);
-        save();
-      });
-
-      /* ====== TASK Modal ====== */
-      function openTasks(dateStr){
-        const t = ensureTask(dateStr);
-        tasksTitle.textContent = `TODAY TASKS / ${dateStr}`;
-
-        tasksPanel.classList.add("open");
-        dim.classList.add("on");
-
-        renderTaskList(dateStr);
-      }
-
-      function closeTasks(){
-        tasksPanel.classList.remove("open");
-        dim.classList.remove("on");
-      }
-
-      function renderTaskList(dateStr){
-        const t = ensureTask(dateStr);
-        taskListEl.innerHTML = "";
-
-        t.text.forEach((val, idx)=>{
-          const row = document.createElement("div");
-          row.className = "task";
-
-          const chk = document.createElement("div");
-          chk.className = "chk";
-          chk.setAttribute("data-taskcheck", String(idx));
-          if(t.done[idx]) chk.classList.add("on");
-
-          const input = document.createElement("input");
-          input.type = "text";
-          input.value = val || "";
-          input.placeholder = `TASK ${idx+1}`;
-
-          input.addEventListener("input", ()=>{
-            const tt = ensureTask(dateStr);
-            tt.text[idx] = input.value;
-            save();
-            render(); // ✅ 점 표시 즉시 갱신
-          });
-
-          chk.addEventListener("click", ()=>{
-            const tt = ensureTask(dateStr);
-            tt.done[idx] = !tt.done[idx];
-            chk.classList.toggle("on", tt.done[idx]);
-            save();
-            render(); // ✅ 점 표시 즉시 갱신
-          });
-
-          row.appendChild(chk);
-          row.appendChild(input);
-          taskListEl.appendChild(row);
-        });
-      }
-
-      // ✅ +TASK 버튼: 사용자가 직접 입력칸 늘림
-      addTaskBtn.addEventListener("click", ()=>{
-        if(!state.picked) return;
-        const t = ensureTask(state.picked);
-        t.text.push("");
-        t.done.push(false);
-        save();
-        renderTaskList(state.picked);
-      });
-
-      // ✅ -TASK 버튼: 마지막 칸 삭제 (최소 1칸은 유지)
-      removeTaskBtn.addEventListener("click", ()=>{
-        if(!state.picked) return;
-        const t = ensureTask(state.picked);
-        if(t.text.length <= 1) return; // 최소 1개는 남김
-        t.text.pop();
-        t.done.pop();
-        save();
-        renderTaskList(state.picked);
-        render();
-      });
-
-      /* ====== Month Controls ====== */
+      /* =====================
+         ✅ Month Controls
+         ===================== */
       prevBtn.addEventListener("click", ()=>{
         state.viewMonth--;
-        if(state.viewMonth < 0){ state.viewMonth = 11; state.viewYear--; }
-        save(); render();
+        if(state.viewMonth < 0){
+          state.viewMonth = 11;
+          state.viewYear--;
+        }
+        save();
+        render();
       });
 
       nextBtn.addEventListener("click", ()=>{
         state.viewMonth++;
-        if(state.viewMonth > 11){ state.viewMonth = 0; state.viewYear++; }
-        save(); render();
+        if(state.viewMonth > 11){
+          state.viewMonth = 0;
+          state.viewYear++;
+        }
+        save();
+        render();
       });
 
       todayBtn.addEventListener("click", ()=>{
         const t = new Date();
         state.viewYear = t.getFullYear();
         state.viewMonth = t.getMonth();
-        state.picked = fmt(t);
+        const d = fmt(t);
         save();
         render();
-        openTasks(state.picked);
-        showTodayRoutine(state.picked);
+        openTasks(d);
       });
 
-      closeTasksBtn.addEventListener("click", closeTasks);
-      dim.addEventListener("click", closeTasks);
-
-      window.addEventListener("keydown", (e)=>{
-        if(e.key === "Escape") closeTasks();
-      });
-
-      /* ====== Weekly Routine Toggles ====== */
+      /* =====================
+         ✅ Weekly Routine
+         ===================== */
       rWorkout.addEventListener("click", ()=>{ state.routine.workout = !state.routine.workout; setRoutineUI(); save(); });
       rReading.addEventListener("click", ()=>{ state.routine.reading = !state.routine.reading; setRoutineUI(); save(); });
       rBudget.addEventListener("click", ()=>{ state.routine.budget = !state.routine.budget; setRoutineUI(); save(); });
@@ -1059,10 +1097,13 @@
         setRoutineUI(); save();
       });
 
-      /* init */
+      // init
       setRoutineUI();
       render();
-      fitStage();
+
+      // ✅ 처음 접속 시: 오늘 날짜 자동 선택하고 싶으면 아래 주석 해제
+      // openTasks(fmt(new Date()));
+
     })();
   </script>
 </body>
