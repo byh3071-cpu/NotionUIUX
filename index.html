@@ -23,12 +23,15 @@
       --radius:22px;
     }
 
-    <script>
-// 페이지 로드 시 URL 체크해서 캐시 방지
-if(!window.location.search) {
-  window.location.href = window.location.href + '?t=' + Date.now();
-}
+<script>
+  // ✅ iframe(노션 임베드) 안에서는 절대 redirect 하지 않음
+  const isInIframe = window.self !== window.top;
+
+  if (!isInIframe && !window.location.search) {
+    window.location.replace(window.location.href + "?t=" + Date.now());
+  }
 </script>
+
 
     *{ box-sizing:border-box; }
     html, body{
@@ -827,3 +830,4 @@ if(!window.location.search) {
   </script>
 </body>
 </html>
+
