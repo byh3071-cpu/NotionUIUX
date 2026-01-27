@@ -43,7 +43,7 @@
       padding:0;
       width:100%;
       height:100%;
-      background: var(--outerbg);
+      background: var(--panel);
       color:var(--text);
       font-family: ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace;
       -webkit-font-smoothing: antialiased;
@@ -54,11 +54,12 @@
     .stage{
       width:100%;
       height:100%;
-      background: var(--outerbg);
+      background: var(--panel);
       display:flex;
       align-items:flex-start;   /* ✅ 좌상단 고정 */
       justify-content:flex-start;
-      padding:0;                /* ✅ 여백 0 */
+      overflow:hidden;
+      padding:8;                /* ✅ 여백 0 */
       margin:0;
     }
 
@@ -222,10 +223,10 @@
     .heartMarker{
       position:absolute;
       left:50%;
-      bottom:1px;
+      bottom:6px;
       transform: translateX(-50%);
       font-size:12px;
-      line-height:1;
+      line-height:1.2;
       color:var(--accent);
       opacity:1;
       user-select:none;
@@ -1075,3 +1076,4 @@
   </script>
 </body>
 </html>
+
