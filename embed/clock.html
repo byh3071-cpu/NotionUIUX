@@ -3,10 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Notion Pixel Clock</title>
-
-  <meta http-equiv="Cache-Control" content="no-store, max-age=0" />
-  <meta http-equiv="Pragma" content="no-cache" />
+  <title>Notion Pixel Clock (Open Calendar)</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -25,58 +22,49 @@
       --baseW: 360;
       --baseH: 156;
       --scale: 1;
-
-      --stageBg: transparent; /* 투명 유지 */
     }
 
     *{ box-sizing:border-box; }
+
+    /* ✅ 흰 여백 방지(iframe 남는 영역도 패널로) */
     html,body{
-    margin:0;
-    padding:0;
-    width:100%;
-    height:100%;
-    background: var(--panel);         /* ✅ 흰 여백 제거 */
-    color:var(--text);
-    font-family: ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace;
-    -webkit-font-smoothing: antialiased;
-    text-rendering: geometricPrecision;
-    overflow:hidden;                  /* ✅ 바깥 스크롤 방지 */
+      margin:0; padding:0;
+      width:100%; height:100%;
+      background: var(--panel);
+      color:var(--text);
+      font-family: ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: geometricPrecision;
+      overflow:hidden;
     }
-    
-    /* ✅ iframe 남는 영역도 패널로 채우고 싶으면 body를 flex로 */
     body{
-    display:flex;
-    align-items:flex-start;           /* top 고정(원하면 center로) */
-    justify-content:flex-start;       /* left 고정(원하면 center로) */
+      display:flex;
+      align-items:flex-start;
+      justify-content:flex-start;
     }
-    
     .stage{
-    width:100%;
-    height:100%;
-    background: var(--panel);
-    display:flex;
-    align-items:flex-start;   /* top 유지면 그대로 */
-    justify-content:center;   /* 가운데로 */
-    overflow:hidden;
-    padding: 8px;             /* 테두리 잘림 방지 */
+      width:100%;
+      height:100%;
+      background: var(--panel);
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      overflow:hidden;
+      padding:8px;
     }
 
     .wrap{
       width: calc(var(--baseW) * 1px);
       height: calc(var(--baseH) * 1px);
       zoom: var(--scale);
-
       background:var(--panel);
       border:2px solid var(--line2);
       border-radius:0;
       overflow:hidden;
       display:flex;
       flex-direction:column;
-
-      pointer-events:auto; /* ✅ 여기부터 클릭 받기 */
-      position:relative;
+      pointer-events:auto;
     }
-
     @supports not (zoom: 1){
       .wrap{ transform: scale(var(--scale)); transform-origin: top left; }
     }
@@ -85,13 +73,12 @@
       height:36px;
       display:flex;
       align-items:center;
+      justify-content:flex-start;
       padding:6px 8px;
       padding-right:26px;
       border-bottom:2px solid var(--line2);
       background:linear-gradient(180deg, var(--panel2), var(--panel));
       gap:8px;
-
-      pointer-events:auto; /* ✅ 재강제 */
     }
 
     .title{
@@ -106,7 +93,6 @@
       flex:1;
     }
 
-    /* ✅ div 대신 button: 노션에서 안정적 */
     .chip{
       height:24px;
       padding:0 8px;
@@ -120,14 +106,8 @@
       cursor:pointer;
       user-select:none;
       line-height:1;
-
-      pointer-events:auto !important;  /* ✅ 강제 */
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
-
-      outline:none;
-      appearance:none;
-      -webkit-appearance:none;
     }
     .chip:hover{ border-color:var(--accent); }
     .chip.on{
@@ -141,23 +121,23 @@
       display:flex;
       align-items:stretch;
       justify-content:space-between;
-      padding:10px;
+      padding:10px 10px;
       gap:10px;
       min-height:0;
-      pointer-events:auto;
     }
 
     .leftBox{
       flex:1;
       border:2px solid var(--line);
       background:#0b0c10;
-      padding:12px;
+      padding:12px 12px;
       min-width:0;
       display:flex;
       flex-direction:column;
       justify-content:center;
       overflow:hidden;
     }
+
     .dateRow{
       font-size:9px;
       color:var(--muted);
@@ -167,10 +147,44 @@
       text-overflow:ellipsis;
       margin-bottom:8px;
     }
-    .timeRow{ display:flex; align-items:center; gap:10px; white-space:nowrap; overflow:hidden; }
-    .time{ font-size:18px; letter-spacing:1px; line-height:1.45; padding:2px 0 6px; }
-    .cursor{ font-size:14px; color:var(--accent); line-height:1.45; padding:2px 0 6px; user-select:none; pointer-events:none; }
-    .note{ margin-top:10px; font-size:8px; color:rgba(233,238,247,.75); line-height:1.45; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+    .timeRow{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      white-space:nowrap;
+      overflow:hidden;
+    }
+
+    .time{
+      font-size:18px;
+      color:var(--text);
+      letter-spacing:1px;
+      display:inline-block;
+      line-height:1.45;
+      padding:2px 0 6px;
+    }
+
+    .cursor{
+      font-size:14px;
+      color:var(--accent);
+      display:inline-block;
+      line-height:1.45;
+      padding:2px 0 6px;
+      opacity:1;
+      user-select:none;
+      pointer-events:none;
+    }
+
+    .note{
+      margin-top:10px;
+      font-size:8px;
+      color:rgba(233,238,247,.75);
+      line-height:1.45;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
 
     .rightBox{
       width:112px;
@@ -183,21 +197,51 @@
       gap:8px;
       overflow:hidden;
     }
-    .meterLabel{ font-size:8px; color:var(--muted); line-height:1; user-select:none; }
-    .meter{ height:10px; border:2px solid var(--line2); background:#0e1016; position:relative; overflow:hidden; }
-    .bar{ position:absolute; left:0; top:0; bottom:0; width:0%; background:var(--accent); }
-    .meterText{ font-size:8px; color:rgba(233,238,247,.75); line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-height:10px; }
 
-    @media (max-width: 340px){ .rightBox{ display:none; } }
+    .meterLabel{
+      font-size:8px;
+      color:var(--muted);
+      opacity:.95;
+      line-height:1;
+      user-select:none;
+    }
+
+    .meter{
+      height:10px;
+      border:2px solid var(--line2);
+      background:#0e1016;
+      position:relative;
+      overflow:hidden;
+    }
+    .bar{
+      position:absolute;
+      left:0; top:0; bottom:0;
+      width:0%;
+      background:var(--accent);
+    }
+
+    .meterText{
+      font-size:8px;
+      color:rgba(233,238,247,.75);
+      line-height:1.2;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      min-height:10px;
+    }
+
+    @media (max-width: 340px){
+      .rightBox{ display:none; }
+    }
   </style>
 </head>
 
 <body>
   <div class="stage">
-    <div class="wrap">
+    <div class="wrap" id="wrap">
       <div class="top">
-        <button class="chip on" id="modeBtn" type="button">24H</button>
-        <button class="chip" id="openTodayBtn" type="button">OPEN</button>
+        <div class="chip on" id="modeBtn" title="12/24 토글">24H</div>
+        <div class="chip" id="openTodayBtn" title="오늘 TASK 열기">OPEN</div>
         <div class="title">PIXEL CLOCK</div>
       </div>
 
@@ -296,15 +340,22 @@
     }
 
     function fitToFrame(){
-      const baseW = 360, baseH = 156;
-      const vw = (window.visualViewport?.width) ?? window.innerWidth;
-      const vh = (window.visualViewport?.height) ?? window.innerHeight;
+      const rootStyle = getComputedStyle(document.documentElement);
+      const baseW = Number(rootStyle.getPropertyValue("--baseW")) || 360;
+      const baseH = Number(rootStyle.getPropertyValue("--baseH")) || 156;
+
+      const vw = (window.visualViewport && window.visualViewport.width) ? window.visualViewport.width : window.innerWidth;
+      const vh = (window.visualViewport && window.visualViewport.height) ? window.visualViewport.height : window.innerHeight;
+
       const availW = Math.max(1, vw - 24);
       const availH = Math.max(1, vh - 24);
+
       let scale = Math.min(availW / baseW, availH / baseH);
       if(!isFinite(scale) || scale <= 0) scale = 1;
+
       scale = Math.min(3, Math.max(0.55, scale));
       scale = Math.floor(scale * 100) / 100;
+
       document.documentElement.style.setProperty("--scale", String(scale));
     }
 
@@ -345,44 +396,23 @@
       tick();
     }
 
-    // ✅ 같은 폴더 calendar.html로 "현재 자리 이동" (팝업 사용 안함)
-    function buildCalendarUrl(iso){
-      const base = new URL(".", window.location.href);
-      const cal = new URL("calendar.html", base);
-      cal.searchParams.set("date", iso);
-      cal.searchParams.set("open", "1");
-      cal.searchParams.set("from", "clock");
-      cal.searchParams.set("v", String(Date.now())); // 캐시 탈출
-      return cal.toString();
-    }
-
+    /* ✅ 꼬임 방지: 무조건 절대경로 + 같은 iframe에서 이동 */
     function openToday(){
-      // ✅ 클릭이 먹었는지 시각 확인
-      const original = openTodayBtn.textContent;
-      openTodayBtn.textContent = "...";
-
       const iso = toISO(new Date());
-      const url = buildCalendarUrl(iso);
-
-      // ✅ 무조건 같은 자리 이동
-      window.location.href = url;
-
-      // 이동이 막힐 경우 대비(아예 아무 반응 없을 때 복구)
-      setTimeout(()=>{ openTodayBtn.textContent = original; }, 800);
+      const url = new URL("/embed/calendar.html", window.location.origin);
+      url.searchParams.set("date", iso);
+      url.searchParams.set("open", "1");
+      url.searchParams.set("from", "clock");
+      location.href = url.toString();
     }
 
-    function bindHard(el, fn){
-      ["pointerdown","mousedown","touchstart","click"].forEach(type=>{
-        el.addEventListener(type, (e)=>{ stopAll(e); fn(); }, { capture:true, passive:false });
-      });
-    }
-
-    bindHard(modeBtn, toggleMode);
-    bindHard(openTodayBtn, openToday);
+    ["pointerdown","mousedown","touchstart"].forEach(type=>{
+      modeBtn.addEventListener(type, (e)=>{ stopAll(e); toggleMode(); }, { capture:true, passive:false });
+      openTodayBtn.addEventListener(type, (e)=>{ stopAll(e); openToday(); }, { capture:true, passive:false });
+    });
 
     fitToFrame();
     window.addEventListener("resize", fitToFrame);
-    window.visualViewport?.addEventListener("resize", fitToFrame);
     setInterval(fitToFrame, 500);
 
     tick();
