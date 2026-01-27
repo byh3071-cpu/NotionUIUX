@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Notion Pixel Clock (No Scroll + Open Today)</title>
+  <title>Notion Pixel Clock (Zoom Fit + Open Calendar)</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,10 +19,11 @@
       --muted:#a7b0c2;
       --accent:#7cc7ff;
 
-      /* 기준 크기(여백 포함) */
+      /* 기준 크기(여백 넉넉하게) */
       --baseW: 360;
-      --baseH: 140;
+      --baseH: 150;
 
+      /* JS에서 자동 계산 */
       --scale: 1;
     }
 
@@ -36,7 +37,7 @@
       -webkit-font-smoothing: antialiased;
       text-rendering: geometricPrecision;
 
-      /* ✅ 내부 스크롤 절대 금지 */
+      /* ✅ 내부 스크롤 금지 */
       overflow:hidden;
     }
 
@@ -53,12 +54,9 @@
     .wrap{
       width: calc(var(--baseW) * 1px);
       height: calc(var(--baseH) * 1px);
-      transform: scale(var(--scale));
-      transform-origin: top left;
 
-      will-change: transform;
-      backface-visibility: hidden;
-      transform-style: preserve-3d;
+      /* ✅ 핵심: zoom 우선 (레이아웃까지 줄어서 스크롤/가림 크게 감소) */
+      zoom: var(--scale);
 
       background:var(--panel);
       border:2px solid var(--line2);
@@ -67,6 +65,17 @@
       display:flex;
       flex-direction:column;
       pointer-events:auto;
+    }
+
+    /* zoom 미지원 브라우저 대비(노션은 Chromium이라 거의 OK) */
+    @supports not (zoom: 1){
+      .wrap{
+        transform: scale(var(--scale));
+        transform-origin: top left;
+        will-change: transform;
+        backface-visibility: hidden;
+        transform-style: preserve-3d;
+      }
     }
 
     .top{
@@ -90,8 +99,8 @@
       text-overflow:ellipsis;
       user-select:none;
       pointer-events:none;
-      margin-left:2px;
       flex:1;
+      margin-left:2px;
     }
 
     .chip{
@@ -109,6 +118,7 @@
       line-height:1;
       pointer-events:auto;
       touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
     .chip:hover{ border-color:var(--accent); }
     .chip.on{
@@ -142,7 +152,7 @@
     .dateRow{
       font-size:9px;
       color:var(--muted);
-      line-height:1.4;
+      line-height:1.45;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
@@ -162,16 +172,16 @@
       color:var(--text);
       letter-spacing:1px;
       display:inline-block;
-      line-height:1.35;
-      padding:2px 0 4px;
+      line-height:1.4;
+      padding:2px 0 6px;  /* ✅ 가림 방지 */
     }
 
     .cursor{
       font-size:14px;
       color:var(--accent);
       display:inline-block;
-      line-height:1.35;
-      padding:2px 0 4px;
+      line-height:1.4;
+      padding:2px 0 6px;
       opacity:1;
       user-select:none;
       pointer-events:none;
@@ -181,14 +191,14 @@
       margin-top:10px;
       font-size:8px;
       color:rgba(233,238,247,.75);
-      line-height:1.4;
+      line-height:1.45;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
     }
 
     .rightBox{
-      width:108px;
+      width:112px;
       border:2px solid var(--line);
       background:#0b0c10;
       padding:8px;
@@ -228,6 +238,7 @@
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
+      min-height:10px; /* ✅ 글자가 “- -”처럼 깨지는 느낌 방지 */
     }
 
     @media (max-width: 340px){
@@ -240,9 +251,8 @@
   <div class="stage">
     <div class="wrap" id="wrap">
       <div class="top">
-        <!-- ✅ 노션 우상단 오버레이 피하려고 왼쪽 배치 -->
         <div class="chip on" id="modeBtn" title="12/24 토글">24H</div>
-        <div class="chip" id="openTodayBtn" title="캘린더에서 오늘 할 일 열기">OPEN</div>
+        <div class="chip" id="openTodayBtn" title="캘린더에서 오늘 열기">OPEN</div>
         <div class="title">PIXEL CLOCK</div>
       </div>
 
@@ -284,7 +294,9 @@
     const state = { is24h: true };
     const DOW_KR = ["일","월","화","수","목","금","토"];
 
+    // ✅ 캘린더 저장키 후보(최신 v6도 포함)
     const STORE_KEYS = [
+      "pixel_calendar_tasks_v6",
       "pixel_calendar_tasks_v5_backup_hideDone",
       "pixel_calendar_tasks_v4_bottomTriangles",
       "pixel_calendar_tasks_v3_bottomBadges",
@@ -339,29 +351,27 @@
       return Math.max(0, Math.min(1, now/total));
     }
 
-    // ✅ 스케일은 “절대 넘치지 않게” 항상 내림(= 스크롤 0)
+    // ✅ 스크롤 0 모드: viewport보다 절대 커지지 않게 스케일 다운
     function fitToFrame(){
       const rootStyle = getComputedStyle(document.documentElement);
       const baseW = Number(rootStyle.getPropertyValue("--baseW")) || 360;
-      const baseH = Number(rootStyle.getPropertyValue("--baseH")) || 140;
+      const baseH = Number(rootStyle.getPropertyValue("--baseH")) || 150;
 
       const vw = (window.visualViewport && window.visualViewport.width) ? window.visualViewport.width : window.innerWidth;
       const vh = (window.visualViewport && window.visualViewport.height) ? window.visualViewport.height : window.innerHeight;
 
-      // 여유를 조금 더 줘서 노션 스크롤바 방지
-      const availW = Math.max(1, vw - 8);
-      const availH = Math.max(1, vh - 8);
+      // 노션 내부 여백/오버레이 감안해서 여유 크게
+      const availW = Math.max(1, vw - 24);
+      const availH = Math.max(1, vh - 24);
 
       let scale = Math.min(availW / baseW, availH / baseH);
       if(!isFinite(scale) || scale <= 0) scale = 1;
 
-      // 과도 확대 제한(원하면 4로 올려도 됨)
+      // 과도 확대 제한(원하면 4)
       scale = Math.min(3, Math.max(0.5, scale));
 
-      // ✅ 핵심: 항상 아래로 내림(절대 넘치지 않게)
+      // ✅ 절대 넘치지 않게 내림
       scale = Math.floor(scale * 100) / 100;
-
-      // 너무 작아지면 가독성 떨어지니 최소선
       if(scale < 0.55) scale = 0.55;
 
       document.documentElement.style.setProperty("--scale", String(scale));
@@ -405,18 +415,42 @@
       tick();
     }
 
-    function openToday(){
-      const iso = toISO(new Date());
+    // ✅ 404 방지: 현재 경로에서 calendar.html로 치환 + /embed/calendar.html 폴백
+    function buildCalendarUrl(iso){
+      const u = new URL(window.location.href);
 
-      // 같은 embed 폴더에 calendar.html이 있다고 가정
-      const url = new URL("calendar.html", window.location.href);
-      url.searchParams.set("date", iso);
-      url.searchParams.set("open", "1");
+      // 1) 현재 파일이 clock.html이면 calendar.html로 치환
+      u.pathname = u.pathname.replace(/clock\.html$/i, "calendar.html");
 
-      window.open(url.toString(), "_blank", "noopener,noreferrer");
+      // 2) 그래도 clock.html이 안 들어있었다면 같은 폴더 기준으로 강제
+      if(!/calendar\.html$/i.test(u.pathname)){
+        const parts = u.pathname.split("/");
+        parts[parts.length - 1] = "calendar.html";
+        u.pathname = parts.join("/");
+      }
+
+      u.searchParams.set("date", iso);
+      u.searchParams.set("open", "1");
+      return u.toString();
     }
 
-    // 버튼 이벤트(캡처 단계로 확정)
+    function openToday(){
+      const iso = toISO(new Date());
+      const url1 = buildCalendarUrl(iso);
+
+      // window.open은 404를 JS에서 감지 못함 → 폴백도 함께 준비
+      const w = window.open(url1, "_blank", "noopener,noreferrer");
+
+      // 폴백: 새 탭이 차단되면 현재 탭에서 이동(사용자 설정 따라)
+      if(!w){
+        // embed 폴더가 명확하면 여기 수정 가능:
+        const fallback = new URL("/embed/calendar.html", window.location.origin);
+        fallback.searchParams.set("date", iso);
+        fallback.searchParams.set("open", "1");
+        window.location.href = fallback.toString();
+      }
+    }
+
     ["pointerdown","mousedown","touchstart"].forEach(type=>{
       modeBtn.addEventListener(type, (e)=>{ stopAll(e); toggleMode(); }, { capture:true, passive:false });
       openTodayBtn.addEventListener(type, (e)=>{ stopAll(e); openToday(); }, { capture:true, passive:false });
