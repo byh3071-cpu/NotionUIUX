@@ -50,7 +50,7 @@
       align-items:flex-start;
       justify-content:center;
       overflow:hidden;
-      padding:8px;
+      padding:0px;
     }
 
     .wrap{
@@ -422,8 +422,8 @@
       const vw = (window.visualViewport && window.visualViewport.width) ? window.visualViewport.width : window.innerWidth;
       const vh = (window.visualViewport && window.visualViewport.height) ? window.visualViewport.height : window.innerHeight;
 
-      const availW = Math.max(1, vw - 24);
-      const availH = Math.max(1, vh - 24);
+      const availW = Math.max(1, vw);
+      const availH = Math.max(1, vh);
 
       let scale = Math.min(availW / baseW, availH / baseH);
       if(!isFinite(scale) || scale <= 0) scale = 1;
