@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Notion Pixel Clock (Fit)</title>
+  <title>Notion Pixel Clock (Auto Scale)</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,12 +19,12 @@
       --muted:#a7b0c2;
 
       --accent:#7cc7ff;
-      --today:#ffe08a;
 
-      /* ✅ 기준 사이즈(노션에서 잘릴 때는 JS가 자동으로 축소) */
+      /* ✅ 기본 “원본” 크기(이걸 기준으로 확대/축소됨) */
       --baseW: 360;
-      --baseH: 104;
+      --baseH: 110;
 
+      /* JS가 계산해서 넣음 */
       --scale: 1;
     }
 
@@ -32,41 +32,41 @@
     html,body{
       margin:0;
       padding:0;
+      width:100%;
+      height:100%;
       background:transparent;
       color:var(--text);
       font-family: ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace;
-      width:100%;
-      height:100%;
     }
 
-    /* ✅ iframe 안에서 자동으로 “맞춰” 들어가게 하는 스테이지 */
+    /* iframe 전체를 꽉 채움 */
     .stage{
       width:100%;
       height:100%;
       display:flex;
       align-items:flex-start;
       justify-content:flex-start;
-      padding:0;
+      overflow:hidden;
     }
 
     .wrap{
       width: calc(var(--baseW) * 1px);
       height: calc(var(--baseH) * 1px);
+
+      /* ✅ 핵심: iframe 크기에 맞춰 확대/축소 */
       transform: scale(var(--scale));
       transform-origin: top left;
 
       background:var(--panel);
       border:2px solid var(--line2);
       border-radius:0;
-
-      /* ❗잘림 방지: 내부는 숨기되, 전체가 안 잘리도록 스케일로 해결 */
       overflow:hidden;
       display:flex;
       flex-direction:column;
     }
 
     .top{
-      height:32px;
+      height:36px;
       display:flex;
       align-items:center;
       justify-content:space-between;
@@ -86,7 +86,7 @@
     }
 
     .chip{
-      height:22px;
+      height:24px;
       padding:0 8px;
       border:2px solid var(--line2);
       background:#0e1016;
@@ -111,8 +111,8 @@
       display:flex;
       align-items:stretch;
       justify-content:space-between;
-      padding:8px 8px;
-      gap:8px;
+      padding:10px 10px;
+      gap:10px;
       min-height:0;
     }
 
@@ -152,7 +152,6 @@
       line-height:1;
     }
 
-    /* ✅ 초 대신 픽셀 커서 */
     .cursor{
       font-size:14px;
       color:var(--accent);
@@ -174,7 +173,7 @@
     }
 
     .rightBox{
-      width:84px;
+      width:86px;
       border:2px solid var(--line);
       background:#0b0c10;
       padding:8px;
@@ -205,7 +204,7 @@
       background:var(--accent);
     }
 
-    /* ✅ 혹시 폭이 아주 좁아지면 오른쪽 박스 숨김(안 잘리게) */
+    /* 폭이 너무 좁으면 오른쪽 박스 숨김(잘림 방지) */
     @media (max-width: 330px){
       .rightBox{ display:none; }
     }
@@ -244,7 +243,6 @@
   <script>
     const $ = (s) => document.querySelector(s);
 
-    const wrap = $("#wrap");
     const dateText  = $("#dateText");
     const timeText  = $("#timeText");
     const cursorEl  = $("#cursor");
@@ -254,10 +252,9 @@
     const modeBtn = $("#modeBtn");
 
     const state = { is24h: true };
-
     const DOW_KR = ["일","월","화","수","목","금","토"];
 
-    // ✅ 캘린더 저장키 후보(네 최신 키 포함)
+    // ✅ 캘린더 저장키 후보(너 최신 키 포함)
     const STORE_KEYS = [
       "pixel_calendar_tasks_v5_backup_hideDone",
       "pixel_calendar_tasks_v4_bottomTriangles",
@@ -267,6 +264,34 @@
 
     const pad2 = (n) => String(n).padStart(2,"0");
     const toISO = (d) => `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+    const safeParse = (json) => { try { return JSON.parse(json); } catch(e){ return null; } };
+
+    function normalizeList(list){
+      if(!Array.isArray(list)) return [];
+      return list.map(x => {
+        if(typeof x === "string") return { text:x, done:false };
+        if(x && typeof x === "object") return { text: String(x.text ?? ""), done: Boolean(x.done) };
+        return { text:"", done:false };
+      }).filter(t => t.text.trim().length > 0);
+    }
+
+    function loadAllFromAnyKey(){
+      for(const k of STORE_KEYS){
+        const raw = localStorage.getItem(k);
+        if(!raw) continue;
+        const parsed = safeParse(raw);
+        if(parsed && typeof parsed === "object" && !Array.isArray(parsed)) return parsed;
+      }
+      return {};
+    }
+
+    function getTodayProgress(iso){
+      const data = loadAllFromAnyKey();
+      const list = normalizeList(data[iso]);
+      const total = list.length;
+      const done = list.filter(t => t.done).length;
+      return { done, total };
+    }
 
     function formatTime(d){
       let h = d.getHours();
@@ -280,60 +305,30 @@
       return `${pad2(h)}:${pad2(m)}`;
     }
 
-    function safeParse(json){ try{ return JSON.parse(json); }catch(e){ return null; } }
-
-    function normalizeList(list){
-      if(!Array.isArray(list)) return [];
-      return list.map(x => {
-        if(typeof x === "string") return { text:x, done:false };
-        if(x && typeof x === "object"){
-          return { text: String(x.text ?? ""), done: Boolean(x.done) };
-        }
-        return { text:"", done:false };
-      }).filter(t => t.text.trim().length > 0);
-    }
-
-    function loadAllFromAnyKey(){
-      for(const k of STORE_KEYS){
-        const raw = localStorage.getItem(k);
-        if(!raw) continue;
-        const parsed = safeParse(raw);
-        if(parsed && typeof parsed === "object" && !Array.isArray(parsed)){
-          return parsed;
-        }
-      }
-      return {};
-    }
-
-    function getTodayProgress(iso){
-      const data = loadAllFromAnyKey();
-      const list = normalizeList(data[iso]);
-      const total = list.length;
-      const done = list.filter(t => t.done).length;
-      return { done, total };
-    }
-
     function calcDayProgress(d){
       const total = 24*60*60;
       const now = d.getHours()*3600 + d.getMinutes()*60 + d.getSeconds();
       return Math.max(0, Math.min(1, now/total));
     }
 
-    // ✅ 노션 iframe 크기에 맞춰 자동 스케일(잘림 방지 핵심)
+    // ✅ 핵심: iframe 크기에 맞춰 “확대/축소” 모두 허용
     function fitToFrame(){
-      const baseW = Number(getComputedStyle(document.documentElement).getPropertyValue("--baseW")) || 360;
-      const baseH = Number(getComputedStyle(document.documentElement).getPropertyValue("--baseH")) || 104;
+      const rootStyle = getComputedStyle(document.documentElement);
+      const baseW = Number(rootStyle.getPropertyValue("--baseW")) || 360;
+      const baseH = Number(rootStyle.getPropertyValue("--baseH")) || 110;
 
-      const availW = window.innerWidth || baseW;
-      const availH = window.innerHeight || baseH;
+      // 노션에서 innerHeight/Width가 덜 정확할 때 대비해 visualViewport도 활용
+      const vw = (window.visualViewport && window.visualViewport.width) ? window.visualViewport.width : window.innerWidth;
+      const vh = (window.visualViewport && window.visualViewport.height) ? window.visualViewport.height : window.innerHeight;
 
-      // 약간의 안전 여백(테두리/렌더링 오차)
-      const safeW = Math.max(1, availW - 2);
-      const safeH = Math.max(1, availH - 2);
+      const availW = Math.max(1, vw - 2);
+      const availH = Math.max(1, vh - 2);
 
-      let scale = Math.min(safeW / baseW, safeH / baseH);
+      let scale = Math.min(availW / baseW, availH / baseH);
       if(!isFinite(scale) || scale <= 0) scale = 1;
-      scale = Math.min(1, scale); // 확대는 하지 않음
+
+      // 너무 커지는 것 방지(원하면 숫자 키워도 됨)
+      scale = Math.min(3, Math.max(0.5, scale));
 
       document.documentElement.style.setProperty("--scale", String(scale));
     }
@@ -351,8 +346,6 @@
 
       dateText.textContent = `${y}-${pad2(mo)}-${pad2(da)} (${dow}) · TODAY ${done}/${total}`;
       timeText.textContent = formatTime(d);
-
-      // ✅ 픽셀 커서 깜빡임 (초 기반)
       cursorEl.style.opacity = (d.getSeconds() % 2 === 0) ? "1" : "0.15";
 
       dayBar.style.width = `${Math.round(calcDayProgress(d) * 100)}%`;
@@ -369,10 +362,25 @@
       tick();
     });
 
-    // 초기 + 리사이즈 대응
-    fitToFrame();
-    window.addEventListener("resize", fitToFrame);
+    // ✅ 노션은 resize 이벤트가 안 뜰 때가 있어: ResizeObserver + 폴백 타이머
+    function setupAutoFit(){
+      fitToFrame();
 
+      // 1) 창 리사이즈
+      window.addEventListener("resize", fitToFrame);
+
+      // 2) 문서 크기 변화 감지(노션 임베드 높이 조절 대응)
+      if("ResizeObserver" in window){
+        const ro = new ResizeObserver(() => fitToFrame());
+        ro.observe(document.documentElement);
+        ro.observe(document.body);
+      }
+
+      // 3) 폴백: 0.5초마다 한번(가벼움)
+      setInterval(fitToFrame, 500);
+    }
+
+    setupAutoFit();
     tick();
     setInterval(tick, 1000);
   </script>
