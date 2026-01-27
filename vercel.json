@@ -3,11 +3,7 @@
   "rewrites": [
     { "source": "/embed", "destination": "/embed/calendar.html" },
     { "source": "/embed/", "destination": "/embed/calendar.html" },
-
-    { "source": "/embed/calendar", "destination": "/embed/calendar.html" },
-    { "source": "/embed/clock", "destination": "/embed/clock.html" },
-
-    { "source": "/embed/calender.html", "destination": "/embed/calendar.html" }
+    { "source": "/embed/calendar", "destination": "/embed/calendar.html" }
   ],
   "headers": [
     {
