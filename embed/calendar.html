@@ -43,7 +43,7 @@
       padding:0;
       width:100%;
       height:100%;
-      background: var(--panel); !important; }
+      background: var(--panel); !important;
       color:var(--text);
       font-family: ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace;
       -webkit-font-smoothing: antialiased;
@@ -54,7 +54,7 @@
     .stage{
       width:100%;
       height:100%;
-      background: var(--panel); !important; }
+      background: var(--panel); !important;
       display:flex;
       align-items:flex-start;   /* ✅ 좌상단 고정 */
       justify-content:flex-start;
@@ -1005,18 +1005,39 @@
       renderTaskList();
     }, { passive:false });
 
-    exportBtn.addEventListener("pointerdown", (e) => {
-      e.preventDefault();
-      const data = loadAll();
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = `pixel_calendar_backup_${new Date().toISOString().slice(0,10)}.json`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-    }, { passive:false });
+exportBtn.addEventListener("pointerdown", async (e) => {
+  e.preventDefault();
+
+  const data = loadAll();
+  const json = JSON.stringify(data, null, 2);
+
+  // 1) ✅ 우선: 클립보드 복사(노션 임베드에서도 성공률 높음)
+  try{
+    if(navigator.clipboard?.writeText){
+      await navigator.clipboard.writeText(json);
+      alert("EXPORT: JSON이 클립보드에 복사됐어요.\n(노션 임베드에선 파일 다운로드가 막힐 수 있어요)");
+    }else{
+      alert("EXPORT: 클립보드 API를 지원하지 않아 복사를 못했어요.");
+    }
+  }catch(_){
+    // 복사 실패해도 아래 다운로드는 시도
+  }
+
+  // 2) ✅ 그래도 파일 다운로드 시도(가능한 환경이면 됨)
+  try{
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `pixel_calendar_backup_${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  }catch(_){
+    // 임베드가 막으면 여기로 옴
+  }
+}, { passive:false });
 
     importBtn.addEventListener("pointerdown", (e) => {
       e.preventDefault();
@@ -1076,5 +1097,6 @@
   </script>
 </body>
 </html>
+
 
 
