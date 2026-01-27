@@ -32,15 +32,26 @@
     }
 
     *{ box-sizing:border-box; }
-    html,body{
+      html,body{
       margin:0;
       padding:0;
-      background:transparent;
+      width:100%;
+      height:100%;
+      background: var(--panel);         /* ✅ 흰 여백 제거 */
       color:var(--text);
       font-family: ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace;
       -webkit-font-smoothing: antialiased;
       text-rendering: geometricPrecision;
+      overflow:hidden;                  /* ✅ 바깥 스크롤 방지 */
     }
+    
+    /* ✅ iframe 남는 영역도 패널로 채우고 싶으면 body를 flex로 */
+    body{
+      display:flex;
+      align-items:flex-start;           /* top 고정(원하면 center로) */
+      justify-content:flex-start;       /* left 고정(원하면 center로) */
+    }
+
 
     .wrap{
       width:var(--w);
@@ -1087,6 +1098,7 @@
   </script>
 </body>
 </html>
+
 
 
 
