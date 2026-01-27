@@ -1,8 +1,8 @@
 {
   "version": 2,
   "rewrites": [
-    { "source": "/embed", "destination": "/embed/index.html" },
-    { "source": "/embed/", "destination": "/embed/index.html" }
+    { "source": "/embed", "destination": "/embed/calender.html" },
+    { "source": "/embed/", "destination": "/embed/calender.html" }
   ],
   "headers": [
     {
