@@ -47,12 +47,18 @@
       height:100%;
       background: var(--panel);
       display:flex;
-      align-items:flex-start;
+      align-items:center;
       justify-content:center;
       overflow:hidden;
       padding:0px;
     }
-
+    
+    .scaler{
+      /* ✅ 스케일된 “실제 박스 크기”를 만들어서 중앙정렬/클릭영역 안 어긋나게 */
+      width: calc(var(--baseW) * 1px * var(--scale));
+      height: calc(var(--baseH) * 1px * var(--scale));
+    }
+    
     .wrap{
       width: calc(var(--baseW) * 1px);
       height: calc(var(--baseH) * 1px);
@@ -70,9 +76,6 @@
       pointer-events:auto;
     }
 
-    @supports not (zoom: 1){
-      .wrap{ transform: scale(var(--scale)); transform-origin: top left; }
-    }
 
     .top{
       height:36px;
@@ -295,7 +298,8 @@
 </head>
 
 <body>
-  <div class="stage">
+<div class="stage">
+  <div class="scaler" id="scaler">
     <div class="wrap" id="wrap">
       <div class="top">
         <button class="chip on" id="modeBtn" title="12/24 토글">24H</button>
