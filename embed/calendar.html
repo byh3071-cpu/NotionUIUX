@@ -72,6 +72,39 @@
       overflow:hidden;
       position:relative;
     }
+    
+    /* ✅ z-index 패치 (딱 1번만 유지) */
+    .grid{
+      position:relative;
+      z-index:1;
+    }
+    
+    .modalBack{
+      position:absolute;
+      inset:0;
+      z-index:1000; /* ✅ 추가 */
+      background: rgba(0,0,0,.55);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:10px;
+    }
+    .modalBack.show{ display:flex; }
+    
+    .modal{
+      position:relative;
+      z-index:1001;
+    
+      width: 100%;
+      max-width: 340px;
+      height: 350px;
+      background: #0e1016;
+      border: 2px solid var(--line2);
+      border-radius:0;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+    }
 
     .topbar{
       display:flex;
@@ -385,9 +418,11 @@
     .checkBtn{
       width:30px;
       height:28px;
-      border:2px solid var(--accent);
+    
+      border:2px solid var(--line2);   /* ✅ 기본은 라인색 */
       background:transparent;
       color:var(--text);
+    
       border-radius:0;
       cursor:pointer;
       display:flex;
@@ -399,7 +434,8 @@
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
     }
-    .checkBtn.done{ background: var(--accent); color:#0b0c10; }
+    .checkBtn:hover{ border-color:var(--accent); } /* ✅ 호버만 포인트 */
+    .checkBtn.done{ background: var(--accent); border-color: var(--accent); color:#0b0c10; }
 
     .taskText{
       font-size:10px;
@@ -721,9 +757,13 @@
       setTimeout(() => taskInput.focus(), 0);
     }
 
-    function closeModal(){
+     function closeModal(){
       modalBack.classList.remove("show");
       modalBack.setAttribute("aria-hidden", "true");
+    
+      // ✅ 수동 EXPORT로 taskList가 바뀐 경우 원복
+      if(state.selectedISO) renderTaskList();
+    
       state.selectedISO = null;
       state.editingIndex = null;
     }
@@ -1009,39 +1049,70 @@
       saveUI();
       renderTaskList();
     }, { passive:false });
+    
+function copyTextFallback(text){
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.setAttribute("readonly", "");
+  ta.style.position = "fixed";
+  ta.style.left = "-9999px";
+  ta.style.top = "0";
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  let ok = false;
+  try{ ok = document.execCommand("copy"); }catch(_){}
+  ta.remove();
+  return ok;
+}
 
+function showManualExport(text){
+  // ✅ iframe에서 다운로드/클립보드가 다 막혀도, 이건 마지막으로 남겨둠(수동 복사)
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.width = "100%";
+  ta.style.height = "180px";
+  ta.style.background = "#0b0c10";
+  ta.style.color = "var(--text)";
+  ta.style.border = "2px solid var(--line2)";
+  ta.style.padding = "8px";
+  ta.style.fontSize = "10px";
+  ta.style.fontFamily = 'ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace';
+
+  // taskList 영역에 임시로 보여주기(기존 목록은 잠깐 숨김)
+  const old = taskList.innerHTML;
+  taskList.innerHTML = "";
+  taskList.appendChild(ta);
+  ta.focus();
+  ta.select();
+
+  alert("EXPORT가 막혀서 텍스트창을 띄웠어요. 전체 선택 후 복사(Ctrl+C)하세요.\n복사 후엔 모달을 닫았다 다시 열면 목록이 돌아옵니다.");
+}
+    
 exportBtn.addEventListener("pointerdown", async (e) => {
   e.preventDefault();
 
   const data = loadAll();
   const json = JSON.stringify(data, null, 2);
 
-  // 1) ✅ 우선: 클립보드 복사(노션 임베드에서도 성공률 높음)
+  // 1) Clipboard API
   try{
     if(navigator.clipboard?.writeText){
       await navigator.clipboard.writeText(json);
-      alert("EXPORT: JSON이 클립보드에 복사됐어요.\n(노션 임베드에선 파일 다운로드가 막힐 수 있어요)");
-    }else{
-      alert("EXPORT: 클립보드 API를 지원하지 않아 복사를 못했어요.");
+      alert("EXPORT: JSON이 클립보드에 복사됐어요.");
+      return;
     }
-  }catch(_){
-    // 복사 실패해도 아래 다운로드는 시도
+  }catch(_){}
+
+  // 2) execCommand fallback
+  const ok = copyTextFallback(json);
+  if(ok){
+    alert("EXPORT: JSON이 클립보드에 복사됐어요.(fallback)");
+    return;
   }
 
-  // 2) ✅ 그래도 파일 다운로드 시도(가능한 환경이면 됨)
-  try{
-    const blob = new Blob([json], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `pixel_calendar_backup_${new Date().toISOString().slice(0,10)}.json`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 2000);
-  }catch(_){
-    // 임베드가 막으면 여기로 옴
-  }
+  // 3) Manual export textarea
+  showManualExport(json);
 }, { passive:false });
 
     importBtn.addEventListener("pointerdown", (e) => {
@@ -1102,6 +1173,7 @@ exportBtn.addEventListener("pointerdown", async (e) => {
   </script>
 </body>
 </html>
+
 
 
 
