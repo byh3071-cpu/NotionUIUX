@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Notion Pixel Clock</title>
+  <title>Notion Pixel Clock (Linked)</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,15 +21,13 @@
       --accent:#7cc7ff;
       --today:#ffe08a;
 
-      /* ✅ 노션 임베드 추천 사이즈 */
       --w: 360px;
       --h: 110px;
     }
 
     *{ box-sizing:border-box; }
     html,body{
-      margin:0;
-      padding:0;
+      margin:0; padding:0;
       background:transparent;
       color:var(--text);
       font-family: ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace;
@@ -65,6 +63,8 @@
       overflow:hidden;
       text-overflow:ellipsis;
     }
+
+    .chipRow{ display:flex; gap:6px; align-items:center; }
 
     .chip{
       height:24px;
@@ -116,7 +116,7 @@
       margin-top:6px;
       display:flex;
       align-items:baseline;
-      gap:10px;
+      gap:8px;
       white-space:nowrap;
       overflow:hidden;
     }
@@ -127,13 +127,27 @@
       letter-spacing:1px;
     }
 
-    .sec{
-      font-size:10px;
+    /* ✅ 초 대신 픽셀 커서 */
+    .cursor{
+      font-size:14px;
       color:var(--accent);
-      opacity:.95;
+      line-height:1;
+      transform: translateY(-1px);
+      opacity:1;
+      user-select:none;
+      pointer-events:none;
     }
 
-    /* ✅ 픽셀 느낌 작은 상태바 */
+    .note{
+      font-size:8px;
+      color:rgba(233,238,247,.75);
+      margin-top:2px;
+      line-height:1.35;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
     .rightBox{
       width:86px;
       height:100%;
@@ -161,18 +175,9 @@
     }
     .bar{
       position:absolute;
-      left:0;
-      top:0;
-      bottom:0;
+      left:0; top:0; bottom:0;
       width:50%;
       background:var(--accent);
-    }
-
-    .note{
-      font-size:8px;
-      color:rgba(233,238,247,.75);
-      margin-top:2px;
-      line-height:1.35;
     }
   </style>
 </head>
@@ -180,29 +185,28 @@
 <body>
   <div class="wrap" id="app">
     <div class="top">
-      <div class="title">PIXEL CLOCK</div>
-      <div style="display:flex; gap:6px;">
+      <div class="title" id="titleText">PIXEL CLOCK</div>
+      <div class="chipRow">
         <div class="chip on" id="modeBtn" title="12/24 토글">24H</div>
-        <div class="chip" id="syncBtn" title="초 단위 반짝임">SYNC</div>
       </div>
     </div>
 
     <div class="main">
       <div class="leftBox">
-        <div class="dateRow" id="dateText">2026-01-26 (월)</div>
+        <div class="dateRow" id="dateText">0000-00-00 (월) · TODAY 0/0</div>
         <div class="timeRow">
           <div class="time" id="timeText">00:00</div>
-          <div class="sec" id="secText">00</div>
+          <div class="cursor" id="cursor">■</div>
         </div>
-        <div class="note" id="noteText">오늘도 한 칸씩.</div>
+        <div class="note" id="noteText">오늘 할 일: 0 / 0</div>
       </div>
 
       <div class="rightBox">
-        <div class="meterLabel">DAY PROGRESS</div>
+        <div class="meterLabel">DAY</div>
         <div class="meter"><div class="bar" id="dayBar"></div></div>
 
-        <div class="meterLabel">WEEK PROGRESS</div>
-        <div class="meter"><div class="bar" id="weekBar"></div></div>
+        <div class="meterLabel">TODAY TASK</div>
+        <div class="meter"><div class="bar" id="taskBar"></div></div>
       </div>
     </div>
   </div>
@@ -210,46 +214,100 @@
   <script>
     const $ = (s) => document.querySelector(s);
 
-    const dateText = $("#dateText");
-    const timeText = $("#timeText");
-    const secText  = $("#secText");
-    const noteText = $("#noteText");
+    const titleText = $("#titleText");
+    const dateText  = $("#dateText");
+    const timeText  = $("#timeText");
+    const cursorEl  = $("#cursor");
+    const noteText  = $("#noteText");
 
-    const dayBar = $("#dayBar");
-    const weekBar = $("#weekBar");
+    const dayBar  = $("#dayBar");
+    const taskBar = $("#taskBar");
 
     const modeBtn = $("#modeBtn");
-    const syncBtn = $("#syncBtn");
 
     const state = {
       is24h: true,
-      syncBlink: false,
+      cursorOn: true
     };
 
     const DOW_KR = ["일","월","화","수","목","금","토"];
 
+    // ✅ 캘린더가 쓰는 저장키(기본) + 혹시 바뀌었을 때 탐색용 후보
+    const STORE_KEYS = [
+      "pixel_calendar_tasks_v5_backup_hideDone",      // 너 최신 캘린더 코드
+      "pixel_calendar_tasks_v4_bottomTriangles",
+      "pixel_calendar_tasks_v3_bottomBadges",
+      "pixel_calendar_tasks_v2_heart_preview",
+    ];
+
     function pad2(n){ return String(n).padStart(2,"0"); }
+
+    function toISO(d){
+      return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+    }
+
+    function formatDate(d, done, total){
+      const y = d.getFullYear();
+      const mo = d.getMonth() + 1;
+      const da = d.getDate();
+      const dow = DOW_KR[d.getDay()];
+      return `${y}-${pad2(mo)}-${pad2(da)} (${dow}) · TODAY ${done}/${total}`;
+    }
 
     function formatTime(d){
       let h = d.getHours();
       const m = d.getMinutes();
-      const s = d.getSeconds();
 
       if(!state.is24h){
         const ampm = h < 12 ? "AM" : "PM";
         h = h % 12;
         if(h === 0) h = 12;
-        return { hhmm: `${pad2(h)}:${pad2(m)} ${ampm}`, ss: pad2(s) };
+        return `${pad2(h)}:${pad2(m)} ${ampm}`;
       }
-      return { hhmm: `${pad2(h)}:${pad2(m)}`, ss: pad2(s) };
+      return `${pad2(h)}:${pad2(m)}`;
     }
 
-    function formatDate(d){
-      const y = d.getFullYear();
-      const mo = d.getMonth() + 1;
-      const da = d.getDate();
-      const dow = DOW_KR[d.getDay()];
-      return `${y}-${pad2(mo)}-${pad2(da)} (${dow})`;
+    function safeParse(json){
+      try{ return JSON.parse(json); }catch(e){ return null; }
+    }
+
+    function normalizeList(list){
+      if(!Array.isArray(list)) return [];
+      return list.map(x => {
+        if(typeof x === "string") return { text:x, done:false };
+        if(x && typeof x === "object"){
+          return { text: String(x.text ?? ""), done: Boolean(x.done) };
+        }
+        return { text:"", done:false };
+      }).filter(t => t.text.trim().length > 0);
+    }
+
+    function loadAllFromAnyKey(){
+      // 1) 후보 키들 중 먼저 발견되는 걸 사용
+      for(const k of STORE_KEYS){
+        const raw = localStorage.getItem(k);
+        if(!raw) continue;
+        const parsed = safeParse(raw);
+        if(parsed && typeof parsed === "object" && !Array.isArray(parsed)){
+          return { key: k, data: parsed };
+        }
+      }
+      // 2) 못 찾으면 null
+      return { key: null, data: {} };
+    }
+
+    function getTodayProgress(iso){
+      const { key, data } = loadAllFromAnyKey();
+
+      // key가 없으면 안내만(노션 임베드 환경에 따라 localStorage 공유 안될 수 있음)
+      if(!key){
+        return { done: 0, total: 0, ok: false, msg: "캘린더 데이터 없음" };
+      }
+
+      const list = normalizeList(data[iso]);
+      const total = list.length;
+      const done = list.filter(t => t.done).length;
+      return { done, total, ok: true, msg: key };
     }
 
     function calcDayProgress(d){
@@ -258,39 +316,39 @@
       return Math.max(0, Math.min(1, now/total));
     }
 
-    function calcWeekProgress(d){
-      // ✅ 월요일 시작(0) 기준 진행률
-      const jsDay = d.getDay(); // 0=일
-      const mondayBased = (jsDay + 6) % 7; // 월=0 ... 일=6
-      const total = 7*24*60*60;
-      const daySeconds = d.getHours()*3600 + d.getMinutes()*60 + d.getSeconds();
-      const now = mondayBased*24*60*60 + daySeconds;
-      return Math.max(0, Math.min(1, now/total));
-    }
-
     function tick(){
       const d = new Date();
+      const iso = toISO(d);
 
-      dateText.textContent = formatDate(d);
+      // ✅ 오늘 TASK 진행률(캘린더 연동)
+      const prog = getTodayProgress(iso);
+      const done = prog.done;
+      const total = prog.total;
 
-      const t = formatTime(d);
-      timeText.textContent = t.hhmm;
-      secText.textContent = t.ss;
+      dateText.textContent = formatDate(d, done, total);
+      timeText.textContent = formatTime(d);
 
-      // ✅ 진행 바 업데이트
+      // ✅ 픽셀 커서 깜빡임 (초 기반)
+      const even = d.getSeconds() % 2 === 0;
+      cursorEl.style.opacity = even ? "1" : "0.15";
+
+      // ✅ 진행바: 하루 / 오늘 할 일
       dayBar.style.width = `${Math.round(calcDayProgress(d)*100)}%`;
-      weekBar.style.width = `${Math.round(calcWeekProgress(d)*100)}%`;
+      const taskRatio = total === 0 ? 0 : (done / total);
+      taskBar.style.width = `${Math.round(taskRatio*100)}%`;
 
-      // ✅ 초 단위 SYNC 깜빡임(옵션)
-      if(state.syncBlink){
-        const even = d.getSeconds() % 2 === 0;
-        secText.style.opacity = even ? "1" : "0.25";
+      // ✅ 하단 문구
+      if(total === 0){
+        noteText.textContent = "오늘 할 일: 0 / 0";
       }else{
-        secText.style.opacity = "0.95";
+        noteText.textContent = `오늘 할 일: ${done} / ${total}`;
       }
+
+      // (선택) 디버그성 제목: 어떤 키를 읽는지 보고 싶으면 잠깐 켜도 됨
+      // titleText.textContent = prog.ok ? `PIXEL CLOCK · LINKED` : `PIXEL CLOCK · NO LINK`;
     }
 
-    // 버튼: 12/24 토글
+    // 12/24 토글
     modeBtn.addEventListener("click", () => {
       state.is24h = !state.is24h;
       modeBtn.textContent = state.is24h ? "24H" : "12H";
@@ -298,14 +356,6 @@
       tick();
     });
 
-    // 버튼: SYNC(초 깜빡임)
-    syncBtn.addEventListener("click", () => {
-      state.syncBlink = !state.syncBlink;
-      syncBtn.classList.toggle("on", state.syncBlink);
-      tick();
-    });
-
-    // ✅ 1초마다 갱신
     tick();
     setInterval(tick, 1000);
   </script>
