@@ -2,13 +2,16 @@
   "version": 2,
   "headers": [
     {
-      "source": "/embed/(.*)",
+      "source": "/(.*)",
       "headers": [
         {
           "key": "Content-Security-Policy",
           "value": "frame-ancestors https://notion.so https://www.notion.so https://*.notion.site https://*.notion.so;"
         },
-        { "key": "Cache-Control", "value": "no-store, max-age=0" }
+        {
+          "key": "Cache-Control",
+          "value": "no-store, max-age=0"
+        }
       ]
     }
   ]
