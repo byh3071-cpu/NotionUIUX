@@ -83,6 +83,7 @@
       justify-content:center;
       user-select:none;
       transition: transform .05s ease;
+
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
     }
@@ -152,7 +153,6 @@
       transition: border-color .12s ease;
       overflow:hidden;
 
-      /* ✅ 터치 안정 */
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
     }
@@ -171,53 +171,53 @@
       color:var(--text);
     }
 
-    /* ✅ 우상단(총 개수): 대각 삼각형 */
-    .countBadge{
+    /* ✅ 좌하단: 할 일(총 개수) */
+    .todoBadge{
       position:absolute;
-      top:0px;
-      right:0px;
+      left:0px;
+      bottom:0px;
       width:18px;
       height:18px;
-      clip-path: polygon(100% 0, 0 0, 100% 100%);
+      clip-path: polygon(0 100%, 0 0, 100% 100%);
       background: var(--accent);
       color:#0b0c10;
       display:flex;
-      align-items:flex-start;
-      justify-content:flex-end;
+      align-items:flex-end;
+      justify-content:flex-start;
       font-size:9px;
       line-height:1;
-      padding:2px 3px 0 0;
+      padding:0 0 2px 3px;
       box-shadow: inset 0 0 0 2px rgba(11,12,16,.25);
       user-select:none;
       pointer-events:none;
     }
 
-    /* ✅ 좌상단(완료 개수): 대각 삼각형 */
+    /* ✅ 우하단: 완료(완료 개수) */
     .doneBadge{
       position:absolute;
-      top:0px;
-      left:0px;
+      right:0px;
+      bottom:0px;
       width:18px;
       height:18px;
-      clip-path: polygon(0 0, 100% 0, 0 100%);
+      clip-path: polygon(100% 100%, 0 100%, 100% 0);
       background: rgba(124,199,255,.22);
       color: var(--accent);
       display:flex;
-      align-items:flex-start;
-      justify-content:flex-start;
+      align-items:flex-end;
+      justify-content:flex-end;
       font-size:9px;
       line-height:1;
-      padding:2px 0 0 3px;
+      padding:0 3px 2px 0;
       box-shadow: inset 0 0 0 2px rgba(124,199,255,.25);
       user-select:none;
       pointer-events:none;
     }
 
-    /* ✅ 하트: 모두완료면 ♥, 아니면 ♡ */
+    /* ✅ 하트: 배지 위로 */
     .heartMarker{
       position:absolute;
       left:50%;
-      bottom:6px;
+      bottom:22px;
       transform: translateX(-50%);
       font-size:12px;
       line-height:1;
@@ -501,7 +501,7 @@
 
           <div class="taskList" id="taskList"></div>
 
-          <div class="help">♡=미완료 있음 / ♥=전부완료 · 좌상=완료수 · 우상=전체수 (10↑는 9+)</div>
+          <div class="help">좌하단=총 할 일 · 우하단=완료 · ♡/♥=완료상태</div>
         </div>
       </div>
     </div>
@@ -529,9 +529,8 @@
     const addBtn = $("#addBtn");
     const taskList = $("#taskList");
 
-    // ✅ 최신 저장 키 (시계도 이 키를 읽음)
     const STORE_KEY = "pixel_calendar_tasks_v6";
-    const UI_KEY = "pixel_calendar_ui_v6"; // hideDone 저장용
+    const UI_KEY = "pixel_calendar_ui_v6";
 
     const LEGACY_KEYS = [
       "pixel_calendar_tasks_v5_backup_hideDone",
@@ -570,11 +569,9 @@
     }
 
     function loadAll(){
-      // 1) 최신 키 우선
       const cur = safeParse(localStorage.getItem(STORE_KEY));
       if(cur && typeof cur === "object" && !Array.isArray(cur)) return cur;
 
-      // 2) 레거시에서 첫 번째로 발견되는 것 로드 + 마이그레이션
       for(const k of LEGACY_KEYS){
         const v = safeParse(localStorage.getItem(k));
         if(v && typeof v === "object" && !Array.isArray(v)){
@@ -604,6 +601,7 @@
       const all = loadAll();
       return normalizeList(all[iso]);
     }
+
     function setTasks(iso, list){
       const all = loadAll();
       all[iso] = normalizeList(list);
@@ -670,17 +668,16 @@
         num.textContent = displayNum;
         cell.appendChild(num);
 
-        // 배지/하트
         const tasks = getTasks(iso);
         if(tasks.length > 0){
-          const total = tasks.length;
-          const done = tasks.filter(t => t.done).length;
+          const total = tasks.length; // 좌하단(총)
+          const done = tasks.filter(t => t.done).length; // 우하단(완료)
           const hasUndone = tasks.some(t => !t.done);
 
-          const totalBadge = document.createElement("div");
-          totalBadge.className = "countBadge";
-          totalBadge.textContent = fmtCount(total);
-          cell.appendChild(totalBadge);
+          const todoBadge = document.createElement("div");
+          todoBadge.className = "todoBadge";
+          todoBadge.textContent = fmtCount(total);
+          cell.appendChild(todoBadge);
 
           if(done > 0){
             const doneBadge = document.createElement("div");
@@ -696,10 +693,9 @@
           cell.appendChild(heart);
         }
 
-        // ✅ 클릭 안정: pointerdown (작은 화면에서 더 정확)
         cell.addEventListener("pointerdown", (e) => {
           e.preventDefault();
-          if(disabled) return; // 흐린 날짜는 클릭 막음
+          if(disabled) return; // 흐린 날짜 클릭 막음
           openModal(iso);
         }, { passive:false });
 
@@ -753,10 +749,8 @@
       }
 
       tasks.forEach((task) => {
-        // hideDone ON이면 index가 원본과 달라질 수 있어 원본 인덱스를 찾아야 함
         const listAll = getTasks(iso);
         const idx = listAll.findIndex(t => t.text === task.text && t.done === task.done);
-        // (동일 텍스트가 중복이면 첫 매칭; 필요하면 id 붙이는 방식으로 업그레이드 가능)
 
         const item = document.createElement("div");
         item.className = "taskItem";
@@ -822,7 +816,6 @@
       });
     }
 
-    // 편집 모드(원본 인덱스 기반)
     function renderTaskListEditMode(){
       const iso = state.selectedISO;
       if(!iso) return;
@@ -998,7 +991,7 @@
       addTask();
     }, { passive:false });
 
-    // ✅ 완료 숨김 토글
+    // 완료 숨김 토글
     hideDoneBtn.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       state.hideDone = !state.hideDone;
@@ -1006,7 +999,7 @@
       renderTaskList();
     }, { passive:false });
 
-    // ✅ 내보내기(JSON)
+    // 내보내기(JSON)
     exportBtn.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       const data = loadAll();
@@ -1020,7 +1013,7 @@
       setTimeout(() => URL.revokeObjectURL(a.href), 2000);
     }, { passive:false });
 
-    // ✅ 가져오기(JSON)
+    // 가져오기(JSON)
     importBtn.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       const input = document.createElement("input");
@@ -1047,7 +1040,7 @@
       input.click();
     }, { passive:false });
 
-    // ✅ URL 쿼리로 날짜 모달 자동 오픈
+    // URL 쿼리로 날짜 모달 자동 오픈: ?date=YYYY-MM-DD&open=1
     function parseISODateParam(){
       const sp = new URLSearchParams(location.search);
       const iso = sp.get("date");
