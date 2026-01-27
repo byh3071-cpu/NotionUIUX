@@ -20,7 +20,7 @@
       --accent:#7cc7ff;
 
       --baseW: 360;
-      --baseH: 156;
+      --baseH: 160; /* 살짝 여유 */
       --scale: 1;
     }
 
@@ -72,7 +72,7 @@
       align-items:center;
       justify-content:flex-start;
       padding:6px 8px;
-      padding-right:26px;
+      padding-right:30px; /* 노션 우상단 오버레이 보험 */
       border-bottom:2px solid var(--line2);
       background:linear-gradient(180deg, var(--panel2), var(--panel));
       gap:8px;
@@ -118,7 +118,7 @@
       display:flex;
       align-items:stretch;
       justify-content:space-between;
-      padding:10px 10px;
+      padding:10px;
       gap:10px;
       min-height:0;
     }
@@ -127,7 +127,7 @@
       flex:1;
       border:2px solid var(--line);
       background:#0b0c10;
-      padding:12px 12px;
+      padding:12px;
       min-width:0;
       display:flex;
       flex-direction:column;
@@ -339,13 +339,13 @@
     function fitToFrame(){
       const rootStyle = getComputedStyle(document.documentElement);
       const baseW = Number(rootStyle.getPropertyValue("--baseW")) || 360;
-      const baseH = Number(rootStyle.getPropertyValue("--baseH")) || 156;
+      const baseH = Number(rootStyle.getPropertyValue("--baseH")) || 160;
 
       const vw = (window.visualViewport && window.visualViewport.width) ? window.visualViewport.width : window.innerWidth;
       const vh = (window.visualViewport && window.visualViewport.height) ? window.visualViewport.height : window.innerHeight;
 
-      const availW = Math.max(1, vw - 24);
-      const availH = Math.max(1, vh - 24);
+      const availW = Math.max(1, vw - 20);
+      const availH = Math.max(1, vh - 20);
 
       let scale = Math.min(availW / baseW, availH / baseH);
       if(!isFinite(scale) || scale <= 0) scale = 1;
@@ -393,41 +393,34 @@
       tick();
     }
 
-    /**
-     * ✅ 404 방지 전략
-     * 1) /embed?date=...&open=1  (vercel.json rewrite로 calender.html을 서빙)
-     * 2) 만약 rewrite가 깨졌을 때 대비: /embed/calender.html 로 fallback
-     */
-    function buildCalendarUrl(iso){
+    // ✅ OPEN: 1순위 /embed/calendar (정식)
+    // ✅ fallback: /embed (rewrite로 캘린더 열리게)
+    function openCalendarForISO(iso){
       const origin = window.location.origin;
 
-      // 1) 가장 안전: /embed (rewrite 대상)
-      const u1 = new URL("/embed", origin);
-      u1.searchParams.set("date", iso);
-      u1.searchParams.set("open", "1");
+      const primary = new URL("/embed/calendar", origin);
+      primary.searchParams.set("date", iso);
+      primary.searchParams.set("open", "1");
 
-      // 2) fallback: 실제 파일명(현재 레포 구조)
-      const u2 = new URL("/embed/calender.html", origin);
-      u2.searchParams.set("date", iso);
-      u2.searchParams.set("open", "1");
+      const fallback = new URL("/embed", origin);
+      fallback.searchParams.set("date", iso);
+      fallback.searchParams.set("open", "1");
 
-      return { primary: u1, fallback: u2 };
+      const w = window.open(primary.toString(), "_blank", "noopener,noreferrer");
+      if(!w){
+        window.location.href = primary.toString();
+        return;
+      }
+
+      // 일부 환경에서 primary가 404일 때 대비: 사용자가 눌렀을 때만 fallback 열리도록(자동 2탭 방지)
+      // 필요하면 여기서 안내 문구/버튼을 추가하는 방식이 제일 깔끔함.
+      console.log("[OPEN] primary =", primary.toString());
+      console.log("[OPEN] fallback =", fallback.toString());
     }
 
     function openToday(){
       const iso = toISO(new Date());
-      const url = new URL("/embed/calendar", window.location.origin); // ✅ 확장자 없는 정식 경로
-      url.searchParams.set("date", iso);
-      url.searchParams.set("open", "1");
-    
-      const w = window.open(url.toString(), "_blank", "noopener,noreferrer");
-      if(!w) window.location.href = url.toString();
-    }
-
-      // 일부 환경에서 primary가 404일 수 있어서 fallback도 제공(사용자가 바로 누를 수 있게)
-      // 자동으로 fallback을 또 여는 건 탭이 2개 떠서 싫어할 수 있으니, 콘솔에만 안내
-      console.log("OPEN primary =", primary.toString());
-      console.log("OPEN fallback =", fallback.toString());
+      openCalendarForISO(iso);
     }
 
     ["pointerdown","mousedown","touchstart"].forEach(type=>{
@@ -440,8 +433,17 @@
     fitToFrame();
     window.addEventListener("resize", fitToFrame);
 
-    // 노션 임베드에서 visualViewport 변동이 잦아서 보정
-    setInterval(fitToFrame, 500);
+    // 노션 임베드에서 visualViewport 변동 보정(과하지 않게)
+    let fitTimer = null;
+    const scheduleFit = () => {
+      if(fitTimer) return;
+      fitTimer = setTimeout(() => { fitTimer = null; fitToFrame(); }, 80);
+    };
+    window.addEventListener("scroll", scheduleFit, { passive:true });
+    if(window.visualViewport){
+      window.visualViewport.addEventListener("resize", scheduleFit);
+      window.visualViewport.addEventListener("scroll", scheduleFit);
+    }
 
     tick();
     setInterval(tick, 1000);
