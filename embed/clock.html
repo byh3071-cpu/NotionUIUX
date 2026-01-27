@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Notion Pixel Clock (Open Calendar)</title>
+  <title>Notion Pixel Calendar (Tasks Only)</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,448 +17,1122 @@
       --line2:#3a4150;
       --text:#e9eef7;
       --muted:#a7b0c2;
-      --accent:#7cc7ff;
 
-      --baseW: 360;
-      --baseH: 160; /* 살짝 여유 */
-      --scale: 1;
+      --accent:#7cc7ff;
+      --today:#ffe08a;
+      --danger:#ff6b6b;
+
+      --sun:#ff8f8f;
+      --sat:#8fb6ff;
+
+      --w: 360px;
+      --h: 440px;
+      --cell: 46px;
+      --gap: 4px;
     }
 
     *{ box-sizing:border-box; }
-html,body{
-  margin:0;
-  padding:0;
-  width:100%;
-  height:100%;
-  background: var(--panel);         /* ✅ 흰 여백 제거 */
-  color:var(--text);
-  font-family: ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: geometricPrecision;
-  overflow:hidden;                  /* ✅ 바깥 스크롤 방지 */
-}
+    html,body{
+      margin:0;
+      padding:0;
+      width:100%;
+      height:100%;
+      overflow:hidden;          /* ✅ 흰 여백/스크롤 꼬임 방지 */
+      background:transparent;
+      color:var(--text);
+      font-family: ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: geometricPrecision;
+    }
 
-/* ✅ iframe 남는 영역도 패널로 채우고 싶으면 body를 flex로 */
-body{
-  display:flex;
-  align-items:flex-start;           /* top 고정(원하면 center로) */
-  justify-content:flex-start;       /* left 고정(원하면 center로) */
-}
-
-
-.stage{
-  width:100%;
-  height:100%;
-  background: var(--panel);
-  display:flex;
-  align-items:flex-start;   /* top 유지면 그대로 */
-  justify-content:center;   /* 가운데로 */
-  overflow:hidden;
-  padding: 8px;             /* 테두리 잘림 방지 */
-}
+    .stage{
+      width:100%;
+      height:100%;
+      display:flex;
+      align-items:flex-start;
+      justify-content:flex-start;
+      overflow:hidden;
+    }
 
     .wrap{
-      width: calc(var(--baseW) * 1px);
-      height: calc(var(--baseH) * 1px);
-      zoom: var(--scale);
-
+      width:var(--w);
+      height:var(--h);
       background:var(--panel);
       border:2px solid var(--line2);
       border-radius:0;
       overflow:hidden;
-      display:flex;
-      flex-direction:column;
-      pointer-events:auto;
+      position:relative;
     }
 
-    @supports not (zoom: 1){
-      .wrap{
-        transform: scale(var(--scale));
-        transform-origin: top left;
-      }
-    }
-
-    .top{
-      height:36px;
+    .topbar{
       display:flex;
       align-items:center;
-      justify-content:flex-start;
-      padding:6px 8px;
-      padding-right:30px; /* 노션 우상단 오버레이 보험 */
+      justify-content:space-between;
+      padding:8px 8px;
       border-bottom:2px solid var(--line2);
       background:linear-gradient(180deg, var(--panel2), var(--panel));
-      gap:8px;
+      gap:6px;
     }
 
-    .title{
-      font-size:9px;
-      color:var(--muted);
-      letter-spacing:0.5px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      user-select:none;
-      pointer-events:none;
-      flex:1;
+    .leftBtns, .rightBtns{
+      display:flex;
+      gap:6px;
+      align-items:center;
     }
 
-    .chip{
-      height:24px;
-      padding:0 8px;
-      border:2px solid var(--line2);
+    .btn{
+      height:32px;
+      padding:0 10px;
       background:#0e1016;
       color:var(--text);
-      font-size:9px;
+      border:2px solid var(--line2);
+      border-radius:0;
+      cursor:pointer;
+      font-size:10px;
+      line-height:1;
       display:flex;
       align-items:center;
       justify-content:center;
-      cursor:pointer;
       user-select:none;
-      line-height:1;
+      transition: transform .05s ease;
+
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
     }
-    .chip:hover{ border-color:var(--accent); }
-    .chip.on{
-      border-color:var(--accent);
-      box-shadow: inset 0 0 0 2px rgba(124,199,255,.12);
-      color:var(--accent);
-    }
+    .btn:active{ transform: translateY(1px); }
+    .btn:hover{ border-color:var(--accent); }
 
-    .main{
+    .monthTitle{
       flex:1;
-      display:flex;
-      align-items:stretch;
-      justify-content:space-between;
-      padding:10px;
-      gap:10px;
-      min-height:0;
-    }
-
-    .leftBox{
-      flex:1;
-      border:2px solid var(--line);
-      background:#0b0c10;
-      padding:12px;
-      min-width:0;
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-      overflow:hidden;
-    }
-
-    .dateRow{
-      font-size:9px;
-      color:var(--muted);
-      line-height:1.45;
+      text-align:center;
+      font-size:11px;
+      color:var(--text);
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
-      margin-bottom:8px;
+      user-select:none;
     }
 
-    .timeRow{
+    .dow{
+      display:grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: var(--gap);
+      padding:8px 8px 6px;
+      border-bottom:2px solid var(--line2);
+      background:#0e1016;
+    }
+
+    .dow div{
+      text-align:center;
+      font-size:9px;
+      color:var(--muted);
+      padding:6px 0;
+      border:2px solid var(--line);
+      border-radius:0;
+      background:#0b0c10;
+      user-select:none;
+    }
+
+    .dow .sunHead{
+      color:var(--sun);
+      border-color:rgba(255,143,143,.45);
+    }
+    .dow .satHead{
+      color:var(--sat);
+      border-color:rgba(143,182,255,.45);
+    }
+
+    .grid{
+      padding:8px;
+      display:grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: var(--gap);
+      background:var(--panel);
+    }
+
+    .day{
+      height: var(--cell);
+      border:2px solid var(--line);
+      border-radius:0;
+      background:#0b0c10;
+      position:relative;
+      cursor:pointer;
       display:flex;
-      align-items:center;
-      gap:10px;
-      white-space:nowrap;
+      align-items:flex-start;
+      justify-content:flex-start;
+      padding:6px;
+      user-select:none;
+      transition: border-color .12s ease;
       overflow:hidden;
+
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .day:hover{ border-color:var(--accent); }
+
+    .day.disabled{
+      opacity:.35;
+      cursor:default;
     }
 
-    .time{
-      font-size:18px;
+    .day.sun:not(.disabled){ border-color: rgba(255,143,143,.30); }
+    .day.sat:not(.disabled){ border-color: rgba(143,182,255,.30); }
+
+    .num{
+      font-size:10px;
       color:var(--text);
-      letter-spacing:1px;
-      display:inline-block;
-      line-height:1.45;
-      padding:2px 0 6px;
     }
 
-    .cursor{
-      font-size:14px;
+    /* ✅ 좌하단: 총 할 일(하단 코너 삼각형) */
+    .todoBadge{
+      position:absolute;
+      left:0;
+      bottom:0;
+      width:18px;
+      height:18px;
+      clip-path: polygon(0 0, 0 100%, 100% 100%);
+
+      background: var(--accent);
+      color:#0b0c10;
+
+      display:flex;
+      align-items:flex-end;
+      justify-content:flex-start;
+
+      font-size:9px;
+      line-height:1;
+      padding:0 0 2px 3px;
+
+      box-shadow: inset 0 0 0 2px rgba(11,12,16,.25);
+      user-select:none;
+      pointer-events:none;
+    }
+
+    /* ✅ 우하단: 완료(하단 코너 삼각형) */
+    .doneBadge{
+      position:absolute;
+      right:0;
+      bottom:0;
+      width:18px;
+      height:18px;
+      clip-path: polygon(100% 0, 0 100%, 100% 100%);
+
+      background: rgba(124,199,255,.22);
+      color: var(--accent);
+
+      display:flex;
+      align-items:flex-end;
+      justify-content:flex-end;
+
+      font-size:9px;
+      line-height:1;
+      padding:0 3px 2px 0;
+
+      box-shadow: inset 0 0 0 2px rgba(124,199,255,.25);
+      user-select:none;
+      pointer-events:none;
+    }
+
+    /* ✅ 하트: "배지 위 중앙" - 더 아래로 내리고 싶으면 bottom만 더 줄이면 됨 */
+    .heartMarker{
+      position:absolute;
+      left:50%;
+      bottom:4px;              /* ✅ 여기만 조절하면 됨: 2px~8px 추천 */
+      transform: translateX(-50%);
+      font-size:12px;
+      line-height:1.2;
       color:var(--accent);
-      display:inline-block;
-      line-height:1.45;
-      padding:2px 0 6px;
       opacity:1;
       user-select:none;
       pointer-events:none;
     }
+    .heartMarker.doneAll{
+      filter: drop-shadow(0 0 2px rgba(124,199,255,.25));
+    }
 
-    .note{
-      margin-top:10px;
-      font-size:8px;
-      color:rgba(233,238,247,.75);
-      line-height:1.45;
+    .today{
+      border-color: var(--today) !important;
+      box-shadow: inset 0 0 0 2px rgba(255,224,138,.25);
+    }
+
+    .modalBack{
+      position:absolute;
+      inset:0;
+      background: rgba(0,0,0,.55);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:10px;
+    }
+    .modalBack.show{ display:flex; }
+
+    .modal{
+      width: 100%;
+      max-width: 340px;
+      height: 350px;
+      background: #0e1016;
+      border: 2px solid var(--line2);
+      border-radius:0;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+    }
+
+    .modalHeader{
+      padding:8px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      border-bottom:2px solid var(--line2);
+      background:#0b0c10;
+      gap:6px;
+    }
+
+    .modalTitle{
+      font-size:10px;
+      color:var(--text);
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
-    }
-
-    .rightBox{
-      width:112px;
-      border:2px solid var(--line);
-      background:#0b0c10;
-      padding:8px;
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-      gap:8px;
-      overflow:hidden;
-    }
-
-    .meterLabel{
-      font-size:8px;
-      color:var(--muted);
-      opacity:.95;
-      line-height:1;
+      flex:1;
       user-select:none;
     }
 
-    .meter{
-      height:10px;
+    .miniBtn{
+      height:28px;
+      padding:0 8px;
       border:2px solid var(--line2);
       background:#0e1016;
-      position:relative;
-      overflow:hidden;
+      color:var(--text);
+      border-radius:0;
+      cursor:pointer;
+      font-size:9px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      user-select:none;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
-    .bar{
+    .miniBtn:hover{ border-color:var(--accent); }
+
+    .closeBtn{
+      width:32px;
+      height:32px;
+      border:2px solid var(--line2);
+      background:#0e1016;
+      color:var(--text);
+      border-radius:0;
+      cursor:pointer;
+      font-size:12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      user-select:none;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .closeBtn:hover{ border-color:var(--danger); }
+
+    .modalBody{
+      padding:8px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      height:100%;
+      min-height:0;
+    }
+
+    .addRow{
+      display:flex;
+      gap:6px;
+    }
+
+    .taskInput{
+      flex:1;
+      height:34px;
+      border:2px solid var(--line2);
+      background:#0b0c10;
+      color:var(--text);
+      border-radius:0;
+      outline:none;
+      padding:0 8px;
+      font-size:10px;
+    }
+    .taskInput::placeholder{ color:#7b8497; }
+
+    .addBtn{
+      width:70px;
+      height:34px;
+      border:2px solid var(--line2);
+      background:#0b0c10;
+      color:var(--text);
+      border-radius:0;
+      cursor:pointer;
+      font-size:10px;
+      user-select:none;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .addBtn:hover{ border-color:var(--accent); }
+
+    .taskList{
+      border:2px solid var(--line2);
+      background:#0b0c10;
+      border-radius:0;
+      padding:6px;
+      overflow:auto;
+      flex:1;
+      min-height:0;
+    }
+
+    .taskItem{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      padding:6px;
+      border:2px solid var(--line);
+      border-radius:0;
+      margin-bottom:6px;
+      background:#0e1016;
+    }
+
+    .checkBtn{
+      width:30px;
+      height:28px;
+      border:2px solid var(--accent);
+      background:transparent;
+      color:var(--text);
+      border-radius:0;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:11px;
+      flex:0 0 auto;
+      user-select:none;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .checkBtn.done{
+      background: var(--accent);
+      color:#0b0c10;
+    }
+
+    .taskText{
+      font-size:10px;
+      color:var(--text);
+      line-height:1.25;
+      word-break:break-word;
+      flex:1;
+    }
+    .taskText.done{
+      color: var(--muted);
+      text-decoration: line-through;
+      opacity:.9;
+    }
+
+    .editInput{
+      flex:1;
+      height:30px;
+      border:2px solid var(--line2);
+      background:#0b0c10;
+      color:var(--text);
+      border-radius:0;
+      outline:none;
+      padding:0 8px;
+      font-size:10px;
+    }
+
+    .taskActions{
+      display:flex;
+      gap:6px;
+      flex:0 0 auto;
+    }
+
+    .iconBtn{
+      width:30px;
+      height:28px;
+      border:2px solid var(--line2);
+      background:#0b0c10;
+      color:var(--text);
+      border-radius:0;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:11px;
+      user-select:none;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .iconBtn:hover{ border-color:var(--accent); }
+    .iconBtn.delete:hover{ border-color:var(--danger); }
+
+    .help{
+      font-size:9px;
+      color:var(--muted);
+      opacity:.9;
+      line-height:1.4;
+      user-select:none;
+    }
+
+    /* ✅ 캘린더에서도 팝업차단 안내 */
+    .toast{
       position:absolute;
-      left:0; top:0; bottom:0;
-      width:0%;
-      background:var(--accent);
+      left:10px;
+      right:10px;
+      bottom:10px;
+      padding:10px;
+      border:2px solid rgba(124,199,255,.6);
+      background:#0b0c10;
+      color:rgba(233,238,247,.92);
+      font-size:9px;
+      line-height:1.4;
+      z-index:9999;
+      cursor:pointer;
+      user-select:none;
+      display:none;
     }
-
-    .meterText{
-      font-size:8px;
-      color:rgba(233,238,247,.75);
-      line-height:1.2;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      min-height:10px;
-    }
-
-    @media (max-width: 340px){
-      .rightBox{ display:none; }
-    }
+    .toast b{ color:var(--accent); font-weight:700; }
   </style>
 </head>
 
 <body>
   <div class="stage">
-    <div class="wrap" id="wrap">
-      <div class="top">
-        <div class="chip on" id="modeBtn" title="12/24 토글">24H</div>
-        <div class="chip" id="openTodayBtn" title="캘린더에서 오늘 열기">OPEN</div>
-        <div class="title">PIXEL CLOCK</div>
+    <div class="wrap" id="app">
+      <div class="topbar">
+        <div class="leftBtns">
+          <button class="btn" id="prevBtn">◀</button>
+          <button class="btn" id="nextBtn">▶</button>
+        </div>
+
+        <div class="monthTitle" id="monthTitle">2026-01</div>
+
+        <div class="rightBtns">
+          <button class="btn" id="clockBtn">CLOCK</button>
+          <button class="btn" id="todayBtn">TODAY</button>
+        </div>
       </div>
 
-      <div class="main">
-        <div class="leftBox">
-          <div class="dateRow" id="dateText">0000-00-00 (월) · TODAY 0/0</div>
-          <div class="timeRow">
-            <div class="time" id="timeText">00:00</div>
-            <div class="cursor" id="cursor">■</div>
+      <div class="dow" id="dow">
+        <div class="sunHead">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div class="satHead">토</div>
+      </div>
+
+      <div class="grid" id="grid"></div>
+
+      <div class="modalBack" id="modalBack" aria-hidden="true">
+        <div class="modal" role="dialog" aria-modal="true">
+          <div class="modalHeader">
+            <div class="modalTitle" id="modalTitle">TASK</div>
+
+            <button class="miniBtn" id="hideDoneBtn" title="완료 숨김 토글">HIDE</button>
+            <button class="miniBtn" id="exportBtn" title="내보내기(JSON)">EXPORT</button>
+            <button class="miniBtn" id="importBtn" title="가져오기(JSON)">IMPORT</button>
+
+            <button class="closeBtn" id="closeBtn">X</button>
           </div>
-          <div class="note" id="noteText">오늘 할 일: 0 / 0</div>
-        </div>
 
-        <div class="rightBox">
-          <div class="meterLabel">DAY</div>
-          <div class="meter"><div class="bar" id="dayBar"></div></div>
+          <div class="modalBody">
+            <div class="addRow">
+              <input class="taskInput" id="taskInput" placeholder="할 일 입력" maxlength="60" />
+              <button class="addBtn" id="addBtn">추가</button>
+            </div>
 
-          <div class="meterLabel">TODAY TASK</div>
-          <div class="meter"><div class="bar" id="taskBar"></div></div>
-          <div class="meterText" id="taskPctText">0/0 · 0%</div>
+            <div class="taskList" id="taskList"></div>
+
+            <div class="help">좌하단=총 할 일 · 우하단=완료 · ♡/♥=완료상태</div>
+          </div>
         </div>
       </div>
+
+      <div class="toast" id="toast"></div>
     </div>
   </div>
 
   <script>
-    const $ = (s) => document.querySelector(s);
+    const $ = (sel) => document.querySelector(sel);
 
-    const dateText  = $("#dateText");
-    const timeText  = $("#timeText");
-    const cursorEl  = $("#cursor");
-    const noteText  = $("#noteText");
-    const dayBar    = $("#dayBar");
-    const taskBar   = $("#taskBar");
-    const taskPctText = $("#taskPctText");
-    const modeBtn   = $("#modeBtn");
-    const openTodayBtn = $("#openTodayBtn");
+    const gridEl = $("#grid");
+    const monthTitleEl = $("#monthTitle");
 
-    const state = { is24h: true };
-    const DOW_KR = ["일","월","화","수","목","금","토"];
+    const prevBtn = $("#prevBtn");
+    const nextBtn = $("#nextBtn");
+    const todayBtn = $("#todayBtn");
+    const clockBtn = $("#clockBtn");
 
-    const STORE_KEYS = [
-      "pixel_calendar_tasks_v6",
+    const modalBack = $("#modalBack");
+    const closeBtn = $("#closeBtn");
+    const modalTitle = $("#modalTitle");
+
+    const hideDoneBtn = $("#hideDoneBtn");
+    const exportBtn = $("#exportBtn");
+    const importBtn = $("#importBtn");
+
+    const taskInput = $("#taskInput");
+    const addBtn = $("#addBtn");
+    const taskList = $("#taskList");
+
+    const toastEl = $("#toast");
+
+    const STORE_KEY = "pixel_calendar_tasks_v6";
+    const UI_KEY = "pixel_calendar_ui_v6";
+
+    const LEGACY_KEYS = [
       "pixel_calendar_tasks_v5_backup_hideDone",
       "pixel_calendar_tasks_v4_bottomTriangles",
       "pixel_calendar_tasks_v3_bottomBadges",
-      "pixel_calendar_tasks_v2_heart_preview",
+      "pixel_calendar_tasks_v2_heart_preview"
     ];
 
-    const pad2 = (n) => String(n).padStart(2,"0");
-    const toISO = (d) => `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
-    const safeParse = (json) => { try { return JSON.parse(json); } catch(e){ return null; } };
+    const state = {
+      viewDate: new Date(),
+      selectedISO: null,
+      editingIndex: null,
+      hideDone: false
+    };
+
+    const pad2 = (n) => String(n).padStart(2, "0");
+    const toISO = (y,m,d) => `${y}-${pad2(m)}-${pad2(d)}`;
+
+    const isSameDay = (a, b) =>
+      a.getFullYear() === b.getFullYear() &&
+      a.getMonth() === b.getMonth() &&
+      a.getDate() === b.getDate();
+
+    function safeParse(s){
+      try{ return JSON.parse(s); }catch(e){ return null; }
+    }
+
+    function showToast(msg, link){
+      toastEl.innerHTML = msg;
+      toastEl.style.display = "block";
+      toastEl.onclick = () => window.open(link, "_blank", "noopener,noreferrer");
+      clearTimeout(window.__toastT);
+      window.__toastT = setTimeout(() => { toastEl.style.display = "none"; }, 6000);
+    }
+
+    function openClock(){
+      const url = new URL("/embed/clock.html", window.location.origin);
+      const w = window.open(url.toString(), "_blank", "noopener,noreferrer");
+      if(!w){
+        showToast(`팝업이 차단되어 새 탭을 못 열었어요. <b>여기를 눌러</b> 시계를 열어주세요.`, url.toString());
+      }
+    }
+
+    function loadUI(){
+      const ui = safeParse(localStorage.getItem(UI_KEY)) || {};
+      state.hideDone = Boolean(ui.hideDone);
+      hideDoneBtn.textContent = state.hideDone ? "SHOW" : "HIDE";
+    }
+    function saveUI(){
+      localStorage.setItem(UI_KEY, JSON.stringify({ hideDone: state.hideDone }));
+      hideDoneBtn.textContent = state.hideDone ? "SHOW" : "HIDE";
+    }
+
+    function loadAll(){
+      const cur = safeParse(localStorage.getItem(STORE_KEY));
+      if(cur && typeof cur === "object" && !Array.isArray(cur)) return cur;
+
+      for(const k of LEGACY_KEYS){
+        const v = safeParse(localStorage.getItem(k));
+        if(v && typeof v === "object" && !Array.isArray(v)){
+          localStorage.setItem(STORE_KEY, JSON.stringify(v));
+          return v;
+        }
+      }
+      return {};
+    }
+
+    function saveAll(obj){
+      localStorage.setItem(STORE_KEY, JSON.stringify(obj));
+    }
 
     function normalizeList(list){
       if(!Array.isArray(list)) return [];
       return list.map(x => {
         if(typeof x === "string") return { text:x, done:false };
-        if(x && typeof x === "object") return { text: String(x.text ?? ""), done: Boolean(x.done) };
+        if(x && typeof x === "object"){
+          return { text: String(x.text ?? ""), done: Boolean(x.done) };
+        }
         return { text:"", done:false };
       }).filter(t => t.text.trim().length > 0);
     }
 
-    function loadAllFromAnyKey(){
-      for(const k of STORE_KEYS){
-        const raw = localStorage.getItem(k);
-        if(!raw) continue;
-        const parsed = safeParse(raw);
-        if(parsed && typeof parsed === "object" && !Array.isArray(parsed)) return parsed;
+    function getTasks(iso){
+      const all = loadAll();
+      return normalizeList(all[iso]);
+    }
+
+    function setTasks(iso, list){
+      const all = loadAll();
+      all[iso] = normalizeList(list);
+      saveAll(all);
+    }
+
+    function fmtCount(n){
+      return n > 9 ? "9+" : String(n);
+    }
+
+    function render(){
+      gridEl.innerHTML = "";
+
+      const y = state.viewDate.getFullYear();
+      const m = state.viewDate.getMonth();
+
+      monthTitleEl.textContent = `${y}-${pad2(m+1)}`;
+
+      const first = new Date(y, m, 1);
+      const firstDow = first.getDay();
+
+      const last = new Date(y, m+1, 0);
+      const lastDay = last.getDate();
+
+      const prevLast = new Date(y, m, 0).getDate();
+
+      const totalCells = 42;
+
+      for(let i=0; i<totalCells; i++){
+        const cell = document.createElement("div");
+        cell.className = "day";
+
+        const dayNum = i - firstDow + 1;
+
+        let cellDate;
+        let disabled = false;
+        let displayNum;
+
+        if(dayNum < 1){
+          displayNum = prevLast + dayNum;
+          cellDate = new Date(y, m-1, displayNum);
+          disabled = true;
+        }else if(dayNum > lastDay){
+          displayNum = dayNum - lastDay;
+          cellDate = new Date(y, m+1, displayNum);
+          disabled = true;
+        }else{
+          displayNum = dayNum;
+          cellDate = new Date(y, m, displayNum);
+        }
+
+        const iso = toISO(cellDate.getFullYear(), cellDate.getMonth()+1, cellDate.getDate());
+        const dow = cellDate.getDay();
+
+        if(disabled) cell.classList.add("disabled");
+        if(dow === 0) cell.classList.add("sun");
+        if(dow === 6) cell.classList.add("sat");
+
+        const now = new Date();
+        if(isSameDay(cellDate, now) && !disabled) cell.classList.add("today");
+
+        const num = document.createElement("div");
+        num.className = "num";
+        num.textContent = displayNum;
+        cell.appendChild(num);
+
+        const tasks = getTasks(iso);
+        if(tasks.length > 0){
+          const total = tasks.length; // 좌하단(총)
+          const done = tasks.filter(t => t.done).length; // 우하단(완료)
+          const hasUndone = tasks.some(t => !t.done);
+
+          const todoBadge = document.createElement("div");
+          todoBadge.className = "todoBadge";
+          todoBadge.textContent = fmtCount(total);
+          cell.appendChild(todoBadge);
+
+          if(done > 0){
+            const doneBadge = document.createElement("div");
+            doneBadge.className = "doneBadge";
+            doneBadge.textContent = fmtCount(done);
+            cell.appendChild(doneBadge);
+          }
+
+          const heart = document.createElement("div");
+          heart.className = "heartMarker";
+          heart.textContent = hasUndone ? "♡" : "♥";
+          if(!hasUndone) heart.classList.add("doneAll");
+          cell.appendChild(heart);
+        }
+
+        cell.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
+          if(disabled) return;
+          openModal(iso);
+        }, { passive:false });
+
+        gridEl.appendChild(cell);
       }
-      return {};
     }
 
-    function getTodayProgress(iso){
-      const data = loadAllFromAnyKey();
-      const list = normalizeList(data[iso]);
-      const total = list.length;
-      const done = list.filter(t => t.done).length;
-      return { done, total };
+    function openModal(iso){
+      state.selectedISO = iso;
+      state.editingIndex = null;
+
+      modalTitle.textContent = `TASK · ${iso}`;
+      taskInput.value = "";
+      renderTaskList();
+
+      modalBack.classList.add("show");
+      modalBack.setAttribute("aria-hidden", "false");
+      setTimeout(() => taskInput.focus(), 0);
     }
 
-    function formatTime(d){
-      let h = d.getHours();
-      const m = d.getMinutes();
-      if(!state.is24h){
-        const ampm = h < 12 ? "AM" : "PM";
-        h = h % 12; if(h === 0) h = 12;
-        return `${pad2(h)}:${pad2(m)} ${ampm}`;
-      }
-      return `${pad2(h)}:${pad2(m)}`;
+    function closeModal(){
+      modalBack.classList.remove("show");
+      modalBack.setAttribute("aria-hidden", "true");
+      state.selectedISO = null;
+      state.editingIndex = null;
     }
 
-    function calcDayProgress(d){
-      const total = 24*60*60;
-      const now = d.getHours()*3600 + d.getMinutes()*60 + d.getSeconds();
-      return Math.max(0, Math.min(1, now/total));
-    }
+    function renderTaskList(){
+      const iso = state.selectedISO;
+      if(!iso) return;
 
-    function fitToFrame(){
-      const rootStyle = getComputedStyle(document.documentElement);
-      const baseW = Number(rootStyle.getPropertyValue("--baseW")) || 360;
-      const baseH = Number(rootStyle.getPropertyValue("--baseH")) || 160;
+      const all = getTasks(iso);
+      const tasks = state.hideDone ? all.filter(t => !t.done) : all;
 
-      const vw = (window.visualViewport && window.visualViewport.width) ? window.visualViewport.width : window.innerWidth;
-      const vh = (window.visualViewport && window.visualViewport.height) ? window.visualViewport.height : window.innerHeight;
+      taskList.innerHTML = "";
 
-      const availW = Math.max(1, vw - 20);
-      const availH = Math.max(1, vh - 20);
-
-      let scale = Math.min(availW / baseW, availH / baseH);
-      if(!isFinite(scale) || scale <= 0) scale = 1;
-
-      scale = Math.min(3, Math.max(0.55, scale));
-      scale = Math.floor(scale * 100) / 100;
-
-      document.documentElement.style.setProperty("--scale", String(scale));
-    }
-
-    function tick(){
-      const d = new Date();
-      const iso = toISO(d);
-
-      const y = d.getFullYear();
-      const mo = d.getMonth() + 1;
-      const da = d.getDate();
-      const dow = DOW_KR[d.getDay()];
-
-      const { done, total } = getTodayProgress(iso);
-
-      dateText.textContent = `${y}-${pad2(mo)}-${pad2(da)} (${dow}) · TODAY ${done}/${total}`;
-      timeText.textContent = formatTime(d);
-      cursorEl.style.opacity = (d.getSeconds() % 2 === 0) ? "1" : "0.15";
-
-      dayBar.style.width = `${Math.round(calcDayProgress(d) * 100)}%`;
-
-      const pct = total === 0 ? 0 : Math.round((done / total) * 100);
-      taskBar.style.width = `${pct}%`;
-      taskPctText.textContent = `${done}/${total} · ${pct}%`;
-
-      noteText.textContent = `오늘 할 일: ${done} / ${total}`;
-    }
-
-    function stopAll(e){
-      e.preventDefault();
-      e.stopPropagation();
-      if(e.stopImmediatePropagation) e.stopImmediatePropagation();
-    }
-
-    function toggleMode(){
-      state.is24h = !state.is24h;
-      modeBtn.textContent = state.is24h ? "24H" : "12H";
-      modeBtn.classList.toggle("on", state.is24h);
-      tick();
-    }
-
-    // ✅ OPEN: 1순위 /embed/calendar (정식)
-    // ✅ fallback: /embed (rewrite로 캘린더 열리게)
-    function openCalendarForISO(iso){
-      const origin = window.location.origin;
-
-      const primary = new URL("/embed/calendar", origin);
-      primary.searchParams.set("date", iso);
-      primary.searchParams.set("open", "1");
-
-      const fallback = new URL("/embed", origin);
-      fallback.searchParams.set("date", iso);
-      fallback.searchParams.set("open", "1");
-
-      const w = window.open(primary.toString(), "_blank", "noopener,noreferrer");
-      if(!w){
-        window.location.href = primary.toString();
+      if(all.length === 0){
+        const empty = document.createElement("div");
+        empty.className = "help";
+        empty.textContent = "등록된 TASK 없음";
+        taskList.appendChild(empty);
         return;
       }
 
-      // 일부 환경에서 primary가 404일 때 대비: 사용자가 눌렀을 때만 fallback 열리도록(자동 2탭 방지)
-      // 필요하면 여기서 안내 문구/버튼을 추가하는 방식이 제일 깔끔함.
-      console.log("[OPEN] primary =", primary.toString());
-      console.log("[OPEN] fallback =", fallback.toString());
+      if(state.hideDone && tasks.length === 0){
+        const empty = document.createElement("div");
+        empty.className = "help";
+        empty.textContent = "미완료 TASK 없음 (완료 숨김 ON)";
+        taskList.appendChild(empty);
+        return;
+      }
+
+      tasks.forEach((task) => {
+        const listAll = getTasks(iso);
+        const idx = listAll.findIndex(t => t.text === task.text && t.done === task.done);
+
+        const item = document.createElement("div");
+        item.className = "taskItem";
+
+        const check = document.createElement("button");
+        check.className = "checkBtn";
+        check.textContent = task.done ? "✓" : "";
+        if(task.done) check.classList.add("done");
+        check.title = "완료 체크";
+        check.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
+          const list = getTasks(iso);
+          if(idx >= 0){
+            list[idx].done = !list[idx].done;
+            setTasks(iso, list);
+          }
+          renderTaskList();
+          render();
+        }, { passive:false });
+
+        item.appendChild(check);
+
+        const text = document.createElement("div");
+        text.className = "taskText";
+        text.textContent = task.text;
+        if(task.done) text.classList.add("done");
+
+        const actions = document.createElement("div");
+        actions.className = "taskActions";
+
+        const edit = document.createElement("button");
+        edit.className = "iconBtn";
+        edit.textContent = "✎";
+        edit.title = "수정";
+        edit.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
+          state.editingIndex = idx;
+          renderTaskListEditMode();
+        }, { passive:false });
+
+        const del = document.createElement("button");
+        del.className = "iconBtn delete";
+        del.textContent = "⌫";
+        del.title = "삭제";
+        del.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
+          const list = getTasks(iso);
+          if(idx >= 0){
+            list.splice(idx, 1);
+            setTasks(iso, list);
+          }
+          renderTaskList();
+          render();
+        }, { passive:false });
+
+        actions.appendChild(edit);
+        actions.appendChild(del);
+
+        item.appendChild(text);
+        item.appendChild(actions);
+
+        taskList.appendChild(item);
+      });
     }
 
-    function openToday(){
-      const iso = toISO(new Date());
-      openCalendarForISO(iso);
+    function renderTaskListEditMode(){
+      const iso = state.selectedISO;
+      if(!iso) return;
+
+      const tasks = getTasks(iso);
+      const idx = state.editingIndex;
+
+      taskList.innerHTML = "";
+
+      tasks.forEach((task, i) => {
+        const item = document.createElement("div");
+        item.className = "taskItem";
+
+        const check = document.createElement("button");
+        check.className = "checkBtn";
+        check.textContent = task.done ? "✓" : "";
+        if(task.done) check.classList.add("done");
+        check.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
+          const list = getTasks(iso);
+          list[i].done = !list[i].done;
+          setTasks(iso, list);
+          renderTaskListEditMode();
+          render();
+        }, { passive:false });
+
+        item.appendChild(check);
+
+        if(i === idx){
+          const input = document.createElement("input");
+          input.className = "editInput";
+          input.value = task.text;
+          input.maxLength = 60;
+
+          const actions = document.createElement("div");
+          actions.className = "taskActions";
+
+          const save = document.createElement("button");
+          save.className = "iconBtn";
+          save.textContent = "✔";
+          save.title = "저장";
+          save.addEventListener("pointerdown", (e) => {
+            e.preventDefault();
+            const v = input.value.trim();
+            if(!v) return;
+            const list = getTasks(iso);
+            list[i].text = v;
+            setTasks(iso, list);
+            state.editingIndex = null;
+            renderTaskList();
+            render();
+          }, { passive:false });
+
+          const cancel = document.createElement("button");
+          cancel.className = "iconBtn delete";
+          cancel.textContent = "↩";
+          cancel.title = "취소";
+          cancel.addEventListener("pointerdown", (e) => {
+            e.preventDefault();
+            state.editingIndex = null;
+            renderTaskList();
+          }, { passive:false });
+
+          actions.appendChild(save);
+          actions.appendChild(cancel);
+
+          item.appendChild(input);
+          item.appendChild(actions);
+
+          setTimeout(() => input.focus(), 0);
+          input.addEventListener("keydown", (e) => {
+            if(e.key === "Enter") save.click();
+            if(e.key === "Escape") cancel.click();
+          });
+
+          taskList.appendChild(item);
+          return;
+        }
+
+        const text = document.createElement("div");
+        text.className = "taskText";
+        text.textContent = task.text;
+        if(task.done) text.classList.add("done");
+
+        const actions = document.createElement("div");
+        actions.className = "taskActions";
+
+        const edit = document.createElement("button");
+        edit.className = "iconBtn";
+        edit.textContent = "✎";
+        edit.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
+          state.editingIndex = i;
+          renderTaskListEditMode();
+        }, { passive:false });
+
+        const del = document.createElement("button");
+        del.className = "iconBtn delete";
+        del.textContent = "⌫";
+        del.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
+          const list = getTasks(iso);
+          list.splice(i, 1);
+          setTasks(iso, list);
+          renderTaskListEditMode();
+          render();
+        }, { passive:false });
+
+        actions.appendChild(edit);
+        actions.appendChild(del);
+
+        item.appendChild(text);
+        item.appendChild(actions);
+
+        taskList.appendChild(item);
+      });
     }
 
-    ["pointerdown","mousedown","touchstart"].forEach(type=>{
-      modeBtn.addEventListener(type, (e)=>{ stopAll(e); toggleMode(); }, { capture:true, passive:false });
-      openTodayBtn.addEventListener(type, (e)=>{ stopAll(e); openToday(); }, { capture:true, passive:false });
+    function addTask(){
+      const iso = state.selectedISO;
+      if(!iso) return;
+
+      const val = taskInput.value.trim();
+      if(!val) return;
+
+      const list = getTasks(iso);
+      list.unshift({ text: val, done: false });
+      setTasks(iso, list);
+
+      taskInput.value = "";
+      renderTaskList();
+      render();
+    }
+
+    prevBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      const d = new Date(state.viewDate);
+      d.setMonth(d.getMonth() - 1);
+      state.viewDate = d;
+      render();
+    }, { passive:false });
+
+    nextBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      const d = new Date(state.viewDate);
+      d.setMonth(d.getMonth() + 1);
+      state.viewDate = d;
+      render();
+    }, { passive:false });
+
+    todayBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      state.viewDate = new Date();
+      render();
+    }, { passive:false });
+
+    clockBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      openClock();
+    }, { passive:false });
+
+    closeBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      closeModal();
+    }, { passive:false });
+
+    modalBack.addEventListener("pointerdown", (e) => {
+      if(e.target === modalBack) closeModal();
+    }, { passive:false });
+
+    taskInput.addEventListener("keydown", (e) => {
+      if(e.key === "Enter") addTask();
+      if(e.key === "Escape") closeModal();
     });
-    modeBtn.addEventListener("click", stopAll, { capture:true });
-    openTodayBtn.addEventListener("click", stopAll, { capture:true });
 
-    fitToFrame();
-    window.addEventListener("resize", fitToFrame);
+    addBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      addTask();
+    }, { passive:false });
 
-    // 노션 임베드에서 visualViewport 변동 보정(과하지 않게)
-    let fitTimer = null;
-    const scheduleFit = () => {
-      if(fitTimer) return;
-      fitTimer = setTimeout(() => { fitTimer = null; fitToFrame(); }, 80);
-    };
-    window.addEventListener("scroll", scheduleFit, { passive:true });
-    if(window.visualViewport){
-      window.visualViewport.addEventListener("resize", scheduleFit);
-      window.visualViewport.addEventListener("scroll", scheduleFit);
+    hideDoneBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      state.hideDone = !state.hideDone;
+      saveUI();
+      renderTaskList();
+    }, { passive:false });
+
+    exportBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      const data = loadAll();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `pixel_calendar_backup_${new Date().toISOString().slice(0,10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    }, { passive:false });
+
+    importBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "application/json";
+      input.addEventListener("change", async () => {
+        const file = input.files?.[0];
+        if(!file) return;
+        try{
+          const text = await file.text();
+          const obj = safeParse(text);
+          if(!obj || typeof obj !== "object" || Array.isArray(obj)){
+            alert("JSON 형식이 올바르지 않아요.");
+            return;
+          }
+          saveAll(obj);
+          render();
+          if(state.selectedISO) renderTaskList();
+          alert("가져오기 완료!");
+        }catch(err){
+          alert("가져오기 실패");
+        }
+      });
+      input.click();
+    }, { passive:false });
+
+    function parseISODateParam(){
+      const sp = new URLSearchParams(location.search);
+      const iso = sp.get("date");
+      const open = sp.get("open");
+      if(!iso) return null;
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null;
+      return { iso, open: open === "1" };
     }
 
-    tick();
-    setInterval(tick, 1000);
+    function setViewToISO(iso){
+      const [Y,M] = iso.split("-").map(n => parseInt(n,10));
+      if(!Y || !M) return;
+      state.viewDate = new Date(Y, M-1, 1);
+    }
+
+    function bootFromQuery(){
+      const q = parseISODateParam();
+      if(!q) return;
+      setViewToISO(q.iso);
+      render();
+      if(q.open){
+        setTimeout(() => openModal(q.iso), 0);
+      }
+    }
+
+    loadUI();
+    render();
+    bootFromQuery();
   </script>
 </body>
 </html>
