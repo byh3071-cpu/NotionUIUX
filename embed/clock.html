@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Notion Pixel Clock (Linked)</title>
+  <title>Notion Pixel Clock (Fit)</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,31 +21,52 @@
       --accent:#7cc7ff;
       --today:#ffe08a;
 
-      --w: 360px;
-      --h: 110px;
+      /* ✅ 기준 사이즈(노션에서 잘릴 때는 JS가 자동으로 축소) */
+      --baseW: 360;
+      --baseH: 104;
+
+      --scale: 1;
     }
 
     *{ box-sizing:border-box; }
     html,body{
-      margin:0; padding:0;
+      margin:0;
+      padding:0;
       background:transparent;
       color:var(--text);
       font-family: ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace;
+      width:100%;
+      height:100%;
+    }
+
+    /* ✅ iframe 안에서 자동으로 “맞춰” 들어가게 하는 스테이지 */
+    .stage{
+      width:100%;
+      height:100%;
+      display:flex;
+      align-items:flex-start;
+      justify-content:flex-start;
+      padding:0;
     }
 
     .wrap{
-      width:var(--w);
-      height:var(--h);
+      width: calc(var(--baseW) * 1px);
+      height: calc(var(--baseH) * 1px);
+      transform: scale(var(--scale));
+      transform-origin: top left;
+
       background:var(--panel);
       border:2px solid var(--line2);
       border-radius:0;
+
+      /* ❗잘림 방지: 내부는 숨기되, 전체가 안 잘리도록 스케일로 해결 */
       overflow:hidden;
       display:flex;
       flex-direction:column;
     }
 
     .top{
-      height:36px;
+      height:32px;
       display:flex;
       align-items:center;
       justify-content:space-between;
@@ -64,10 +85,8 @@
       text-overflow:ellipsis;
     }
 
-    .chipRow{ display:flex; gap:6px; align-items:center; }
-
     .chip{
-      height:24px;
+      height:22px;
       padding:0 8px;
       border:2px solid var(--line2);
       background:#0e1016;
@@ -78,6 +97,7 @@
       justify-content:center;
       cursor:pointer;
       user-select:none;
+      line-height:1;
     }
     .chip:hover{ border-color:var(--accent); }
     .chip.on{
@@ -89,10 +109,11 @@
     .main{
       flex:1;
       display:flex;
-      align-items:center;
+      align-items:stretch;
       justify-content:space-between;
-      padding:10px 10px;
-      gap:10px;
+      padding:8px 8px;
+      gap:8px;
+      min-height:0;
     }
 
     .leftBox{
@@ -101,19 +122,22 @@
       background:#0b0c10;
       padding:8px 10px;
       min-width:0;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
     }
 
     .dateRow{
       font-size:9px;
       color:var(--muted);
-      line-height:1.3;
+      line-height:1.25;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
+      margin-bottom:6px;
     }
 
     .timeRow{
-      margin-top:6px;
       display:flex;
       align-items:baseline;
       gap:8px;
@@ -125,6 +149,7 @@
       font-size:16px;
       color:var(--text);
       letter-spacing:1px;
+      line-height:1;
     }
 
     /* ✅ 초 대신 픽셀 커서 */
@@ -139,31 +164,31 @@
     }
 
     .note{
+      margin-top:6px;
       font-size:8px;
       color:rgba(233,238,247,.75);
-      margin-top:2px;
-      line-height:1.35;
+      line-height:1.25;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
     }
 
     .rightBox{
-      width:86px;
-      height:100%;
+      width:84px;
       border:2px solid var(--line);
       background:#0b0c10;
+      padding:8px;
       display:flex;
       flex-direction:column;
       justify-content:center;
       gap:6px;
-      padding:8px;
     }
 
     .meterLabel{
       font-size:8px;
       color:var(--muted);
       opacity:.95;
+      line-height:1;
     }
 
     .meter{
@@ -176,37 +201,42 @@
     .bar{
       position:absolute;
       left:0; top:0; bottom:0;
-      width:50%;
+      width:0%;
       background:var(--accent);
+    }
+
+    /* ✅ 혹시 폭이 아주 좁아지면 오른쪽 박스 숨김(안 잘리게) */
+    @media (max-width: 330px){
+      .rightBox{ display:none; }
     }
   </style>
 </head>
 
 <body>
-  <div class="wrap" id="app">
-    <div class="top">
-      <div class="title" id="titleText">PIXEL CLOCK</div>
-      <div class="chipRow">
+  <div class="stage">
+    <div class="wrap" id="wrap">
+      <div class="top">
+        <div class="title">PIXEL CLOCK</div>
         <div class="chip on" id="modeBtn" title="12/24 토글">24H</div>
       </div>
-    </div>
 
-    <div class="main">
-      <div class="leftBox">
-        <div class="dateRow" id="dateText">0000-00-00 (월) · TODAY 0/0</div>
-        <div class="timeRow">
-          <div class="time" id="timeText">00:00</div>
-          <div class="cursor" id="cursor">■</div>
+      <div class="main">
+        <div class="leftBox">
+          <div class="dateRow" id="dateText">0000-00-00 (월) · TODAY 0/0</div>
+          <div class="timeRow">
+            <div class="time" id="timeText">00:00</div>
+            <div class="cursor" id="cursor">■</div>
+          </div>
+          <div class="note" id="noteText">오늘 할 일: 0 / 0</div>
         </div>
-        <div class="note" id="noteText">오늘 할 일: 0 / 0</div>
-      </div>
 
-      <div class="rightBox">
-        <div class="meterLabel">DAY</div>
-        <div class="meter"><div class="bar" id="dayBar"></div></div>
+        <div class="rightBox">
+          <div class="meterLabel">DAY</div>
+          <div class="meter"><div class="bar" id="dayBar"></div></div>
 
-        <div class="meterLabel">TODAY TASK</div>
-        <div class="meter"><div class="bar" id="taskBar"></div></div>
+          <div class="meterLabel">TODAY TASK</div>
+          <div class="meter"><div class="bar" id="taskBar"></div></div>
+        </div>
       </div>
     </div>
   </div>
@@ -214,45 +244,29 @@
   <script>
     const $ = (s) => document.querySelector(s);
 
-    const titleText = $("#titleText");
+    const wrap = $("#wrap");
     const dateText  = $("#dateText");
     const timeText  = $("#timeText");
     const cursorEl  = $("#cursor");
     const noteText  = $("#noteText");
-
     const dayBar  = $("#dayBar");
     const taskBar = $("#taskBar");
-
     const modeBtn = $("#modeBtn");
 
-    const state = {
-      is24h: true,
-      cursorOn: true
-    };
+    const state = { is24h: true };
 
     const DOW_KR = ["일","월","화","수","목","금","토"];
 
-    // ✅ 캘린더가 쓰는 저장키(기본) + 혹시 바뀌었을 때 탐색용 후보
+    // ✅ 캘린더 저장키 후보(네 최신 키 포함)
     const STORE_KEYS = [
-      "pixel_calendar_tasks_v5_backup_hideDone",      // 너 최신 캘린더 코드
+      "pixel_calendar_tasks_v5_backup_hideDone",
       "pixel_calendar_tasks_v4_bottomTriangles",
       "pixel_calendar_tasks_v3_bottomBadges",
       "pixel_calendar_tasks_v2_heart_preview",
     ];
 
-    function pad2(n){ return String(n).padStart(2,"0"); }
-
-    function toISO(d){
-      return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
-    }
-
-    function formatDate(d, done, total){
-      const y = d.getFullYear();
-      const mo = d.getMonth() + 1;
-      const da = d.getDate();
-      const dow = DOW_KR[d.getDay()];
-      return `${y}-${pad2(mo)}-${pad2(da)} (${dow}) · TODAY ${done}/${total}`;
-    }
+    const pad2 = (n) => String(n).padStart(2,"0");
+    const toISO = (d) => `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
 
     function formatTime(d){
       let h = d.getHours();
@@ -260,16 +274,13 @@
 
       if(!state.is24h){
         const ampm = h < 12 ? "AM" : "PM";
-        h = h % 12;
-        if(h === 0) h = 12;
+        h = h % 12; if(h === 0) h = 12;
         return `${pad2(h)}:${pad2(m)} ${ampm}`;
       }
       return `${pad2(h)}:${pad2(m)}`;
     }
 
-    function safeParse(json){
-      try{ return JSON.parse(json); }catch(e){ return null; }
-    }
+    function safeParse(json){ try{ return JSON.parse(json); }catch(e){ return null; } }
 
     function normalizeList(list){
       if(!Array.isArray(list)) return [];
@@ -283,31 +294,23 @@
     }
 
     function loadAllFromAnyKey(){
-      // 1) 후보 키들 중 먼저 발견되는 걸 사용
       for(const k of STORE_KEYS){
         const raw = localStorage.getItem(k);
         if(!raw) continue;
         const parsed = safeParse(raw);
         if(parsed && typeof parsed === "object" && !Array.isArray(parsed)){
-          return { key: k, data: parsed };
+          return parsed;
         }
       }
-      // 2) 못 찾으면 null
-      return { key: null, data: {} };
+      return {};
     }
 
     function getTodayProgress(iso){
-      const { key, data } = loadAllFromAnyKey();
-
-      // key가 없으면 안내만(노션 임베드 환경에 따라 localStorage 공유 안될 수 있음)
-      if(!key){
-        return { done: 0, total: 0, ok: false, msg: "캘린더 데이터 없음" };
-      }
-
+      const data = loadAllFromAnyKey();
       const list = normalizeList(data[iso]);
       const total = list.length;
       const done = list.filter(t => t.done).length;
-      return { done, total, ok: true, msg: key };
+      return { done, total };
     }
 
     function calcDayProgress(d){
@@ -316,45 +319,59 @@
       return Math.max(0, Math.min(1, now/total));
     }
 
+    // ✅ 노션 iframe 크기에 맞춰 자동 스케일(잘림 방지 핵심)
+    function fitToFrame(){
+      const baseW = Number(getComputedStyle(document.documentElement).getPropertyValue("--baseW")) || 360;
+      const baseH = Number(getComputedStyle(document.documentElement).getPropertyValue("--baseH")) || 104;
+
+      const availW = window.innerWidth || baseW;
+      const availH = window.innerHeight || baseH;
+
+      // 약간의 안전 여백(테두리/렌더링 오차)
+      const safeW = Math.max(1, availW - 2);
+      const safeH = Math.max(1, availH - 2);
+
+      let scale = Math.min(safeW / baseW, safeH / baseH);
+      if(!isFinite(scale) || scale <= 0) scale = 1;
+      scale = Math.min(1, scale); // 확대는 하지 않음
+
+      document.documentElement.style.setProperty("--scale", String(scale));
+    }
+
     function tick(){
       const d = new Date();
       const iso = toISO(d);
 
-      // ✅ 오늘 TASK 진행률(캘린더 연동)
-      const prog = getTodayProgress(iso);
-      const done = prog.done;
-      const total = prog.total;
+      const y = d.getFullYear();
+      const mo = d.getMonth() + 1;
+      const da = d.getDate();
+      const dow = DOW_KR[d.getDay()];
 
-      dateText.textContent = formatDate(d, done, total);
+      const { done, total } = getTodayProgress(iso);
+
+      dateText.textContent = `${y}-${pad2(mo)}-${pad2(da)} (${dow}) · TODAY ${done}/${total}`;
       timeText.textContent = formatTime(d);
 
       // ✅ 픽셀 커서 깜빡임 (초 기반)
-      const even = d.getSeconds() % 2 === 0;
-      cursorEl.style.opacity = even ? "1" : "0.15";
+      cursorEl.style.opacity = (d.getSeconds() % 2 === 0) ? "1" : "0.15";
 
-      // ✅ 진행바: 하루 / 오늘 할 일
-      dayBar.style.width = `${Math.round(calcDayProgress(d)*100)}%`;
+      dayBar.style.width = `${Math.round(calcDayProgress(d) * 100)}%`;
       const taskRatio = total === 0 ? 0 : (done / total);
-      taskBar.style.width = `${Math.round(taskRatio*100)}%`;
+      taskBar.style.width = `${Math.round(taskRatio * 100)}%`;
 
-      // ✅ 하단 문구
-      if(total === 0){
-        noteText.textContent = "오늘 할 일: 0 / 0";
-      }else{
-        noteText.textContent = `오늘 할 일: ${done} / ${total}`;
-      }
-
-      // (선택) 디버그성 제목: 어떤 키를 읽는지 보고 싶으면 잠깐 켜도 됨
-      // titleText.textContent = prog.ok ? `PIXEL CLOCK · LINKED` : `PIXEL CLOCK · NO LINK`;
+      noteText.textContent = `오늘 할 일: ${done} / ${total}`;
     }
 
-    // 12/24 토글
     modeBtn.addEventListener("click", () => {
       state.is24h = !state.is24h;
       modeBtn.textContent = state.is24h ? "24H" : "12H";
       modeBtn.classList.toggle("on", state.is24h);
       tick();
     });
+
+    // 초기 + 리사이즈 대응
+    fitToFrame();
+    window.addEventListener("resize", fitToFrame);
 
     tick();
     setInterval(tick, 1000);
