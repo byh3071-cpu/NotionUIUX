@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Notion Pixel Clock (Crisp + Safe)</title>
+  <title>Notion Pixel Clock (No Scroll + Open Today)</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,7 +19,7 @@
       --muted:#a7b0c2;
       --accent:#7cc7ff;
 
-      /* ✅ 기준 크기(숫자 여백 확보) */
+      /* 기준 크기(여백 포함) */
       --baseW: 360;
       --baseH: 140;
 
@@ -35,6 +35,9 @@
       font-family: ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace;
       -webkit-font-smoothing: antialiased;
       text-rendering: geometricPrecision;
+
+      /* ✅ 내부 스크롤 절대 금지 */
+      overflow:hidden;
     }
 
     .stage{
@@ -44,16 +47,15 @@
       align-items:flex-start;
       justify-content:flex-start;
       overflow:hidden;
+      background:transparent;
     }
 
     .wrap{
       width: calc(var(--baseW) * 1px);
       height: calc(var(--baseH) * 1px);
-
       transform: scale(var(--scale));
       transform-origin: top left;
 
-      /* ✅ 스케일 렌더 안정화(깨짐 완화) */
       will-change: transform;
       backface-visibility: hidden;
       transform-style: preserve-3d;
@@ -76,7 +78,7 @@
       padding-right:24px; /* 노션 우상단 오버레이 보험 */
       border-bottom:2px solid var(--line2);
       background:linear-gradient(180deg, var(--panel2), var(--panel));
-      gap:10px;
+      gap:8px;
     }
 
     .title{
@@ -88,6 +90,8 @@
       text-overflow:ellipsis;
       user-select:none;
       pointer-events:none;
+      margin-left:2px;
+      flex:1;
     }
 
     .chip{
@@ -127,7 +131,7 @@
       flex:1;
       border:2px solid var(--line);
       background:#0b0c10;
-      padding:12px 12px; /* ✅ 세로 여유 */
+      padding:12px 12px;
       min-width:0;
       display:flex;
       flex-direction:column;
@@ -145,7 +149,6 @@
       margin-bottom:8px;
     }
 
-    /* ✅ baseline 정렬이 글리프 클립 유발할 수 있어서 center로 */
     .timeRow{
       display:flex;
       align-items:center;
@@ -158,24 +161,17 @@
       font-size:18px;
       color:var(--text);
       letter-spacing:1px;
-
-      /* ✅ 핵심: 글리프 상하 여백 확보 */
       display:inline-block;
       line-height:1.35;
-      padding:2px 0 4px;  /* 아래 잘림 방지 */
-      margin:0;
+      padding:2px 0 4px;
     }
 
     .cursor{
       font-size:14px;
       color:var(--accent);
-
-      /* ✅ 커서도 같이 여유 */
       display:inline-block;
       line-height:1.35;
       padding:2px 0 4px;
-
-      transform: translateY(0);
       opacity:1;
       user-select:none;
       pointer-events:none;
@@ -192,7 +188,7 @@
     }
 
     .rightBox{
-      width:86px;
+      width:108px;
       border:2px solid var(--line);
       background:#0b0c10;
       padding:8px;
@@ -225,7 +221,16 @@
       background:var(--accent);
     }
 
-    @media (max-width: 330px){
+    .meterText{
+      font-size:8px;
+      color:rgba(233,238,247,.75);
+      line-height:1.2;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    @media (max-width: 340px){
       .rightBox{ display:none; }
     }
   </style>
@@ -235,7 +240,9 @@
   <div class="stage">
     <div class="wrap" id="wrap">
       <div class="top">
+        <!-- ✅ 노션 우상단 오버레이 피하려고 왼쪽 배치 -->
         <div class="chip on" id="modeBtn" title="12/24 토글">24H</div>
+        <div class="chip" id="openTodayBtn" title="캘린더에서 오늘 할 일 열기">OPEN</div>
         <div class="title">PIXEL CLOCK</div>
       </div>
 
@@ -255,6 +262,7 @@
 
           <div class="meterLabel">TODAY TASK</div>
           <div class="meter"><div class="bar" id="taskBar"></div></div>
+          <div class="meterText" id="taskPctText">0/0 · 0%</div>
         </div>
       </div>
     </div>
@@ -269,7 +277,9 @@
     const noteText  = $("#noteText");
     const dayBar    = $("#dayBar");
     const taskBar   = $("#taskBar");
+    const taskPctText = $("#taskPctText");
     const modeBtn   = $("#modeBtn");
+    const openTodayBtn = $("#openTodayBtn");
 
     const state = { is24h: true };
     const DOW_KR = ["일","월","화","수","목","금","토"];
@@ -329,12 +339,7 @@
       return Math.max(0, Math.min(1, now/total));
     }
 
-    // ✅ 배율을 0.05 단위로 스냅 → 글자 깨짐/번짐 크게 감소
-    function snapScale(x){
-      const step = 0.1;
-      return Math.round(x / step) * step;
-    }
-
+    // ✅ 스케일은 “절대 넘치지 않게” 항상 내림(= 스크롤 0)
     function fitToFrame(){
       const rootStyle = getComputedStyle(document.documentElement);
       const baseW = Number(rootStyle.getPropertyValue("--baseW")) || 360;
@@ -343,14 +348,21 @@
       const vw = (window.visualViewport && window.visualViewport.width) ? window.visualViewport.width : window.innerWidth;
       const vh = (window.visualViewport && window.visualViewport.height) ? window.visualViewport.height : window.innerHeight;
 
-      const availW = Math.max(1, vw - 2);
-      const availH = Math.max(1, vh - 2);
+      // 여유를 조금 더 줘서 노션 스크롤바 방지
+      const availW = Math.max(1, vw - 8);
+      const availH = Math.max(1, vh - 8);
 
       let scale = Math.min(availW / baseW, availH / baseH);
       if(!isFinite(scale) || scale <= 0) scale = 1;
 
+      // 과도 확대 제한(원하면 4로 올려도 됨)
       scale = Math.min(3, Math.max(0.5, scale));
-      scale = snapScale(scale);
+
+      // ✅ 핵심: 항상 아래로 내림(절대 넘치지 않게)
+      scale = Math.floor(scale * 100) / 100;
+
+      // 너무 작아지면 가독성 떨어지니 최소선
+      if(scale < 0.55) scale = 0.55;
 
       document.documentElement.style.setProperty("--scale", String(scale));
     }
@@ -368,37 +380,51 @@
 
       dateText.textContent = `${y}-${pad2(mo)}-${pad2(da)} (${dow}) · TODAY ${done}/${total}`;
       timeText.textContent = formatTime(d);
-
       cursorEl.style.opacity = (d.getSeconds() % 2 === 0) ? "1" : "0.15";
 
       dayBar.style.width = `${Math.round(calcDayProgress(d) * 100)}%`;
-      const taskRatio = total === 0 ? 0 : (done / total);
-      taskBar.style.width = `${Math.round(taskRatio * 100)}%`;
+
+      const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+      taskBar.style.width = `${pct}%`;
+      taskPctText.textContent = `${done}/${total} · ${pct}%`;
 
       noteText.textContent = `오늘 할 일: ${done} / ${total}`;
     }
 
-    // ✅ 노션 클릭 가로채기 방지 (캡처 단계에서 확정)
+    // ✅ 노션 클릭 가로채기 방지
     function stopAll(e){
       e.preventDefault();
       e.stopPropagation();
       if(e.stopImmediatePropagation) e.stopImmediatePropagation();
     }
+
     function toggleMode(){
       state.is24h = !state.is24h;
       modeBtn.textContent = state.is24h ? "24H" : "12H";
       modeBtn.classList.toggle("on", state.is24h);
       tick();
     }
+
+    function openToday(){
+      const iso = toISO(new Date());
+
+      // 같은 embed 폴더에 calendar.html이 있다고 가정
+      const url = new URL("calendar.html", window.location.href);
+      url.searchParams.set("date", iso);
+      url.searchParams.set("open", "1");
+
+      window.open(url.toString(), "_blank", "noopener,noreferrer");
+    }
+
+    // 버튼 이벤트(캡처 단계로 확정)
     ["pointerdown","mousedown","touchstart"].forEach(type=>{
-      modeBtn.addEventListener(type, (e)=>{
-        stopAll(e);
-        toggleMode();
-      }, { capture:true, passive:false });
+      modeBtn.addEventListener(type, (e)=>{ stopAll(e); toggleMode(); }, { capture:true, passive:false });
+      openTodayBtn.addEventListener(type, (e)=>{ stopAll(e); openToday(); }, { capture:true, passive:false });
     });
     modeBtn.addEventListener("click", stopAll, { capture:true });
+    openTodayBtn.addEventListener("click", stopAll, { capture:true });
 
-    // 리사이즈 대응(노션에서 이벤트가 안 올 때 대비)
+    // 리사이즈 대응
     fitToFrame();
     window.addEventListener("resize", fitToFrame);
     if("ResizeObserver" in window){
