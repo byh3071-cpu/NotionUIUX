@@ -550,6 +550,52 @@
   <script>
     const $ = (sel) => document.querySelector(sel);
 
+    // ✅ Notion/iframe에서 pointerdown이 씹힐 수 있어서 click도 같이 받는 헬퍼
+function onPress(el, handler){
+  if(!el) return;
+
+  let locked = false;
+  const run = (e) => {
+    if(locked) return;
+    locked = true;
+    try{ handler(e); }
+    finally{ setTimeout(() => (locked = false), 0); }
+  };
+
+  const wrap = (e) => {
+    // ✅ 노션/iframe 상위에서 이벤트 먹는 경우 방지
+    e.preventDefault();
+    e.stopPropagation();
+    run(e);
+  };
+
+  // ✅ 캡처 단계로도 걸어두기
+  el.addEventListener("pointerdown", wrap, { passive:false, capture:true });
+  el.addEventListener("click", wrap, { capture:true });
+
+  // ✅ 키보드 접근(포커스 후 Enter/Space)
+  el.addEventListener("keydown", (e) => {
+    if(e.key === "Enter" || e.key === " "){
+      e.preventDefault();
+      e.stopPropagation();
+      run(e);
+    }
+  }, { capture:true });
+}
+
+  el.addEventListener("pointerdown", (e) => { e.preventDefault(); run(e); }, { passive:false });
+  el.addEventListener("click", (e) => { e.preventDefault(); run(e); });
+}
+
+        function lsGet(key){
+      try { return localStorage.getItem(key); }
+      catch(e){ return null; }
+    }
+    function lsSet(key, val){
+      try { localStorage.setItem(key, val); return true; }
+      catch(e){ return false; }
+    }
+
     const gridEl = $("#grid");
     const monthTitleEl = $("#monthTitle");
 
@@ -600,31 +646,31 @@
     }
 
     function loadUI(){
-      const ui = safeParse(localStorage.getItem(UI_KEY)) || {};
+      const ui = safeParse(lsGet(UI_KEY)) || {};
       state.hideDone = Boolean(ui.hideDone);
       hideDoneBtn.textContent = state.hideDone ? "SHOW" : "HIDE";
     }
     function saveUI(){
-      localStorage.setItem(UI_KEY, JSON.stringify({ hideDone: state.hideDone }));
+      lsSet(UI_KEY, JSON.stringify({ hideDone: state.hideDone }));
       hideDoneBtn.textContent = state.hideDone ? "SHOW" : "HIDE";
     }
 
     function loadAll(){
-      const cur = safeParse(localStorage.getItem(STORE_KEY));
+      const cur = safeParse(lsGet(STORE_KEY));
       if(cur && typeof cur === "object" && !Array.isArray(cur)) return cur;
-
+    
       for(const k of LEGACY_KEYS){
-        const v = safeParse(localStorage.getItem(k));
+        const v = safeParse(lsGet(k));
         if(v && typeof v === "object" && !Array.isArray(v)){
-          localStorage.setItem(STORE_KEY, JSON.stringify(v));
+          lsSet(STORE_KEY, JSON.stringify(v));
           return v;
         }
       }
       return {};
     }
-
+    
     function saveAll(obj){
-      localStorage.setItem(STORE_KEY, JSON.stringify(obj));
+      lsSet(STORE_KEY, JSON.stringify(obj));
     }
 
     function normalizeList(list){
@@ -1089,34 +1135,35 @@ function showManualExport(text){
   alert("EXPORT가 막혀서 텍스트창을 띄웠어요. 전체 선택 후 복사(Ctrl+C)하세요.\n복사 후엔 모달을 닫았다 다시 열면 목록이 돌아옵니다.");
 }
     
-exportBtn.addEventListener("pointerdown", async (e) => {
-  e.preventDefault();
-
-  const data = loadAll();
-  const json = JSON.stringify(data, null, 2);
-
-  // 1) Clipboard API
+onPress(exportBtn, async () => {
   try{
-    if(navigator.clipboard?.writeText){
-      await navigator.clipboard.writeText(json);
-      alert("EXPORT: JSON이 클립보드에 복사됐어요.");
+    const data = loadAll();
+    const json = JSON.stringify(data, null, 2);
+
+    // 1) Clipboard API
+    try{
+      if(navigator.clipboard?.writeText){
+        await navigator.clipboard.writeText(json);
+        alert("EXPORT: JSON이 클립보드에 복사됐어요.");
+        return;
+      }
+    }catch(_){}
+
+    // 2) execCommand fallback
+    const ok = copyTextFallback(json);
+    if(ok){
+      alert("EXPORT: JSON이 클립보드에 복사됐어요.(fallback)");
       return;
     }
-  }catch(_){}
 
-  // 2) execCommand fallback
-  const ok = copyTextFallback(json);
-  if(ok){
-    alert("EXPORT: JSON이 클립보드에 복사됐어요.(fallback)");
-    return;
+    // 3) Manual export textarea
+    showManualExport(json);
+
+  }catch(err){
+    alert("EXPORT 실패(오류): " + (err?.message || err));
   }
-
-  // 3) Manual export textarea
-  showManualExport(json);
-}, { passive:false });
-
-    importBtn.addEventListener("pointerdown", (e) => {
-      e.preventDefault();
+});
+    onPress(importBtn, () => {
       const input = document.createElement("input");
       input.type = "file";
       input.accept = "application/json";
@@ -1139,7 +1186,7 @@ exportBtn.addEventListener("pointerdown", async (e) => {
         }
       });
       input.click();
-    }, { passive:false });
+    });
 
     /* ✅ URL 쿼리로 자동 오픈: ?date=YYYY-MM-DD&open=1 */
     function parseISODateParam(){
@@ -1173,6 +1220,7 @@ exportBtn.addEventListener("pointerdown", async (e) => {
   </script>
 </body>
 </html>
+
 
 
 
