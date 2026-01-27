@@ -43,7 +43,7 @@
       padding:0;
       width:100%;
       height:100%;
-      background: var(--panel);
+      background: var(--panel); !important; }
       color:var(--text);
       font-family: ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace;
       -webkit-font-smoothing: antialiased;
@@ -54,12 +54,12 @@
     .stage{
       width:100%;
       height:100%;
-      background: var(--panel);
+      background: var(--panel); !important; }
       display:flex;
       align-items:flex-start;   /* ✅ 좌상단 고정 */
       justify-content:flex-start;
       overflow:hidden;
-      padding:8;                /* ✅ 여백 0 */
+      padding:0;                /* ✅ 여백 0 */
       margin:0;
     }
 
@@ -1076,4 +1076,5 @@
   </script>
 </body>
 </html>
+
 
