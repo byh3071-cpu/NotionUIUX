@@ -171,53 +171,65 @@
       color:var(--text);
     }
 
-    /* ✅ 좌하단: 할 일(총 개수) */
+    /* ✅ 좌하단: 총 할 일(전체 TASK 수) - "하단 코너 전용" 삼각형 */
     .todoBadge{
       position:absolute;
-      left:0px;
-      bottom:0px;
+      left:0;
+      bottom:0;
       width:18px;
       height:18px;
-      clip-path: polygon(0 100%, 0 0, 100% 100%);
+
+      /* 하단-좌 코너 삼각형: (좌상)-(좌하)-(우하) */
+      clip-path: polygon(0 0, 0 100%, 100% 100%);
+
       background: var(--accent);
       color:#0b0c10;
+
       display:flex;
       align-items:flex-end;
       justify-content:flex-start;
+
       font-size:9px;
       line-height:1;
       padding:0 0 2px 3px;
+
       box-shadow: inset 0 0 0 2px rgba(11,12,16,.25);
       user-select:none;
       pointer-events:none;
     }
 
-    /* ✅ 우하단: 완료(완료 개수) */
+    /* ✅ 우하단: 완료(완료된 TASK 수) - "하단 코너 전용" 삼각형 */
     .doneBadge{
       position:absolute;
-      right:0px;
-      bottom:0px;
+      right:0;
+      bottom:0;
       width:18px;
       height:18px;
-      clip-path: polygon(100% 100%, 0 100%, 100% 0);
+
+      /* 하단-우 코너 삼각형: (우상)-(좌하)-(우하) */
+      clip-path: polygon(100% 0, 0 100%, 100% 100%);
+
       background: rgba(124,199,255,.22);
       color: var(--accent);
+
       display:flex;
       align-items:flex-end;
       justify-content:flex-end;
+
       font-size:9px;
       line-height:1;
       padding:0 3px 2px 0;
+
       box-shadow: inset 0 0 0 2px rgba(124,199,255,.25);
       user-select:none;
       pointer-events:none;
     }
 
-    /* ✅ 하트: 배지 위로 */
+    /* ✅ 하트: 배지 위(가운데) */
     .heartMarker{
       position:absolute;
       left:50%;
-      bottom:22px;
+      bottom:22px; /* 배지(18px) + 여백 */
       transform: translateX(-50%);
       font-size:12px;
       line-height:1;
@@ -674,11 +686,13 @@
           const done = tasks.filter(t => t.done).length; // 우하단(완료)
           const hasUndone = tasks.some(t => !t.done);
 
+          // ✅ 좌하단: 총
           const todoBadge = document.createElement("div");
           todoBadge.className = "todoBadge";
           todoBadge.textContent = fmtCount(total);
           cell.appendChild(todoBadge);
 
+          // ✅ 우하단: 완료
           if(done > 0){
             const doneBadge = document.createElement("div");
             doneBadge.className = "doneBadge";
@@ -686,6 +700,7 @@
             cell.appendChild(doneBadge);
           }
 
+          // ✅ 하트
           const heart = document.createElement("div");
           heart.className = "heartMarker";
           heart.textContent = hasUndone ? "♡" : "♥";
