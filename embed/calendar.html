@@ -25,42 +25,61 @@
       --sun:#ff8f8f;
       --sat:#8fb6ff;
 
-      --w: 360px;
-      --h: 440px;
+      --baseW: 360;
+      --baseH: 440;
+      --scale: 1;
+
       --cell: 46px;
       --gap: 4px;
+
+      /* ✅ 하트 위치 튜닝용 */
+      --heartBottom: 8px; /* 더 내리고 싶으면 4px, 더 올리고 싶으면 12px */
     }
 
     *{ box-sizing:border-box; }
-      html,body{
+
+    /* ✅ 흰 여백 방지(iframe 남는 영역도 패널로) */
+    html,body{
       margin:0;
       padding:0;
       width:100%;
       height:100%;
-      background: var(--panel);         /* ✅ 흰 여백 제거 */
+      background: var(--panel);
       color:var(--text);
       font-family: ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace;
       -webkit-font-smoothing: antialiased;
       text-rendering: geometricPrecision;
-      overflow:hidden;                  /* ✅ 바깥 스크롤 방지 */
+      overflow:hidden;
     }
-    
-    /* ✅ iframe 남는 영역도 패널로 채우고 싶으면 body를 flex로 */
     body{
       display:flex;
-      align-items:flex-start;           /* top 고정(원하면 center로) */
-      justify-content:flex-start;       /* left 고정(원하면 center로) */
+      align-items:flex-start;
+      justify-content:flex-start;
+    }
+    .stage{
+      width:100%;
+      height:100%;
+      background: var(--panel);
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      overflow:hidden;
+      padding:8px;
     }
 
-
     .wrap{
-      width:var(--w);
-      height:var(--h);
+      width: calc(var(--baseW) * 1px);
+      height: calc(var(--baseH) * 1px);
+      zoom: var(--scale);
+
       background:var(--panel);
       border:2px solid var(--line2);
       border-radius:0;
       overflow:hidden;
       position:relative;
+    }
+    @supports not (zoom: 1){
+      .wrap{ transform: scale(var(--scale)); transform-origin: top left; }
     }
 
     .topbar{
@@ -94,7 +113,6 @@
       justify-content:center;
       user-select:none;
       transition: transform .05s ease;
-
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
     }
@@ -120,7 +138,6 @@
       border-bottom:2px solid var(--line2);
       background:#0e1016;
     }
-
     .dow div{
       text-align:center;
       font-size:9px;
@@ -131,15 +148,8 @@
       background:#0b0c10;
       user-select:none;
     }
-
-    .dow .sunHead{
-      color:var(--sun);
-      border-color:rgba(255,143,143,.45);
-    }
-    .dow .satHead{
-      color:var(--sat);
-      border-color:rgba(143,182,255,.45);
-    }
+    .dow .sunHead{ color:var(--sun); border-color:rgba(255,143,143,.45); }
+    .dow .satHead{ color:var(--sat); border-color:rgba(143,182,255,.45); }
 
     .grid{
       padding:8px;
@@ -163,87 +173,59 @@
       user-select:none;
       transition: border-color .12s ease;
       overflow:hidden;
-
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
     }
     .day:hover{ border-color:var(--accent); }
 
-    .day.disabled{
-      opacity:.35;
-      cursor:default;
-    }
-
+    .day.disabled{ opacity:.35; cursor:default; }
     .day.sun:not(.disabled){ border-color: rgba(255,143,143,.30); }
     .day.sat:not(.disabled){ border-color: rgba(143,182,255,.30); }
 
-    .num{
-      font-size:10px;
-      color:var(--text);
-    }
+    .num{ font-size:10px; color:var(--text); }
 
-    /* ✅ 좌하단: 총 할 일(전체 TASK 수) - "하단 코너 전용" 삼각형 */
     .todoBadge{
-      position:absolute;
-      left:0;
-      bottom:0;
-      width:18px;
-      height:18px;
-
-      /* 하단-좌 코너 삼각형: (좌상)-(좌하)-(우하) */
+      position:absolute; left:0; bottom:0;
+      width:18px; height:18px;
       clip-path: polygon(0 0, 0 100%, 100% 100%);
-
       background: var(--accent);
       color:#0b0c10;
-
       display:flex;
       align-items:flex-end;
       justify-content:flex-start;
-
       font-size:9px;
       line-height:1;
       padding:0 0 2px 3px;
-
       box-shadow: inset 0 0 0 2px rgba(11,12,16,.25);
       user-select:none;
       pointer-events:none;
     }
 
-    /* ✅ 우하단: 완료(완료된 TASK 수) - "하단 코너 전용" 삼각형 */
     .doneBadge{
-      position:absolute;
-      right:0;
-      bottom:0;
-      width:18px;
-      height:18px;
-
-      /* 하단-우 코너 삼각형: (우상)-(좌하)-(우하) */
+      position:absolute; right:0; bottom:0;
+      width:18px; height:18px;
       clip-path: polygon(100% 0, 0 100%, 100% 100%);
-
       background: rgba(124,199,255,.22);
       color: var(--accent);
-
       display:flex;
       align-items:flex-end;
       justify-content:flex-end;
-
       font-size:9px;
       line-height:1;
       padding:0 3px 2px 0;
-
       box-shadow: inset 0 0 0 2px rgba(124,199,255,.25);
       user-select:none;
       pointer-events:none;
     }
 
-    /* ✅ 하트: 배지 위(가운데) */
+    /* ✅ 하트: "너무 위" 문제 방지 -> bottom을 변수로 */
     .heartMarker{
       position:absolute;
       left:50%;
-      bottom:4px; /* 배지(18px) + 여백 */
+      bottom: var(--heartBottom);
       transform: translateX(-50%);
-      font-size:12px;
-      line-height:1.2;
+      font-size:11px;
+      line-height:1;
       color:var(--accent);
       opacity:1;
       user-select:none;
@@ -269,10 +251,13 @@
     }
     .modalBack.show{ display:flex; }
 
+    /* ✅ 작은 iframe에서도 안 잘리게: max-height를 viewport 기준으로 */
     .modal{
       width: 100%;
       max-width: 340px;
-      height: 350px;
+      height: min(380px, calc(100vh - 24px));
+      max-height: calc(100vh - 24px);
+
       background: #0e1016;
       border: 2px solid var(--line2);
       border-radius:0;
@@ -342,14 +327,11 @@
       display:flex;
       flex-direction:column;
       gap:8px;
-      height:100%;
-      min-height:0;
+      flex:1;
+      min-height:0; /* ✅ 내부 스크롤 필수 */
     }
 
-    .addRow{
-      display:flex;
-      gap:6px;
-    }
+    .addRow{ display:flex; gap:6px; }
 
     .taskInput{
       flex:1;
@@ -379,6 +361,7 @@
     }
     .addBtn:hover{ border-color:var(--accent); }
 
+    /* ✅ 여기에서 스크롤이 생김 */
     .taskList{
       border:2px solid var(--line2);
       background:#0b0c10;
@@ -418,10 +401,7 @@
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
     }
-    .checkBtn.done{
-      background: var(--accent);
-      color:#0b0c10;
-    }
+    .checkBtn.done{ background: var(--accent); color:#0b0c10; }
 
     .taskText{
       font-size:10px;
@@ -430,11 +410,7 @@
       word-break:break-word;
       flex:1;
     }
-    .taskText.done{
-      color: var(--muted);
-      text-decoration: line-through;
-      opacity:.9;
-    }
+    .taskText.done{ color: var(--muted); text-decoration: line-through; opacity:.9; }
 
     .editInput{
       flex:1;
@@ -448,11 +424,7 @@
       font-size:10px;
     }
 
-    .taskActions{
-      display:flex;
-      gap:6px;
-      flex:0 0 auto;
-    }
+    .taskActions{ display:flex; gap:6px; flex:0 0 auto; }
 
     .iconBtn{
       width:30px;
@@ -484,47 +456,50 @@
 </head>
 
 <body>
-  <div class="wrap" id="app">
-    <div class="topbar">
-      <div class="leftBtns">
-        <button class="btn" id="prevBtn">◀</button>
-        <button class="btn" id="nextBtn">▶</button>
-      </div>
-
-      <div class="monthTitle" id="monthTitle">2026-01</div>
-
-      <div class="rightBtns">
-        <button class="btn" id="todayBtn">TODAY</button>
-      </div>
-    </div>
-
-    <div class="dow" id="dow">
-      <div class="sunHead">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div class="satHead">토</div>
-    </div>
-
-    <div class="grid" id="grid"></div>
-
-    <div class="modalBack" id="modalBack" aria-hidden="true">
-      <div class="modal" role="dialog" aria-modal="true">
-        <div class="modalHeader">
-          <div class="modalTitle" id="modalTitle">TASK</div>
-
-          <button class="miniBtn" id="hideDoneBtn" title="완료 숨김 토글">HIDE</button>
-          <button class="miniBtn" id="exportBtn" title="내보내기(JSON)">EXPORT</button>
-          <button class="miniBtn" id="importBtn" title="가져오기(JSON)">IMPORT</button>
-
-          <button class="closeBtn" id="closeBtn">X</button>
+  <div class="stage">
+    <div class="wrap" id="app">
+      <div class="topbar">
+        <div class="leftBtns">
+          <button class="btn" id="prevBtn">◀</button>
+          <button class="btn" id="nextBtn">▶</button>
         </div>
 
-        <div class="modalBody">
-          <div class="addRow">
-            <input class="taskInput" id="taskInput" placeholder="할 일 입력" maxlength="60" />
-            <button class="addBtn" id="addBtn">추가</button>
+        <div class="monthTitle" id="monthTitle">2026-01</div>
+
+        <div class="rightBtns">
+          <button class="btn" id="clockBtn">CLOCK</button>
+          <button class="btn" id="todayBtn">TODAY</button>
+        </div>
+      </div>
+
+      <div class="dow" id="dow">
+        <div class="sunHead">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div class="satHead">토</div>
+      </div>
+
+      <div class="grid" id="grid"></div>
+
+      <div class="modalBack" id="modalBack" aria-hidden="true">
+        <div class="modal" role="dialog" aria-modal="true">
+          <div class="modalHeader">
+            <div class="modalTitle" id="modalTitle">TASK</div>
+
+            <button class="miniBtn" id="hideDoneBtn" title="완료 숨김 토글">HIDE</button>
+            <button class="miniBtn" id="exportBtn" title="내보내기(JSON)">EXPORT</button>
+            <button class="miniBtn" id="importBtn" title="가져오기(JSON)">IMPORT</button>
+
+            <button class="closeBtn" id="closeBtn">X</button>
           </div>
 
-          <div class="taskList" id="taskList"></div>
+          <div class="modalBody">
+            <div class="addRow">
+              <input class="taskInput" id="taskInput" placeholder="할 일 입력" maxlength="60" />
+              <button class="addBtn" id="addBtn">추가</button>
+            </div>
 
-          <div class="help">좌하단=총 할 일 · 우하단=완료 · ♡/♥=완료상태</div>
+            <div class="taskList" id="taskList"></div>
+
+            <div class="help">좌하단=총 · 우하단=완료 · ♡/♥=완료상태</div>
+          </div>
         </div>
       </div>
     </div>
@@ -539,6 +514,7 @@
     const prevBtn = $("#prevBtn");
     const nextBtn = $("#nextBtn");
     const todayBtn = $("#todayBtn");
+    const clockBtn = $("#clockBtn");
 
     const modalBack = $("#modalBack");
     const closeBtn = $("#closeBtn");
@@ -635,6 +611,26 @@
       return n > 9 ? "9+" : String(n);
     }
 
+    function fitToFrame(){
+      const rootStyle = getComputedStyle(document.documentElement);
+      const baseW = Number(rootStyle.getPropertyValue("--baseW")) || 360;
+      const baseH = Number(rootStyle.getPropertyValue("--baseH")) || 440;
+
+      const vw = (window.visualViewport && window.visualViewport.width) ? window.visualViewport.width : window.innerWidth;
+      const vh = (window.visualViewport && window.visualViewport.height) ? window.visualViewport.height : window.innerHeight;
+
+      const availW = Math.max(1, vw - 24);
+      const availH = Math.max(1, vh - 24);
+
+      let scale = Math.min(availW / baseW, availH / baseH);
+      if(!isFinite(scale) || scale <= 0) scale = 1;
+
+      scale = Math.min(3, Math.max(0.35, scale));
+      scale = Math.floor(scale * 100) / 100;
+
+      document.documentElement.style.setProperty("--scale", String(scale));
+    }
+
     function render(){
       gridEl.innerHTML = "";
 
@@ -693,17 +689,15 @@
 
         const tasks = getTasks(iso);
         if(tasks.length > 0){
-          const total = tasks.length; // 좌하단(총)
-          const done = tasks.filter(t => t.done).length; // 우하단(완료)
+          const total = tasks.length;
+          const done = tasks.filter(t => t.done).length;
           const hasUndone = tasks.some(t => !t.done);
 
-          // ✅ 좌하단: 총
           const todoBadge = document.createElement("div");
           todoBadge.className = "todoBadge";
           todoBadge.textContent = fmtCount(total);
           cell.appendChild(todoBadge);
 
-          // ✅ 우하단: 완료
           if(done > 0){
             const doneBadge = document.createElement("div");
             doneBadge.className = "doneBadge";
@@ -711,7 +705,6 @@
             cell.appendChild(doneBadge);
           }
 
-          // ✅ 하트
           const heart = document.createElement("div");
           heart.className = "heartMarker";
           heart.textContent = hasUndone ? "♡" : "♥";
@@ -721,7 +714,7 @@
 
         cell.addEventListener("pointerdown", (e) => {
           e.preventDefault();
-          if(disabled) return; // 흐린 날짜 클릭 막음
+          if(disabled) return;
           openModal(iso);
         }, { passive:false });
 
@@ -785,7 +778,6 @@
         check.className = "checkBtn";
         check.textContent = task.done ? "✓" : "";
         if(task.done) check.classList.add("done");
-        check.title = "완료 체크";
         check.addEventListener("pointerdown", (e) => {
           e.preventDefault();
           const list = getTasks(iso);
@@ -807,20 +799,9 @@
         const actions = document.createElement("div");
         actions.className = "taskActions";
 
-        const edit = document.createElement("button");
-        edit.className = "iconBtn";
-        edit.textContent = "✎";
-        edit.title = "수정";
-        edit.addEventListener("pointerdown", (e) => {
-          e.preventDefault();
-          state.editingIndex = idx;
-          renderTaskListEditMode();
-        }, { passive:false });
-
         const del = document.createElement("button");
         del.className = "iconBtn delete";
         del.textContent = "⌫";
-        del.title = "삭제";
         del.addEventListener("pointerdown", (e) => {
           e.preventDefault();
           const list = getTasks(iso);
@@ -832,125 +813,6 @@
           render();
         }, { passive:false });
 
-        actions.appendChild(edit);
-        actions.appendChild(del);
-
-        item.appendChild(text);
-        item.appendChild(actions);
-
-        taskList.appendChild(item);
-      });
-    }
-
-    function renderTaskListEditMode(){
-      const iso = state.selectedISO;
-      if(!iso) return;
-
-      const tasks = getTasks(iso);
-      const idx = state.editingIndex;
-
-      taskList.innerHTML = "";
-
-      tasks.forEach((task, i) => {
-        const item = document.createElement("div");
-        item.className = "taskItem";
-
-        const check = document.createElement("button");
-        check.className = "checkBtn";
-        check.textContent = task.done ? "✓" : "";
-        if(task.done) check.classList.add("done");
-        check.addEventListener("pointerdown", (e) => {
-          e.preventDefault();
-          const list = getTasks(iso);
-          list[i].done = !list[i].done;
-          setTasks(iso, list);
-          renderTaskListEditMode();
-          render();
-        }, { passive:false });
-
-        item.appendChild(check);
-
-        if(i === idx){
-          const input = document.createElement("input");
-          input.className = "editInput";
-          input.value = task.text;
-          input.maxLength = 60;
-
-          const actions = document.createElement("div");
-          actions.className = "taskActions";
-
-          const save = document.createElement("button");
-          save.className = "iconBtn";
-          save.textContent = "✔";
-          save.title = "저장";
-          save.addEventListener("pointerdown", (e) => {
-            e.preventDefault();
-            const v = input.value.trim();
-            if(!v) return;
-            const list = getTasks(iso);
-            list[i].text = v;
-            setTasks(iso, list);
-            state.editingIndex = null;
-            renderTaskList();
-            render();
-          }, { passive:false });
-
-          const cancel = document.createElement("button");
-          cancel.className = "iconBtn delete";
-          cancel.textContent = "↩";
-          cancel.title = "취소";
-          cancel.addEventListener("pointerdown", (e) => {
-            e.preventDefault();
-            state.editingIndex = null;
-            renderTaskList();
-          }, { passive:false });
-
-          actions.appendChild(save);
-          actions.appendChild(cancel);
-
-          item.appendChild(input);
-          item.appendChild(actions);
-
-          setTimeout(() => input.focus(), 0);
-          input.addEventListener("keydown", (e) => {
-            if(e.key === "Enter") save.click();
-            if(e.key === "Escape") cancel.click();
-          });
-
-          taskList.appendChild(item);
-          return;
-        }
-
-        const text = document.createElement("div");
-        text.className = "taskText";
-        text.textContent = task.text;
-        if(task.done) text.classList.add("done");
-
-        const actions = document.createElement("div");
-        actions.className = "taskActions";
-
-        const edit = document.createElement("button");
-        edit.className = "iconBtn";
-        edit.textContent = "✎";
-        edit.addEventListener("pointerdown", (e) => {
-          e.preventDefault();
-          state.editingIndex = i;
-          renderTaskListEditMode();
-        }, { passive:false });
-
-        const del = document.createElement("button");
-        del.className = "iconBtn delete";
-        del.textContent = "⌫";
-        del.addEventListener("pointerdown", (e) => {
-          e.preventDefault();
-          const list = getTasks(iso);
-          list.splice(i, 1);
-          setTasks(iso, list);
-          renderTaskListEditMode();
-          render();
-        }, { passive:false });
-
-        actions.appendChild(edit);
         actions.appendChild(del);
 
         item.appendChild(text);
@@ -976,6 +838,12 @@
       render();
     }
 
+    function goClock(){
+      const url = new URL("/embed/clock.html", window.location.origin);
+      url.searchParams.set("from", "calendar");
+      location.href = url.toString();
+    }
+
     prevBtn.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       const d = new Date(state.viewDate);
@@ -998,6 +866,11 @@
       render();
     }, { passive:false });
 
+    clockBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      goClock();
+    }, { passive:false });
+
     closeBtn.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       closeModal();
@@ -1017,7 +890,6 @@
       addTask();
     }, { passive:false });
 
-    // 완료 숨김 토글
     hideDoneBtn.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       state.hideDone = !state.hideDone;
@@ -1025,7 +897,6 @@
       renderTaskList();
     }, { passive:false });
 
-    // 내보내기(JSON)
     exportBtn.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       const data = loadAll();
@@ -1039,7 +910,6 @@
       setTimeout(() => URL.revokeObjectURL(a.href), 2000);
     }, { passive:false });
 
-    // 가져오기(JSON)
     importBtn.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       const input = document.createElement("input");
@@ -1066,7 +936,6 @@
       input.click();
     }, { passive:false });
 
-    // URL 쿼리로 날짜 모달 자동 오픈: ?date=YYYY-MM-DD&open=1
     function parseISODateParam(){
       const sp = new URLSearchParams(location.search);
       const iso = sp.get("date");
@@ -1093,13 +962,12 @@
     }
 
     loadUI();
+    fitToFrame();
+    window.addEventListener("resize", fitToFrame);
+    setInterval(fitToFrame, 500);
+
     render();
     bootFromQuery();
   </script>
 </body>
 </html>
-
-
-
-
-
