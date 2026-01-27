@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Notion Pixel Clock (No Clip)</title>
+  <title>Notion Pixel Clock (No Clip + Notion Safe)</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,10 +19,11 @@
       --muted:#a7b0c2;
       --accent:#7cc7ff;
 
-      /* ✅ 기준 크기: 높이를 넉넉히(잘림 방지) */
+      /* ✅ 기준 크기: 글리프/클립 여유 */
       --baseW: 360;
       --baseH: 132;
 
+      /* JS가 계산해서 넣음(확대/축소 모두 허용) */
       --scale: 1;
     }
 
@@ -33,6 +34,8 @@
       background:transparent;
       color:var(--text);
       font-family: ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: geometricPrecision;
     }
 
     .stage{
@@ -42,6 +45,8 @@
       align-items:flex-start;
       justify-content:flex-start;
       overflow:hidden;
+      /* 노션 오버레이와 겹침 최소화 */
+      padding:0;
     }
 
     .wrap{
@@ -56,17 +61,21 @@
       overflow:hidden;
       display:flex;
       flex-direction:column;
+
+      /* ✅ iframe 안에서 클릭이 새지 않게 */
+      pointer-events: auto;
     }
 
     .top{
       height:36px;
       display:flex;
       align-items:center;
-      justify-content:space-between;
+      justify-content:flex-start; /* ✅ 버튼을 왼쪽으로 */
       padding:6px 8px;
+      padding-right:24px; /* ✅ 노션 우상단 오버레이 피하기(보험) */
       border-bottom:2px solid var(--line2);
       background:linear-gradient(180deg, var(--panel2), var(--panel));
-      gap:8px;
+      gap:10px;
     }
 
     .title{
@@ -76,6 +85,9 @@
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
+      margin-left:2px;
+      user-select:none;
+      pointer-events:none; /* 텍스트 드래그/클릭 방지 */
     }
 
     .chip{
@@ -91,6 +103,9 @@
       cursor:pointer;
       user-select:none;
       line-height:1;
+      /* ✅ 노션에 클릭 새지 않게 */
+      pointer-events:auto;
+      touch-action: manipulation;
     }
     .chip:hover{ border-color:var(--accent); }
     .chip.on{
@@ -113,12 +128,12 @@
       flex:1;
       border:2px solid var(--line);
       background:#0b0c10;
-      /* ✅ 패딩 살짝 증가(글리프 잘림 방지) */
       padding:10px 12px;
       min-width:0;
       display:flex;
       flex-direction:column;
       justify-content:center;
+      overflow:hidden;
     }
 
     .dateRow{
@@ -143,15 +158,14 @@
       font-size:18px;
       color:var(--text);
       letter-spacing:1px;
-      /* ✅ 핵심: line-height 여유 */
-      line-height:1.25;
-      padding-bottom:1px; /* 렌더링 오차용 */
+      line-height:1.25;     /* ✅ 잘림 방지 */
+      padding-bottom:2px;   /* ✅ 렌더링 오차 여유 */
     }
 
     .cursor{
       font-size:14px;
       color:var(--accent);
-      line-height:1.25;      /* ✅ 같이 맞춰 */
+      line-height:1.25;
       transform: translateY(-1px);
       opacity:1;
       user-select:none;
@@ -177,6 +191,7 @@
       flex-direction:column;
       justify-content:center;
       gap:8px;
+      overflow:hidden;
     }
 
     .meterLabel{
@@ -184,6 +199,7 @@
       color:var(--muted);
       opacity:.95;
       line-height:1;
+      user-select:none;
     }
 
     .meter{
@@ -210,8 +226,9 @@
   <div class="stage">
     <div class="wrap" id="wrap">
       <div class="top">
-        <div class="title">PIXEL CLOCK</div>
+        <!-- ✅ 노션 우상단 오버레이 겹침 피하려고 왼쪽 배치 -->
         <div class="chip on" id="modeBtn" title="12/24 토글">24H</div>
+        <div class="title">PIXEL CLOCK</div>
       </div>
 
       <div class="main">
@@ -242,13 +259,14 @@
     const timeText  = $("#timeText");
     const cursorEl  = $("#cursor");
     const noteText  = $("#noteText");
-    const dayBar  = $("#dayBar");
-    const taskBar = $("#taskBar");
-    const modeBtn = $("#modeBtn");
+    const dayBar    = $("#dayBar");
+    const taskBar   = $("#taskBar");
+    const modeBtn   = $("#modeBtn");
 
     const state = { is24h: true };
     const DOW_KR = ["일","월","화","수","목","금","토"];
 
+    // ✅ 캘린더 저장키 후보(네 최신 키 포함)
     const STORE_KEYS = [
       "pixel_calendar_tasks_v5_backup_hideDone",
       "pixel_calendar_tasks_v4_bottomTriangles",
@@ -304,6 +322,7 @@
       return Math.max(0, Math.min(1, now/total));
     }
 
+    // ✅ iframe 크기에 맞춰 “확대/축소” 모두 허용
     function fitToFrame(){
       const rootStyle = getComputedStyle(document.documentElement);
       const baseW = Number(rootStyle.getPropertyValue("--baseW")) || 360;
@@ -318,7 +337,7 @@
       let scale = Math.min(availW / baseW, availH / baseH);
       if(!isFinite(scale) || scale <= 0) scale = 1;
 
-      // ✅ 과도 확대만 제한
+      // ✅ 과도 확대만 제한(원하면 3→4로 올려도 됨)
       scale = Math.min(3, Math.max(0.5, scale));
       document.documentElement.style.setProperty("--scale", String(scale));
     }
@@ -345,14 +364,28 @@
       noteText.textContent = `오늘 할 일: ${done} / ${total}`;
     }
 
-    modeBtn.addEventListener("click", () => {
+    // ✅ 노션이 클릭을 가로채는 걸 막기 위한 강제 캡처 핸들러
+    function stopAll(e){
+      e.preventDefault();
+      e.stopPropagation();
+      if(e.stopImmediatePropagation) e.stopImmediatePropagation();
+    }
+    function toggleMode(){
       state.is24h = !state.is24h;
       modeBtn.textContent = state.is24h ? "24H" : "12H";
       modeBtn.classList.toggle("on", state.is24h);
       tick();
-    });
+    }
 
-    // 노션에서 리사이즈 이벤트가 늦거나 안 올 때 대비
+    ["pointerdown","mousedown","touchstart"].forEach(type=>{
+      modeBtn.addEventListener(type, (e)=>{
+        stopAll(e);
+        toggleMode();
+      }, { capture:true, passive:false });
+    });
+    modeBtn.addEventListener("click", stopAll, { capture:true });
+
+    // ✅ 노션에서 리사이즈 이벤트가 늦거나 안 올 때 대비
     fitToFrame();
     window.addEventListener("resize", fitToFrame);
     if("ResizeObserver" in window){
