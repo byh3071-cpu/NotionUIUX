@@ -1,5 +1,9 @@
 {
   "version": 2,
+  "rewrites": [
+    { "source": "/embed", "destination": "/embed/calendar.html" },
+    { "source": "/embed/", "destination": "/embed/calendar.html" }
+  ],
   "headers": [
     {
       "source": "/embed/(.*)",
