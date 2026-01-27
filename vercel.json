@@ -1,8 +1,11 @@
 {
   "version": 2,
   "rewrites": [
-    { "source": "/embed", "destination": "/embed/calender.html" },
-    { "source": "/embed/", "destination": "/embed/calender.html" }
+    { "source": "/embed", "destination": "/embed/calendar.html" },
+    { "source": "/embed/", "destination": "/embed/calendar.html" },
+
+    { "source": "/embed/calender.html", "destination": "/embed/calendar.html" },
+    { "source": "/embed/calender", "destination": "/embed/calendar.html" }
   ],
   "headers": [
     {
