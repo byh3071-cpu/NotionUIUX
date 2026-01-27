@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Notion Pixel Clock (Zoom Fit + Open Calendar)</title>
+  <title>Notion Pixel Clock (Open Calendar)</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,11 +19,8 @@
       --muted:#a7b0c2;
       --accent:#7cc7ff;
 
-      /* 기준 크기(여백 넉넉하게) */
       --baseW: 360;
-      --baseH: 150;
-
-      /* JS에서 자동 계산 */
+      --baseH: 156;  /* ✅ 살짝 여유 늘림(가림 방지) */
       --scale: 1;
     }
 
@@ -36,9 +33,7 @@
       font-family: ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace;
       -webkit-font-smoothing: antialiased;
       text-rendering: geometricPrecision;
-
-      /* ✅ 내부 스크롤 금지 */
-      overflow:hidden;
+      overflow:hidden; /* ✅ 내부 스크롤 제거 */
     }
 
     .stage{
@@ -48,14 +43,13 @@
       align-items:flex-start;
       justify-content:flex-start;
       overflow:hidden;
-      background:transparent;
     }
 
     .wrap{
       width: calc(var(--baseW) * 1px);
       height: calc(var(--baseH) * 1px);
 
-      /* ✅ 핵심: zoom 우선 (레이아웃까지 줄어서 스크롤/가림 크게 감소) */
+      /* ✅ 노션(Chromium)에서 레이아웃까지 줄어듦 */
       zoom: var(--scale);
 
       background:var(--panel);
@@ -67,14 +61,10 @@
       pointer-events:auto;
     }
 
-    /* zoom 미지원 브라우저 대비(노션은 Chromium이라 거의 OK) */
     @supports not (zoom: 1){
       .wrap{
         transform: scale(var(--scale));
         transform-origin: top left;
-        will-change: transform;
-        backface-visibility: hidden;
-        transform-style: preserve-3d;
       }
     }
 
@@ -84,7 +74,7 @@
       align-items:center;
       justify-content:flex-start;
       padding:6px 8px;
-      padding-right:24px; /* 노션 우상단 오버레이 보험 */
+      padding-right:26px; /* ✅ 노션 우상단 오버레이 보험 */
       border-bottom:2px solid var(--line2);
       background:linear-gradient(180deg, var(--panel2), var(--panel));
       gap:8px;
@@ -100,7 +90,6 @@
       user-select:none;
       pointer-events:none;
       flex:1;
-      margin-left:2px;
     }
 
     .chip{
@@ -116,7 +105,6 @@
       cursor:pointer;
       user-select:none;
       line-height:1;
-      pointer-events:auto;
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
     }
@@ -172,15 +160,15 @@
       color:var(--text);
       letter-spacing:1px;
       display:inline-block;
-      line-height:1.4;
-      padding:2px 0 6px;  /* ✅ 가림 방지 */
+      line-height:1.45;      /* ✅ 가림 방지 */
+      padding:2px 0 6px;     /* ✅ 가림 방지 */
     }
 
     .cursor{
       font-size:14px;
       color:var(--accent);
       display:inline-block;
-      line-height:1.4;
+      line-height:1.45;
       padding:2px 0 6px;
       opacity:1;
       user-select:none;
@@ -238,7 +226,7 @@
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
-      min-height:10px; /* ✅ 글자가 “- -”처럼 깨지는 느낌 방지 */
+      min-height:10px;
     }
 
     @media (max-width: 340px){
@@ -294,7 +282,6 @@
     const state = { is24h: true };
     const DOW_KR = ["일","월","화","수","목","금","토"];
 
-    // ✅ 캘린더 저장키 후보(최신 v6도 포함)
     const STORE_KEYS = [
       "pixel_calendar_tasks_v6",
       "pixel_calendar_tasks_v5_backup_hideDone",
@@ -351,28 +338,22 @@
       return Math.max(0, Math.min(1, now/total));
     }
 
-    // ✅ 스크롤 0 모드: viewport보다 절대 커지지 않게 스케일 다운
     function fitToFrame(){
       const rootStyle = getComputedStyle(document.documentElement);
       const baseW = Number(rootStyle.getPropertyValue("--baseW")) || 360;
-      const baseH = Number(rootStyle.getPropertyValue("--baseH")) || 150;
+      const baseH = Number(rootStyle.getPropertyValue("--baseH")) || 156;
 
       const vw = (window.visualViewport && window.visualViewport.width) ? window.visualViewport.width : window.innerWidth;
       const vh = (window.visualViewport && window.visualViewport.height) ? window.visualViewport.height : window.innerHeight;
 
-      // 노션 내부 여백/오버레이 감안해서 여유 크게
       const availW = Math.max(1, vw - 24);
       const availH = Math.max(1, vh - 24);
 
       let scale = Math.min(availW / baseW, availH / baseH);
       if(!isFinite(scale) || scale <= 0) scale = 1;
 
-      // 과도 확대 제한(원하면 4)
-      scale = Math.min(3, Math.max(0.5, scale));
-
-      // ✅ 절대 넘치지 않게 내림
+      scale = Math.min(3, Math.max(0.55, scale));
       scale = Math.floor(scale * 100) / 100;
-      if(scale < 0.55) scale = 0.55;
 
       document.documentElement.style.setProperty("--scale", String(scale));
     }
@@ -401,7 +382,6 @@
       noteText.textContent = `오늘 할 일: ${done} / ${total}`;
     }
 
-    // ✅ 노션 클릭 가로채기 방지
     function stopAll(e){
       e.preventDefault();
       e.stopPropagation();
@@ -415,39 +395,16 @@
       tick();
     }
 
-    // ✅ 404 방지: 현재 경로에서 calendar.html로 치환 + /embed/calendar.html 폴백
-    function buildCalendarUrl(iso){
-      const u = new URL(window.location.href);
-
-      // 1) 현재 파일이 clock.html이면 calendar.html로 치환
-      u.pathname = u.pathname.replace(/clock\.html$/i, "calendar.html");
-
-      // 2) 그래도 clock.html이 안 들어있었다면 같은 폴더 기준으로 강제
-      if(!/calendar\.html$/i.test(u.pathname)){
-        const parts = u.pathname.split("/");
-        parts[parts.length - 1] = "calendar.html";
-        u.pathname = parts.join("/");
-      }
-
-      u.searchParams.set("date", iso);
-      u.searchParams.set("open", "1");
-      return u.toString();
-    }
-
+    // ✅ 절대경로 고정(노션/상대경로 꼬임 방지)
     function openToday(){
       const iso = toISO(new Date());
-      const url1 = buildCalendarUrl(iso);
+      const url = new URL("/embed/calendar.html", window.location.origin);
+      url.searchParams.set("date", iso);
+      url.searchParams.set("open", "1");
 
-      // window.open은 404를 JS에서 감지 못함 → 폴백도 함께 준비
-      const w = window.open(url1, "_blank", "noopener,noreferrer");
-
-      // 폴백: 새 탭이 차단되면 현재 탭에서 이동(사용자 설정 따라)
+      const w = window.open(url.toString(), "_blank", "noopener,noreferrer");
       if(!w){
-        // embed 폴더가 명확하면 여기 수정 가능:
-        const fallback = new URL("/embed/calendar.html", window.location.origin);
-        fallback.searchParams.set("date", iso);
-        fallback.searchParams.set("open", "1");
-        window.location.href = fallback.toString();
+        window.location.href = url.toString();
       }
     }
 
@@ -458,14 +415,8 @@
     modeBtn.addEventListener("click", stopAll, { capture:true });
     openTodayBtn.addEventListener("click", stopAll, { capture:true });
 
-    // 리사이즈 대응
     fitToFrame();
     window.addEventListener("resize", fitToFrame);
-    if("ResizeObserver" in window){
-      const ro = new ResizeObserver(() => fitToFrame());
-      ro.observe(document.documentElement);
-      ro.observe(document.body);
-    }
     setInterval(fitToFrame, 500);
 
     tick();
