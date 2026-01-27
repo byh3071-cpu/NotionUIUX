@@ -416,15 +416,13 @@
 
     function openToday(){
       const iso = toISO(new Date());
-      const { primary, fallback } = buildCalendarUrl(iso);
-
-      // 새 탭 우선
-      let w = window.open(primary.toString(), "_blank", "noopener,noreferrer");
-      if(!w){
-        // 팝업 차단이면 같은 탭
-        window.location.href = primary.toString();
-        return;
-      }
+      const url = new URL("/embed/calendar", window.location.origin); // ✅ 확장자 없는 정식 경로
+      url.searchParams.set("date", iso);
+      url.searchParams.set("open", "1");
+    
+      const w = window.open(url.toString(), "_blank", "noopener,noreferrer");
+      if(!w) window.location.href = url.toString();
+    }
 
       // 일부 환경에서 primary가 404일 수 있어서 fallback도 제공(사용자가 바로 누를 수 있게)
       // 자동으로 fallback을 또 여는 건 탭이 2개 떠서 싫어할 수 있으니, 콘솔에만 안내
