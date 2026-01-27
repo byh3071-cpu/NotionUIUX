@@ -38,6 +38,8 @@
       background:transparent;
       color:var(--text);
       font-family: ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: geometricPrecision;
     }
 
     .wrap{
@@ -81,6 +83,8 @@
       justify-content:center;
       user-select:none;
       transition: transform .05s ease;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
     .btn:active{ transform: translateY(1px); }
     .btn:hover{ border-color:var(--accent); }
@@ -93,6 +97,7 @@
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
+      user-select:none;
     }
 
     .dow{
@@ -112,6 +117,7 @@
       border:2px solid var(--line);
       border-radius:0;
       background:#0b0c10;
+      user-select:none;
     }
 
     .dow .sunHead{
@@ -145,6 +151,10 @@
       user-select:none;
       transition: border-color .12s ease;
       overflow:hidden;
+
+      /* ✅ 터치 안정 */
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
     .day:hover{ border-color:var(--accent); }
 
@@ -153,77 +163,71 @@
       cursor:default;
     }
 
-    .day.sun:not(.disabled){
-      border-color: rgba(255,143,143,.30);
-    }
-    .day.sat:not(.disabled){
-      border-color: rgba(143,182,255,.30);
-    }
+    .day.sun:not(.disabled){ border-color: rgba(255,143,143,.30); }
+    .day.sat:not(.disabled){ border-color: rgba(143,182,255,.30); }
 
     .num{
       font-size:10px;
       color:var(--text);
     }
 
-    /* ✅ 하단 코너 "대각선 세모 배지" */
+    /* ✅ 우상단(총 개수): 대각 삼각형 */
     .countBadge{
       position:absolute;
-      bottom:0;
-      right:0;
+      top:0px;
+      right:0px;
       width:18px;
       height:18px;
-      clip-path: polygon(100% 100%, 0 100%, 100% 0);
+      clip-path: polygon(100% 0, 0 0, 100% 100%);
       background: var(--accent);
       color:#0b0c10;
-
       display:flex;
-      align-items:flex-end;
+      align-items:flex-start;
       justify-content:flex-end;
-
       font-size:9px;
       line-height:1;
-      padding:0 3px 2px 0;
-
+      padding:2px 3px 0 0;
       box-shadow: inset 0 0 0 2px rgba(11,12,16,.25);
       user-select:none;
       pointer-events:none;
     }
 
+    /* ✅ 좌상단(완료 개수): 대각 삼각형 */
     .doneBadge{
       position:absolute;
-      bottom:0;
-      left:0;
+      top:0px;
+      left:0px;
       width:18px;
       height:18px;
-      clip-path: polygon(0 100%, 0 0, 100% 100%);
+      clip-path: polygon(0 0, 100% 0, 0 100%);
       background: rgba(124,199,255,.22);
       color: var(--accent);
-
       display:flex;
-      align-items:flex-end;
+      align-items:flex-start;
       justify-content:flex-start;
-
       font-size:9px;
       line-height:1;
-      padding:0 0 2px 3px;
-
+      padding:2px 0 0 3px;
       box-shadow: inset 0 0 0 2px rgba(124,199,255,.25);
       user-select:none;
       pointer-events:none;
     }
 
-    /* ✅ 하트(완료 상태만) */
+    /* ✅ 하트: 모두완료면 ♥, 아니면 ♡ */
     .heartMarker{
       position:absolute;
       left:50%;
-      transform: translateX(-50%);
       bottom:6px;
+      transform: translateX(-50%);
       font-size:12px;
       line-height:1;
       color:var(--accent);
       opacity:0.95;
       user-select:none;
       pointer-events:none;
+    }
+    .heartMarker.doneAll{
+      filter: drop-shadow(0 0 2px rgba(124,199,255,.25));
     }
 
     .today{
@@ -245,7 +249,7 @@
     .modal{
       width: 100%;
       max-width: 340px;
-      height: 360px;
+      height: 350px;
       background: #0e1016;
       border: 2px solid var(--line2);
       border-radius:0;
@@ -261,8 +265,9 @@
       justify-content:space-between;
       border-bottom:2px solid var(--line2);
       background:#0b0c10;
-      gap:8px;
+      gap:6px;
     }
+
     .modalTitle{
       font-size:10px;
       color:var(--text);
@@ -270,13 +275,7 @@
       overflow:hidden;
       text-overflow:ellipsis;
       flex:1;
-    }
-
-    .headerBtns{
-      display:flex;
-      gap:6px;
-      align-items:center;
-      flex:0 0 auto;
+      user-select:none;
     }
 
     .miniBtn{
@@ -288,21 +287,18 @@
       border-radius:0;
       cursor:pointer;
       font-size:9px;
-      line-height:1;
       display:flex;
       align-items:center;
       justify-content:center;
       user-select:none;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
     .miniBtn:hover{ border-color:var(--accent); }
-    .miniBtn.active{
-      border-color: var(--accent);
-      box-shadow: inset 0 0 0 2px rgba(124,199,255,.15);
-    }
 
     .closeBtn{
       width:32px;
-      height:28px;
+      height:32px;
       border:2px solid var(--line2);
       background:#0e1016;
       color:var(--text);
@@ -312,6 +308,9 @@
       display:flex;
       align-items:center;
       justify-content:center;
+      user-select:none;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
     .closeBtn:hover{ border-color:var(--danger); }
 
@@ -328,6 +327,7 @@
       display:flex;
       gap:6px;
     }
+
     .taskInput{
       flex:1;
       height:34px;
@@ -350,6 +350,9 @@
       border-radius:0;
       cursor:pointer;
       font-size:10px;
+      user-select:none;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
     .addBtn:hover{ border-color:var(--accent); }
 
@@ -388,6 +391,9 @@
       justify-content:center;
       font-size:11px;
       flex:0 0 auto;
+      user-select:none;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
     .checkBtn.done{
       background: var(--accent);
@@ -424,6 +430,7 @@
       gap:6px;
       flex:0 0 auto;
     }
+
     .iconBtn{
       width:30px;
       height:28px;
@@ -436,22 +443,19 @@
       align-items:center;
       justify-content:center;
       font-size:11px;
+      user-select:none;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
     .iconBtn:hover{ border-color:var(--accent); }
     .iconBtn.delete:hover{ border-color:var(--danger); }
-
-    .backupRow{
-      display:flex;
-      gap:6px;
-      align-items:center;
-      justify-content:flex-end;
-    }
 
     .help{
       font-size:9px;
       color:var(--muted);
       opacity:.9;
-      line-height:1.35;
+      line-height:1.4;
+      user-select:none;
     }
   </style>
 </head>
@@ -482,10 +486,11 @@
         <div class="modalHeader">
           <div class="modalTitle" id="modalTitle">TASK</div>
 
-          <div class="headerBtns">
-            <button class="miniBtn" id="toggleHideDoneBtn" title="완료 숨김 토글">완료숨김</button>
-            <button class="closeBtn" id="closeBtn">X</button>
-          </div>
+          <button class="miniBtn" id="hideDoneBtn" title="완료 숨김 토글">HIDE</button>
+          <button class="miniBtn" id="exportBtn" title="내보내기(JSON)">EXPORT</button>
+          <button class="miniBtn" id="importBtn" title="가져오기(JSON)">IMPORT</button>
+
+          <button class="closeBtn" id="closeBtn">X</button>
         </div>
 
         <div class="modalBody">
@@ -496,15 +501,7 @@
 
           <div class="taskList" id="taskList"></div>
 
-          <div class="backupRow">
-            <button class="miniBtn" id="exportBtn" title="데이터 내보내기">내보내기</button>
-            <button class="miniBtn" id="importBtn" title="데이터 가져오기">가져오기</button>
-          </div>
-
-          <div class="help">
-            좌하단=완료 / 우하단=총 / ♥=올완료 / ♡=미완료 포함<br>
-            완료숨김 ON이면 체크된 항목은 리스트에서 숨김
-          </div>
+          <div class="help">♡=미완료 있음 / ♥=전부완료 · 좌상=완료수 · 우상=전체수 (10↑는 9+)</div>
         </div>
       </div>
     </div>
@@ -524,13 +521,24 @@
     const closeBtn = $("#closeBtn");
     const modalTitle = $("#modalTitle");
 
+    const hideDoneBtn = $("#hideDoneBtn");
+    const exportBtn = $("#exportBtn");
+    const importBtn = $("#importBtn");
+
     const taskInput = $("#taskInput");
     const addBtn = $("#addBtn");
     const taskList = $("#taskList");
 
-    const toggleHideDoneBtn = $("#toggleHideDoneBtn");
-    const exportBtn = $("#exportBtn");
-    const importBtn = $("#importBtn");
+    // ✅ 최신 저장 키 (시계도 이 키를 읽음)
+    const STORE_KEY = "pixel_calendar_tasks_v6";
+    const UI_KEY = "pixel_calendar_ui_v6"; // hideDone 저장용
+
+    const LEGACY_KEYS = [
+      "pixel_calendar_tasks_v5_backup_hideDone",
+      "pixel_calendar_tasks_v4_bottomTriangles",
+      "pixel_calendar_tasks_v3_bottomBadges",
+      "pixel_calendar_tasks_v2_heart_preview"
+    ];
 
     const state = {
       viewDate: new Date(),
@@ -547,12 +555,36 @@
       a.getMonth() === b.getMonth() &&
       a.getDate() === b.getDate();
 
-    const STORE_KEY = "pixel_calendar_tasks_v5_backup_hideDone";
+    function safeParse(s){
+      try{ return JSON.parse(s); }catch(e){ return null; }
+    }
+
+    function loadUI(){
+      const ui = safeParse(localStorage.getItem(UI_KEY)) || {};
+      state.hideDone = Boolean(ui.hideDone);
+      hideDoneBtn.textContent = state.hideDone ? "SHOW" : "HIDE";
+    }
+    function saveUI(){
+      localStorage.setItem(UI_KEY, JSON.stringify({ hideDone: state.hideDone }));
+      hideDoneBtn.textContent = state.hideDone ? "SHOW" : "HIDE";
+    }
 
     function loadAll(){
-      try{ return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; }
-      catch(e){ return {}; }
+      // 1) 최신 키 우선
+      const cur = safeParse(localStorage.getItem(STORE_KEY));
+      if(cur && typeof cur === "object" && !Array.isArray(cur)) return cur;
+
+      // 2) 레거시에서 첫 번째로 발견되는 것 로드 + 마이그레이션
+      for(const k of LEGACY_KEYS){
+        const v = safeParse(localStorage.getItem(k));
+        if(v && typeof v === "object" && !Array.isArray(v)){
+          localStorage.setItem(STORE_KEY, JSON.stringify(v));
+          return v;
+        }
+      }
+      return {};
     }
+
     function saveAll(obj){
       localStorage.setItem(STORE_KEY, JSON.stringify(obj));
     }
@@ -578,14 +610,8 @@
       saveAll(all);
     }
 
-    function updateHideDoneBtnUI(){
-      if(state.hideDone){
-        toggleHideDoneBtn.classList.add("active");
-        toggleHideDoneBtn.textContent = "숨김ON";
-      }else{
-        toggleHideDoneBtn.classList.remove("active");
-        toggleHideDoneBtn.textContent = "완료숨김";
-      }
+    function fmtCount(n){
+      return n > 9 ? "9+" : String(n);
     }
 
     function render(){
@@ -637,45 +663,45 @@
         if(dow === 6) cell.classList.add("sat");
 
         const now = new Date();
-        if(isSameDay(cellDate, now) && !disabled){
-          cell.classList.add("today");
-        }
+        if(isSameDay(cellDate, now) && !disabled) cell.classList.add("today");
 
         const num = document.createElement("div");
         num.className = "num";
         num.textContent = displayNum;
         cell.appendChild(num);
 
+        // 배지/하트
         const tasks = getTasks(iso);
         if(tasks.length > 0){
           const total = tasks.length;
           const done = tasks.filter(t => t.done).length;
-          const fmt = (n) => (n > 9 ? "9+" : String(n));
+          const hasUndone = tasks.some(t => !t.done);
 
-          // ✅ 좌하단: 완료 개수(세모)
-          const doneBadge = document.createElement("div");
-          doneBadge.className = "doneBadge";
-          doneBadge.textContent = fmt(done);
-          cell.appendChild(doneBadge);
-
-          // ✅ 우하단: 총 개수(세모)
           const totalBadge = document.createElement("div");
           totalBadge.className = "countBadge";
-          totalBadge.textContent = fmt(total);
+          totalBadge.textContent = fmtCount(total);
           cell.appendChild(totalBadge);
 
-          // ✅ 하트: 전부 완료면 ♥ / 미완료 포함이면 ♡
-          const allDone = done === total;
+          if(done > 0){
+            const doneBadge = document.createElement("div");
+            doneBadge.className = "doneBadge";
+            doneBadge.textContent = fmtCount(done);
+            cell.appendChild(doneBadge);
+          }
+
           const heart = document.createElement("div");
           heart.className = "heartMarker";
-          heart.textContent = allDone ? "♥" : "♡";
+          heart.textContent = hasUndone ? "♡" : "♥";
+          if(!hasUndone) heart.classList.add("doneAll");
           cell.appendChild(heart);
         }
 
-        cell.addEventListener("click", () => {
-          if(disabled) return; // 흐린 날짜 클릭 막음
+        // ✅ 클릭 안정: pointerdown (작은 화면에서 더 정확)
+        cell.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
+          if(disabled) return; // 흐린 날짜는 클릭 막음
           openModal(iso);
-        });
+        }, { passive:false });
 
         gridEl.appendChild(cell);
       }
@@ -687,7 +713,6 @@
 
       modalTitle.textContent = `TASK · ${iso}`;
       taskInput.value = "";
-      updateHideDoneBtnUI();
       renderTaskList();
 
       modalBack.classList.add("show");
@@ -706,25 +731,32 @@
       const iso = state.selectedISO;
       if(!iso) return;
 
-      const tasks = getTasks(iso);
+      const all = getTasks(iso);
+      const tasks = state.hideDone ? all.filter(t => !t.done) : all;
+
       taskList.innerHTML = "";
 
-      // ✅ 완료 숨김 적용
-      const viewList = state.hideDone ? tasks.filter(t => !t.done) : tasks;
-
-      if(viewList.length === 0){
+      if(all.length === 0){
         const empty = document.createElement("div");
         empty.className = "help";
-        empty.textContent = state.hideDone ? "미완료 TASK 없음" : "등록된 TASK 없음";
+        empty.textContent = "등록된 TASK 없음";
         taskList.appendChild(empty);
         return;
       }
 
-      viewList.forEach((task, viewIdx) => {
-        // ✅ viewIdx → 실제 idx 매핑(완료숨김 상태에서 정확히 수정/삭제/체크하려고)
-        const realIdx = state.hideDone
-          ? tasks.findIndex((t, i) => !t.done && tasks.slice(0, i+1).filter(x => !x.done).length - 1 === viewIdx)
-          : viewIdx;
+      if(state.hideDone && tasks.length === 0){
+        const empty = document.createElement("div");
+        empty.className = "help";
+        empty.textContent = "미완료 TASK 없음 (완료 숨김 ON)";
+        taskList.appendChild(empty);
+        return;
+      }
+
+      tasks.forEach((task) => {
+        // hideDone ON이면 index가 원본과 달라질 수 있어 원본 인덱스를 찾아야 함
+        const listAll = getTasks(iso);
+        const idx = listAll.findIndex(t => t.text === task.text && t.done === task.done);
+        // (동일 텍스트가 중복이면 첫 매칭; 필요하면 id 붙이는 방식으로 업그레이드 가능)
 
         const item = document.createElement("div");
         item.className = "taskItem";
@@ -734,17 +766,92 @@
         check.textContent = task.done ? "✓" : "";
         if(task.done) check.classList.add("done");
         check.title = "완료 체크";
-        check.addEventListener("click", () => {
+        check.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
           const list = getTasks(iso);
-          list[realIdx].done = !list[realIdx].done;
-          setTasks(iso, list);
+          if(idx >= 0){
+            list[idx].done = !list[idx].done;
+            setTasks(iso, list);
+          }
           renderTaskList();
           render();
-        });
+        }, { passive:false });
 
         item.appendChild(check);
 
-        if(state.editingIndex === realIdx){
+        const text = document.createElement("div");
+        text.className = "taskText";
+        text.textContent = task.text;
+        if(task.done) text.classList.add("done");
+
+        const actions = document.createElement("div");
+        actions.className = "taskActions";
+
+        const edit = document.createElement("button");
+        edit.className = "iconBtn";
+        edit.textContent = "✎";
+        edit.title = "수정";
+        edit.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
+          state.editingIndex = idx;
+          renderTaskListEditMode();
+        }, { passive:false });
+
+        const del = document.createElement("button");
+        del.className = "iconBtn delete";
+        del.textContent = "⌫";
+        del.title = "삭제";
+        del.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
+          const list = getTasks(iso);
+          if(idx >= 0){
+            list.splice(idx, 1);
+            setTasks(iso, list);
+          }
+          renderTaskList();
+          render();
+        }, { passive:false });
+
+        actions.appendChild(edit);
+        actions.appendChild(del);
+
+        item.appendChild(text);
+        item.appendChild(actions);
+
+        taskList.appendChild(item);
+      });
+    }
+
+    // 편집 모드(원본 인덱스 기반)
+    function renderTaskListEditMode(){
+      const iso = state.selectedISO;
+      if(!iso) return;
+
+      const tasks = getTasks(iso);
+      const idx = state.editingIndex;
+
+      taskList.innerHTML = "";
+
+      tasks.forEach((task, i) => {
+        const item = document.createElement("div");
+        item.className = "taskItem";
+
+        const check = document.createElement("button");
+        check.className = "checkBtn";
+        check.textContent = task.done ? "✓" : "";
+        if(task.done) check.classList.add("done");
+        check.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
+          const list = getTasks(iso);
+          list[i].done = !list[i].done;
+          setTasks(iso, list);
+          renderTaskListEditMode();
+          render();
+        }, { passive:false });
+
+        item.appendChild(check);
+
+        if(i === idx){
           const input = document.createElement("input");
           input.className = "editInput";
           input.value = task.text;
@@ -757,25 +864,27 @@
           save.className = "iconBtn";
           save.textContent = "✔";
           save.title = "저장";
-          save.addEventListener("click", () => {
+          save.addEventListener("pointerdown", (e) => {
+            e.preventDefault();
             const v = input.value.trim();
             if(!v) return;
             const list = getTasks(iso);
-            list[realIdx].text = v;
+            list[i].text = v;
             setTasks(iso, list);
             state.editingIndex = null;
             renderTaskList();
             render();
-          });
+          }, { passive:false });
 
           const cancel = document.createElement("button");
           cancel.className = "iconBtn delete";
           cancel.textContent = "↩";
           cancel.title = "취소";
-          cancel.addEventListener("click", () => {
+          cancel.addEventListener("pointerdown", (e) => {
+            e.preventDefault();
             state.editingIndex = null;
             renderTaskList();
-          });
+          }, { passive:false });
 
           actions.appendChild(save);
           actions.appendChild(cancel);
@@ -804,25 +913,23 @@
         const edit = document.createElement("button");
         edit.className = "iconBtn";
         edit.textContent = "✎";
-        edit.title = "수정";
-        edit.addEventListener("click", () => {
-          state.editingIndex = realIdx;
-          renderTaskList();
-        });
+        edit.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
+          state.editingIndex = i;
+          renderTaskListEditMode();
+        }, { passive:false });
 
         const del = document.createElement("button");
         del.className = "iconBtn delete";
         del.textContent = "⌫";
-        del.title = "삭제";
-        del.addEventListener("click", () => {
-          const ok = confirm("삭제할까?");
-          if(!ok) return;
+        del.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
           const list = getTasks(iso);
-          list.splice(realIdx, 1);
+          list.splice(i, 1);
           setTasks(iso, list);
-          renderTaskList();
+          renderTaskListEditMode();
           render();
-        });
+        }, { passive:false });
 
         actions.appendChild(edit);
         actions.appendChild(del);
@@ -850,97 +957,125 @@
       render();
     }
 
-    // ✅ 백업: 내보내기
-    async function exportData(){
-      const all = loadAll();
-      const payload = JSON.stringify(all);
-
-      try{
-        if(navigator.clipboard && navigator.clipboard.writeText){
-          await navigator.clipboard.writeText(payload);
-          alert("백업 데이터가 클립보드에 복사됨 ✅\n(메모장/노션에 붙여넣기 해두면 됨)");
-          return;
-        }
-      }catch(e){}
-
-      // clipboard가 막혔을 때 fallback
-      prompt("아래 백업 데이터를 복사해서 보관해줘:", payload);
-    }
-
-    // ✅ 복구: 가져오기
-    function importData(){
-      const txt = prompt("백업 데이터를 붙여넣고 확인을 눌러줘:");
-      if(!txt) return;
-
-      try{
-        const parsed = JSON.parse(txt);
-
-        if(!parsed || typeof parsed !== "object" || Array.isArray(parsed)){
-          alert("형식이 올바르지 않음 ❌");
-          return;
-        }
-
-        // 간단 검증: 값이 배열 또는 문자열/객체 배열이면 OK
-        const safe = {};
-        for(const k of Object.keys(parsed)){
-          safe[k] = normalizeList(parsed[k]);
-        }
-
-        saveAll(safe);
-        alert("가져오기 완료 ✅");
-        renderTaskList();
-        render();
-      }catch(e){
-        alert("JSON 파싱 실패 ❌\n데이터가 깨졌거나 형식이 다름");
-      }
-    }
-
-    // ✅ 상단 버튼들
-    prevBtn.addEventListener("click", () => {
+    prevBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
       const d = new Date(state.viewDate);
       d.setMonth(d.getMonth() - 1);
       state.viewDate = d;
       render();
-    });
+    }, { passive:false });
 
-    nextBtn.addEventListener("click", () => {
+    nextBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
       const d = new Date(state.viewDate);
       d.setMonth(d.getMonth() + 1);
       state.viewDate = d;
       render();
-    });
+    }, { passive:false });
 
-    todayBtn.addEventListener("click", () => {
+    todayBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
       state.viewDate = new Date();
       render();
-    });
+    }, { passive:false });
 
-    closeBtn.addEventListener("click", closeModal);
+    closeBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      closeModal();
+    }, { passive:false });
 
-    modalBack.addEventListener("click", (e) => {
+    modalBack.addEventListener("pointerdown", (e) => {
       if(e.target === modalBack) closeModal();
-    });
+    }, { passive:false });
 
     taskInput.addEventListener("keydown", (e) => {
       if(e.key === "Enter") addTask();
       if(e.key === "Escape") closeModal();
     });
 
-    addBtn.addEventListener("click", addTask);
+    addBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      addTask();
+    }, { passive:false });
 
     // ✅ 완료 숨김 토글
-    toggleHideDoneBtn.addEventListener("click", () => {
+    hideDoneBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
       state.hideDone = !state.hideDone;
-      updateHideDoneBtnUI();
-      state.editingIndex = null;
+      saveUI();
       renderTaskList();
-    });
+    }, { passive:false });
 
-    // ✅ 백업 버튼
-    exportBtn.addEventListener("click", exportData);
-    importBtn.addEventListener("click", importData);
+    // ✅ 내보내기(JSON)
+    exportBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      const data = loadAll();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `pixel_calendar_backup_${new Date().toISOString().slice(0,10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    }, { passive:false });
 
+    // ✅ 가져오기(JSON)
+    importBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "application/json";
+      input.addEventListener("change", async () => {
+        const file = input.files?.[0];
+        if(!file) return;
+        try{
+          const text = await file.text();
+          const obj = safeParse(text);
+          if(!obj || typeof obj !== "object" || Array.isArray(obj)){
+            alert("JSON 형식이 올바르지 않아요.");
+            return;
+          }
+          saveAll(obj);
+          render();
+          if(state.selectedISO) renderTaskList();
+          alert("가져오기 완료!");
+        }catch(err){
+          alert("가져오기 실패");
+        }
+      });
+      input.click();
+    }, { passive:false });
+
+    // ✅ URL 쿼리로 날짜 모달 자동 오픈
+    function parseISODateParam(){
+      const sp = new URLSearchParams(location.search);
+      const iso = sp.get("date");
+      const open = sp.get("open");
+      if(!iso) return null;
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null;
+      return { iso, open: open === "1" };
+    }
+
+    function setViewToISO(iso){
+      const [Y,M] = iso.split("-").map(n => parseInt(n,10));
+      if(!Y || !M) return;
+      state.viewDate = new Date(Y, M-1, 1);
+    }
+
+    function bootFromQuery(){
+      const q = parseISODateParam();
+      if(!q) return;
+      setViewToISO(q.iso);
+      render();
+      if(q.open){
+        setTimeout(() => openModal(q.iso), 0);
+      }
+    }
+
+    loadUI();
     render();
+    bootFromQuery();
   </script>
 </body>
 </html>
