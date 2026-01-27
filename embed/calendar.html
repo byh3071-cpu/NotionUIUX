@@ -30,10 +30,7 @@
       --cell: 46px;
       --gap: 4px;
 
-      /* ✅ 바깥(iframe 남는 영역) 배경
-         - 노션 배경 비치게 하려면: transparent
-         - 노션에서 투명이 흰색으로 보이면: var(--panel) 로 바꾸면 됨 */
-      --outerbg: transparent; /* <- 필요하면 var(--panel) */
+      --outerbg: transparent;
     }
 
     *{ box-sizing:border-box; }
@@ -48,7 +45,7 @@
       font-family: ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace;
       -webkit-font-smoothing: antialiased;
       text-rendering: geometricPrecision;
-      overflow:hidden; /* ✅ 바깥 스크롤 제거(모달/리스트에서만 스크롤) */
+      overflow:hidden;
     }
 
     .stage{
@@ -56,10 +53,10 @@
       height:100%;
       background: var(--panel) !important;
       display:flex;
-      align-items:flex-start;   /* ✅ 좌상단 고정 */
+      align-items:flex-start;
       justify-content:flex-start;
       overflow:hidden;
-      padding:0;                /* ✅ 여백 0 */
+      padding:0;
       margin:0;
     }
 
@@ -72,17 +69,16 @@
       overflow:hidden;
       position:relative;
     }
-    
-    /* ✅ z-index 패치 (딱 1번만 유지) */
+
     .grid{
       position:relative;
       z-index:1;
     }
-    
+
     .modalBack{
       position:absolute;
       inset:0;
-      z-index:1000; /* ✅ 추가 */
+      z-index:1000;
       background: rgba(0,0,0,.55);
       display:none;
       align-items:center;
@@ -90,11 +86,10 @@
       padding:10px;
     }
     .modalBack.show{ display:flex; }
-    
+
     .modal{
       position:relative;
       z-index:1001;
-    
       width: 100%;
       max-width: 340px;
       height: 350px;
@@ -201,8 +196,14 @@
       overflow:hidden;
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
+      outline:none;
     }
     .day:hover{ border-color:var(--accent); }
+
+    .day:focus-visible{
+      border-color: var(--accent);
+      box-shadow: inset 0 0 0 2px rgba(124,199,255,.18);
+    }
 
     .day.disabled{
       opacity:.35;
@@ -271,29 +272,6 @@
     .today{
       border-color: var(--today) !important;
       box-shadow: inset 0 0 0 2px rgba(255,224,138,.25);
-    }
-
-    .modalBack{
-      position:absolute;
-      inset:0;
-      background: rgba(0,0,0,.55);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding:10px;
-    }
-    .modalBack.show{ display:flex; }
-
-    .modal{
-      width: 100%;
-      max-width: 340px;
-      height: 350px;
-      background: #0e1016;
-      border: 2px solid var(--line2);
-      border-radius:0;
-      display:flex;
-      flex-direction:column;
-      overflow:hidden;
     }
 
     .modalHeader{
@@ -396,7 +374,7 @@
       background:#0b0c10;
       border-radius:0;
       padding:6px;
-      overflow:auto; /* ✅ 여기서만 스크롤 */
+      overflow:auto;
       flex:1;
       min-height:0;
       -webkit-overflow-scrolling: touch;
@@ -412,17 +390,15 @@
       border-radius:0;
       margin-bottom:6px;
       background:#0e1016;
-      min-height: 44px; /* ✅ 한 줄이라도 보이게 */
+      min-height: 44px;
     }
 
     .checkBtn{
       width:30px;
       height:28px;
-    
-      border:2px solid var(--line2);   /* ✅ 기본은 라인색 */
+      border:2px solid var(--line2);
       background:transparent;
       color:var(--text);
-    
       border-radius:0;
       cursor:pointer;
       display:flex;
@@ -434,7 +410,7 @@
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
     }
-    .checkBtn:hover{ border-color:var(--accent); } /* ✅ 호버만 포인트 */
+    .checkBtn:hover{ border-color:var(--accent); }
     .checkBtn.done{ background: var(--accent); border-color: var(--accent); color:#0b0c10; }
 
     .taskText{
@@ -443,10 +419,9 @@
       line-height:1.25;
       word-break:break-word;
       flex:1;
-    
-      min-height: 16px;       /* ✅ 텍스트 영역 최소 높이 */
-      display:flex;           /* ✅ 레이아웃 깨짐 방지 */
-      align-items:center;     /* ✅ 세로 정렬 */
+      min-height: 16px;
+      display:flex;
+      align-items:center;
     }
     .taskText.done{
       color: var(--muted);
@@ -502,15 +477,15 @@
     <div class="wrap" id="app">
       <div class="topbar">
         <div class="leftBtns">
-          <button class="btn" id="prevBtn">◀</button>
-          <button class="btn" id="nextBtn">▶</button>
+          <button class="btn" id="prevBtn" type="button">◀</button>
+          <button class="btn" id="nextBtn" type="button">▶</button>
         </div>
 
         <div class="monthTitle" id="monthTitle">2026-01</div>
 
         <div class="rightBtns">
-          <button class="btn" id="clockBtn">CLOCK</button>
-          <button class="btn" id="todayBtn">TODAY</button>
+          <button class="btn" id="clockBtn" type="button">CLOCK</button>
+          <button class="btn" id="todayBtn" type="button">TODAY</button>
         </div>
       </div>
 
@@ -525,17 +500,17 @@
           <div class="modalHeader">
             <div class="modalTitle" id="modalTitle">TASK</div>
 
-            <button class="miniBtn" id="hideDoneBtn" title="완료 숨김 토글">HIDE</button>
-            <button class="miniBtn" id="exportBtn" title="내보내기(JSON)">EXPORT</button>
-            <button class="miniBtn" id="importBtn" title="가져오기(JSON)">IMPORT</button>
+            <button class="miniBtn" id="hideDoneBtn" type="button" title="완료 숨김 토글">HIDE</button>
+            <button class="miniBtn" id="exportBtn" type="button" title="내보내기(JSON)">EXPORT</button>
+            <button class="miniBtn" id="importBtn" type="button" title="가져오기(JSON)">IMPORT</button>
 
-            <button class="closeBtn" id="closeBtn">X</button>
+            <button class="closeBtn" id="closeBtn" type="button">X</button>
           </div>
 
           <div class="modalBody">
             <div class="addRow">
               <input class="taskInput" id="taskInput" placeholder="할 일 입력" maxlength="60" />
-              <button class="addBtn" id="addBtn">추가</button>
+              <button class="addBtn" id="addBtn" type="button">추가</button>
             </div>
 
             <div class="taskList" id="taskList"></div>
@@ -550,44 +525,37 @@
   <script>
     const $ = (sel) => document.querySelector(sel);
 
-    // ✅ Notion/iframe에서 pointerdown이 씹힐 수 있어서 click도 같이 받는 헬퍼
-function onPress(el, handler){
-  if(!el) return;
+    // ✅ Notion/iframe에서 pointerdown이 씹힐 수 있어서 click + capture + stopPropagation
+    function onPress(el, handler){
+      if(!el) return;
 
-  let locked = false;
-  const run = (e) => {
-    if(locked) return;
-    locked = true;
-    try{ handler(e); }
-    finally{ setTimeout(() => (locked = false), 0); }
-  };
+      let locked = false;
+      const run = (e) => {
+        if(locked) return;
+        locked = true;
+        try{ handler(e); }
+        finally{ setTimeout(() => (locked = false), 0); }
+      };
 
-  const wrap = (e) => {
-    // ✅ 노션/iframe 상위에서 이벤트 먹는 경우 방지
-    e.preventDefault();
-    e.stopPropagation();
-    run(e);
-  };
+      const wrap = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        run(e);
+      };
 
-  // ✅ 캡처 단계로도 걸어두기
-  el.addEventListener("pointerdown", wrap, { passive:false, capture:true });
-  el.addEventListener("click", wrap, { capture:true });
+      el.addEventListener("pointerdown", wrap, { passive:false, capture:true });
+      el.addEventListener("click", wrap, { capture:true });
 
-  // ✅ 키보드 접근(포커스 후 Enter/Space)
-  el.addEventListener("keydown", (e) => {
-    if(e.key === "Enter" || e.key === " "){
-      e.preventDefault();
-      e.stopPropagation();
-      run(e);
+      el.addEventListener("keydown", (e) => {
+        if(e.key === "Enter" || e.key === " "){
+          e.preventDefault();
+          e.stopPropagation();
+          run(e);
+        }
+      }, { capture:true });
     }
-  }, { capture:true });
-}
 
-  el.addEventListener("pointerdown", (e) => { e.preventDefault(); run(e); }, { passive:false });
-  el.addEventListener("click", (e) => { e.preventDefault(); run(e); });
-}
-
-        function lsGet(key){
+    function lsGet(key){
       try { return localStorage.getItem(key); }
       catch(e){ return null; }
     }
@@ -658,7 +626,7 @@ function onPress(el, handler){
     function loadAll(){
       const cur = safeParse(lsGet(STORE_KEY));
       if(cur && typeof cur === "object" && !Array.isArray(cur)) return cur;
-    
+
       for(const k of LEGACY_KEYS){
         const v = safeParse(lsGet(k));
         if(v && typeof v === "object" && !Array.isArray(v)){
@@ -668,7 +636,7 @@ function onPress(el, handler){
       }
       return {};
     }
-    
+
     function saveAll(obj){
       lsSet(STORE_KEY, JSON.stringify(obj));
     }
@@ -714,7 +682,6 @@ function onPress(el, handler){
       const lastDay = last.getDate();
 
       const prevLast = new Date(y, m, 0).getDate();
-
       const totalCells = 42;
 
       for(let i=0; i<totalCells; i++){
@@ -780,11 +747,11 @@ function onPress(el, handler){
           cell.appendChild(heart);
         }
 
-        cell.addEventListener("pointerdown", (e) => {
-          e.preventDefault();
+        cell.tabIndex = disabled ? -1 : 0;
+        onPress(cell, () => {
           if(disabled) return;
           openModal(iso);
-        }, { passive:false });
+        });
 
         gridEl.appendChild(cell);
       }
@@ -803,13 +770,12 @@ function onPress(el, handler){
       setTimeout(() => taskInput.focus(), 0);
     }
 
-     function closeModal(){
+    function closeModal(){
       modalBack.classList.remove("show");
       modalBack.setAttribute("aria-hidden", "true");
-    
-      // ✅ 수동 EXPORT로 taskList가 바뀐 경우 원복
+
       if(state.selectedISO) renderTaskList();
-    
+
       state.selectedISO = null;
       state.editingIndex = null;
     }
@@ -847,12 +813,13 @@ function onPress(el, handler){
         item.className = "taskItem";
 
         const check = document.createElement("button");
+        check.type = "button";
         check.className = "checkBtn";
         check.textContent = task.done ? "✓" : "";
         if(task.done) check.classList.add("done");
         check.title = "완료 체크";
-        check.addEventListener("pointerdown", (e) => {
-          e.preventDefault();
+
+        onPress(check, () => {
           const list = getTasks(iso);
           if(idx >= 0){
             list[idx].done = !list[idx].done;
@@ -860,9 +827,7 @@ function onPress(el, handler){
           }
           renderTaskList();
           render();
-        }, { passive:false });
-
-        item.appendChild(check);
+        });
 
         const text = document.createElement("div");
         text.className = "taskText";
@@ -873,21 +838,23 @@ function onPress(el, handler){
         actions.className = "taskActions";
 
         const edit = document.createElement("button");
+        edit.type = "button";
         edit.className = "iconBtn";
         edit.textContent = "✎";
         edit.title = "수정";
-        edit.addEventListener("pointerdown", (e) => {
-          e.preventDefault();
+
+        onPress(edit, () => {
           state.editingIndex = idx;
           renderTaskListEditMode();
-        }, { passive:false });
+        });
 
         const del = document.createElement("button");
+        del.type = "button";
         del.className = "iconBtn delete";
         del.textContent = "⌫";
         del.title = "삭제";
-        del.addEventListener("pointerdown", (e) => {
-          e.preventDefault();
+
+        onPress(del, () => {
           const list = getTasks(iso);
           if(idx >= 0){
             list.splice(idx, 1);
@@ -895,11 +862,12 @@ function onPress(el, handler){
           }
           renderTaskList();
           render();
-        }, { passive:false });
+        });
 
         actions.appendChild(edit);
         actions.appendChild(del);
 
+        item.appendChild(check);
         item.appendChild(text);
         item.appendChild(actions);
 
@@ -921,17 +889,18 @@ function onPress(el, handler){
         item.className = "taskItem";
 
         const check = document.createElement("button");
+        check.type = "button";
         check.className = "checkBtn";
         check.textContent = task.done ? "✓" : "";
         if(task.done) check.classList.add("done");
-        check.addEventListener("pointerdown", (e) => {
-          e.preventDefault();
+
+        onPress(check, () => {
           const list = getTasks(iso);
           list[i].done = !list[i].done;
           setTasks(iso, list);
           renderTaskListEditMode();
           render();
-        }, { passive:false });
+        });
 
         item.appendChild(check);
 
@@ -945,11 +914,12 @@ function onPress(el, handler){
           actions.className = "taskActions";
 
           const save = document.createElement("button");
+          save.type = "button";
           save.className = "iconBtn";
           save.textContent = "✔";
           save.title = "저장";
-          save.addEventListener("pointerdown", (e) => {
-            e.preventDefault();
+
+          onPress(save, () => {
             const v = input.value.trim();
             if(!v) return;
             const list = getTasks(iso);
@@ -958,17 +928,18 @@ function onPress(el, handler){
             state.editingIndex = null;
             renderTaskList();
             render();
-          }, { passive:false });
+          });
 
           const cancel = document.createElement("button");
+          cancel.type = "button";
           cancel.className = "iconBtn delete";
           cancel.textContent = "↩";
           cancel.title = "취소";
-          cancel.addEventListener("pointerdown", (e) => {
-            e.preventDefault();
+
+          onPress(cancel, () => {
             state.editingIndex = null;
             renderTaskList();
-          }, { passive:false });
+          });
 
           actions.appendChild(save);
           actions.appendChild(cancel);
@@ -995,25 +966,27 @@ function onPress(el, handler){
         actions.className = "taskActions";
 
         const edit = document.createElement("button");
+        edit.type = "button";
         edit.className = "iconBtn";
         edit.textContent = "✎";
-        edit.addEventListener("pointerdown", (e) => {
-          e.preventDefault();
+
+        onPress(edit, () => {
           state.editingIndex = i;
           renderTaskListEditMode();
-        }, { passive:false });
+        });
 
         const del = document.createElement("button");
+        del.type = "button";
         del.className = "iconBtn delete";
         del.textContent = "⌫";
-        del.addEventListener("pointerdown", (e) => {
-          e.preventDefault();
+
+        onPress(del, () => {
           const list = getTasks(iso);
           list.splice(i, 1);
           setTasks(iso, list);
           renderTaskListEditMode();
           render();
-        }, { passive:false });
+        });
 
         actions.appendChild(edit);
         actions.appendChild(del);
@@ -1041,154 +1014,42 @@ function onPress(el, handler){
       render();
     }
 
-    prevBtn.addEventListener("pointerdown", (e) => {
-      e.preventDefault();
-      const d = new Date(state.viewDate);
-      d.setMonth(d.getMonth() - 1);
-      state.viewDate = d;
-      render();
-    }, { passive:false });
-
-    nextBtn.addEventListener("pointerdown", (e) => {
-      e.preventDefault();
-      const d = new Date(state.viewDate);
-      d.setMonth(d.getMonth() + 1);
-      state.viewDate = d;
-      render();
-    }, { passive:false });
-
-    todayBtn.addEventListener("pointerdown", (e) => {
-      e.preventDefault();
-      state.viewDate = new Date();
-      render();
-    }, { passive:false });
-
-    /* ✅ CLOCK: 같은 iframe에서 시계로 복귀 */
-    clockBtn.addEventListener("pointerdown", (e) => {
-      e.preventDefault();
-      const url = new URL("/embed/clock.html", window.location.origin);
-      window.location.href = url.toString();
-    }, { passive:false });
-
-    closeBtn.addEventListener("pointerdown", (e) => {
-      e.preventDefault();
-      closeModal();
-    }, { passive:false });
-
-    modalBack.addEventListener("pointerdown", (e) => {
-      if(e.target === modalBack) closeModal();
-    }, { passive:false });
-
-    taskInput.addEventListener("keydown", (e) => {
-      if(e.key === "Enter") addTask();
-      if(e.key === "Escape") closeModal();
-    });
-
-    addBtn.addEventListener("pointerdown", (e) => {
-      e.preventDefault();
-      addTask();
-    }, { passive:false });
-
-    hideDoneBtn.addEventListener("pointerdown", (e) => {
-      e.preventDefault();
-      state.hideDone = !state.hideDone;
-      saveUI();
-      renderTaskList();
-    }, { passive:false });
-    
-function copyTextFallback(text){
-  const ta = document.createElement("textarea");
-  ta.value = text;
-  ta.setAttribute("readonly", "");
-  ta.style.position = "fixed";
-  ta.style.left = "-9999px";
-  ta.style.top = "0";
-  document.body.appendChild(ta);
-  ta.focus();
-  ta.select();
-  let ok = false;
-  try{ ok = document.execCommand("copy"); }catch(_){}
-  ta.remove();
-  return ok;
-}
-
-function showManualExport(text){
-  // ✅ iframe에서 다운로드/클립보드가 다 막혀도, 이건 마지막으로 남겨둠(수동 복사)
-  const ta = document.createElement("textarea");
-  ta.value = text;
-  ta.style.width = "100%";
-  ta.style.height = "180px";
-  ta.style.background = "#0b0c10";
-  ta.style.color = "var(--text)";
-  ta.style.border = "2px solid var(--line2)";
-  ta.style.padding = "8px";
-  ta.style.fontSize = "10px";
-  ta.style.fontFamily = 'ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace';
-
-  // taskList 영역에 임시로 보여주기(기존 목록은 잠깐 숨김)
-  const old = taskList.innerHTML;
-  taskList.innerHTML = "";
-  taskList.appendChild(ta);
-  ta.focus();
-  ta.select();
-
-  alert("EXPORT가 막혀서 텍스트창을 띄웠어요. 전체 선택 후 복사(Ctrl+C)하세요.\n복사 후엔 모달을 닫았다 다시 열면 목록이 돌아옵니다.");
-}
-    
-onPress(exportBtn, async () => {
-  try{
-    const data = loadAll();
-    const json = JSON.stringify(data, null, 2);
-
-    // 1) Clipboard API
-    try{
-      if(navigator.clipboard?.writeText){
-        await navigator.clipboard.writeText(json);
-        alert("EXPORT: JSON이 클립보드에 복사됐어요.");
-        return;
-      }
-    }catch(_){}
-
-    // 2) execCommand fallback
-    const ok = copyTextFallback(json);
-    if(ok){
-      alert("EXPORT: JSON이 클립보드에 복사됐어요.(fallback)");
-      return;
+    function copyTextFallback(text){
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      ta.style.top = "0";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      let ok = false;
+      try{ ok = document.execCommand("copy"); }catch(_){}
+      ta.remove();
+      return ok;
     }
 
-    // 3) Manual export textarea
-    showManualExport(json);
+    function showManualExport(text){
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.width = "100%";
+      ta.style.height = "180px";
+      ta.style.background = "#0b0c10";
+      ta.style.color = "var(--text)";
+      ta.style.border = "2px solid var(--line2)";
+      ta.style.padding = "8px";
+      ta.style.fontSize = "10px";
+      ta.style.fontFamily = 'ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace';
 
-  }catch(err){
-    alert("EXPORT 실패(오류): " + (err?.message || err));
-  }
-});
-    onPress(importBtn, () => {
-      const input = document.createElement("input");
-      input.type = "file";
-      input.accept = "application/json";
-      input.addEventListener("change", async () => {
-        const file = input.files?.[0];
-        if(!file) return;
-        try{
-          const text = await file.text();
-          const obj = safeParse(text);
-          if(!obj || typeof obj !== "object" || Array.isArray(obj)){
-            alert("JSON 형식이 올바르지 않아요.");
-            return;
-          }
-          saveAll(obj);
-          render();
-          if(state.selectedISO) renderTaskList();
-          alert("가져오기 완료!");
-        }catch(err){
-          alert("가져오기 실패");
-        }
-      });
-      input.click();
-    });
+      taskList.innerHTML = "";
+      taskList.appendChild(ta);
+      ta.focus();
+      ta.select();
 
-    /* ✅ URL 쿼리로 자동 오픈: ?date=YYYY-MM-DD&open=1 */
+      alert("EXPORT가 막혀서 텍스트창을 띄웠어요. 전체 선택 후 복사(Ctrl+C)하세요.\n복사 후엔 모달을 닫았다 다시 열면 목록이 돌아옵니다.");
+    }
+
     function parseISODateParam(){
       const sp = new URLSearchParams(location.search);
       const iso = sp.get("date");
@@ -1214,15 +1075,106 @@ onPress(exportBtn, async () => {
       }
     }
 
-    loadUI();
-    render();
-    bootFromQuery();
+    window.addEventListener("DOMContentLoaded", () => {
+      loadUI();
+      render();
+      bootFromQuery();
+
+      // ✅ 상단 버튼/모달 버튼: onPress로 통일
+      onPress(prevBtn, () => {
+        const d = new Date(state.viewDate);
+        d.setMonth(d.getMonth() - 1);
+        state.viewDate = d;
+        render();
+      });
+
+      onPress(nextBtn, () => {
+        const d = new Date(state.viewDate);
+        d.setMonth(d.getMonth() + 1);
+        state.viewDate = d;
+        render();
+      });
+
+      onPress(todayBtn, () => {
+        state.viewDate = new Date();
+        render();
+      });
+
+      onPress(clockBtn, () => {
+        const url = new URL("/embed/clock.html", window.location.origin);
+        window.location.href = url.toString();
+      });
+
+      onPress(closeBtn, closeModal);
+
+      // ✅ 모달 밖 클릭 닫기(여긴 stopPropagation 걸면 내부 클릭 막을 수 있어서 onPress 금지)
+      modalBack.addEventListener("pointerdown", (e) => {
+        if(e.target === modalBack) closeModal();
+      }, { passive:true });
+
+      taskInput.addEventListener("keydown", (e) => {
+        if(e.key === "Enter") addTask();
+        if(e.key === "Escape") closeModal();
+      });
+
+      onPress(addBtn, addTask);
+
+      onPress(hideDoneBtn, () => {
+        state.hideDone = !state.hideDone;
+        saveUI();
+        renderTaskList();
+      });
+
+      onPress(exportBtn, async () => {
+        try{
+          const data = loadAll();
+          const json = JSON.stringify(data, null, 2);
+
+          try{
+            if(navigator.clipboard?.writeText){
+              await navigator.clipboard.writeText(json);
+              alert("EXPORT: JSON이 클립보드에 복사됐어요.");
+              return;
+            }
+          }catch(_){}
+
+          const ok = copyTextFallback(json);
+          if(ok){
+            alert("EXPORT: JSON이 클립보드에 복사됐어요.(fallback)");
+            return;
+          }
+
+          showManualExport(json);
+        }catch(err){
+          alert("EXPORT 실패(오류): " + (err?.message || err));
+        }
+      });
+
+      onPress(importBtn, () => {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = "application/json";
+        input.addEventListener("change", async () => {
+          const file = input.files?.[0];
+          if(!file) return;
+          try{
+            const text = await file.text();
+            const obj = safeParse(text);
+            if(!obj || typeof obj !== "object" || Array.isArray(obj)){
+              alert("JSON 형식이 올바르지 않아요.");
+              return;
+            }
+            saveAll(obj);
+            render();
+            if(state.selectedISO) renderTaskList();
+            alert("가져오기 완료!");
+          }catch(_){
+            alert("가져오기 실패");
+          }
+        });
+        input.click();
+      });
+    });
   </script>
 </body>
 </html>
-
-
-
-
-
-
