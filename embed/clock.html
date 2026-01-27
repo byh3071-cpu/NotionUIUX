@@ -25,32 +25,36 @@
     }
 
     *{ box-sizing:border-box; }
-
-    /* ✅ 흰 여백 방지(iframe 남는 영역도 패널로) */
     html,body{
-      margin:0; padding:0;
-      width:100%; height:100%;
-      background: var(--panel);
-      color:var(--text);
-      font-family: ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace;
-      -webkit-font-smoothing: antialiased;
-      text-rendering: geometricPrecision;
-      overflow:hidden;
+    margin:0;
+    padding:0;
+    width:100%;
+    height:100%;
+    background: var(--panel);         /* ✅ 흰 여백 제거 */
+    color:var(--text);
+    font-family: ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: geometricPrecision;
+    overflow:hidden;                  /* ✅ 바깥 스크롤 방지 */
     }
+    
+    /* ✅ iframe 남는 영역도 패널로 채우고 싶으면 body를 flex로 */
     body{
-      display:flex;
-      align-items:flex-start;
-      justify-content:flex-start;
+    display:flex;
+    align-items:flex-start;           /* top 고정(원하면 center로) */
+    justify-content:flex-start;       /* left 고정(원하면 center로) */
     }
+    
+        /* ✅ 좌상단 고정 (가운데 정렬 X) */
     .stage{
-      width:100%;
-      height:100%;
-      background: var(--panel);
-      display:flex;
-      align-items:flex-start;
-      justify-content:center;
-      overflow:hidden;
-      padding:8px;
+    width:100%;
+    height:100%;
+    background: var(--panel);
+    display:flex;
+    align-items:flex-start;   /* top 유지면 그대로 /
+    justify-content:center;   / 가운데로 /
+    overflow:hidden;
+    padding: 8px;             / 테두리 잘림 방지 */
     }
 
     .wrap{
@@ -64,6 +68,7 @@
       display:flex;
       flex-direction:column;
       pointer-events:auto;
+      position:relative;
     }
     @supports not (zoom: 1){
       .wrap{ transform: scale(var(--scale)); transform-origin: top left; }
@@ -233,6 +238,42 @@
     @media (max-width: 340px){
       .rightBox{ display:none; }
     }
+
+    /* ✅ 팝업 차단 시: 링크 토스트(현재 iframe 이동 금지) */
+    .toast{
+      position:absolute;
+      left:8px;
+      right:8px;
+      bottom:8px;
+      border:2px solid var(--line2);
+      background:#0e1016;
+      padding:8px;
+      display:none;
+      gap:6px;
+      align-items:center;
+      justify-content:space-between;
+      font-size:9px;
+    }
+    .toast.show{ display:flex; }
+    .toast a{
+      color:var(--accent);
+      text-decoration:underline;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width: 220px;
+      display:inline-block;
+    }
+    .toastBtn{
+      height:24px;
+      padding:0 8px;
+      border:2px solid var(--line2);
+      background:#0b0c10;
+      color:var(--text);
+      cursor:pointer;
+      font-size:9px;
+    }
+    .toastBtn:hover{ border-color:var(--accent); }
   </style>
 </head>
 
@@ -240,8 +281,8 @@
   <div class="stage">
     <div class="wrap" id="wrap">
       <div class="top">
-        <div class="chip on" id="modeBtn" title="12/24 토글">24H</div>
-        <div class="chip" id="openTodayBtn" title="오늘 TASK 열기">OPEN</div>
+        <button class="chip on" id="modeBtn" title="12/24 토글">24H</button>
+        <button class="chip" id="openTodayBtn" title="캘린더에서 오늘 열기">OPEN</button>
         <div class="title">PIXEL CLOCK</div>
       </div>
 
@@ -264,6 +305,12 @@
           <div class="meterText" id="taskPctText">0/0 · 0%</div>
         </div>
       </div>
+
+      <div class="toast" id="toast">
+        <div>팝업 차단됨 →</div>
+        <a id="toastLink" href="#" target="_blank" rel="noopener noreferrer">캘린더 열기</a>
+        <button class="toastBtn" id="toastClose">X</button>
+      </div>
     </div>
   </div>
 
@@ -279,6 +326,10 @@
     const taskPctText = $("#taskPctText");
     const modeBtn   = $("#modeBtn");
     const openTodayBtn = $("#openTodayBtn");
+
+    const toast = $("#toast");
+    const toastLink = $("#toastLink");
+    const toastClose = $("#toastClose");
 
     const state = { is24h: true };
     const DOW_KR = ["일","월","화","수","목","금","토"];
@@ -347,8 +398,8 @@
       const vw = (window.visualViewport && window.visualViewport.width) ? window.visualViewport.width : window.innerWidth;
       const vh = (window.visualViewport && window.visualViewport.height) ? window.visualViewport.height : window.innerHeight;
 
-      const availW = Math.max(1, vw - 24);
-      const availH = Math.max(1, vh - 24);
+      const availW = Math.max(1, vw - 0);
+      const availH = Math.max(1, vh - 0);
 
       let scale = Math.min(availW / baseW, availH / baseH);
       if(!isFinite(scale) || scale <= 0) scale = 1;
@@ -383,12 +434,6 @@
       noteText.textContent = `오늘 할 일: ${done} / ${total}`;
     }
 
-    function stopAll(e){
-      e.preventDefault();
-      e.stopPropagation();
-      if(e.stopImmediatePropagation) e.stopImmediatePropagation();
-    }
-
     function toggleMode(){
       state.is24h = !state.is24h;
       modeBtn.textContent = state.is24h ? "24H" : "12H";
@@ -396,20 +441,35 @@
       tick();
     }
 
-    /* ✅ 꼬임 방지: 무조건 절대경로 + 같은 iframe에서 이동 */
-    function openToday(){
-      const iso = toISO(new Date());
-      const url = new URL("/embed/calendar.html", window.location.origin);
-      url.searchParams.set("date", iso);
-      url.searchParams.set("open", "1");
-      url.searchParams.set("from", "clock");
-      location.href = url.toString();
+    function buildCalendarUrl(iso){
+      const u = new URL("/embed/calendar.html", window.location.origin);
+      u.searchParams.set("date", iso);
+      u.searchParams.set("open", "1");
+      return u.toString();
     }
 
-    ["pointerdown","mousedown","touchstart"].forEach(type=>{
-      modeBtn.addEventListener(type, (e)=>{ stopAll(e); toggleMode(); }, { capture:true, passive:false });
-      openTodayBtn.addEventListener(type, (e)=>{ stopAll(e); openToday(); }, { capture:true, passive:false });
-    });
+    function showToast(url){
+      toastLink.href = url;
+      toast.classList.add("show");
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(()=>toast.classList.remove("show"), 8000);
+    }
+
+    function openToday(){
+      const iso = toISO(new Date());
+      const url = buildCalendarUrl(iso);
+
+      const w = window.open(url, "_blank", "noopener,noreferrer");
+      if(!w){
+        // ✅ 여기서 location.href로 강제이동하면 "시계→캘린더로 바뀐 뒤 안 돌아오는" 문제가 생김
+        showToast(url);
+      }
+    }
+
+    modeBtn.addEventListener("click", (e)=>{ e.preventDefault(); toggleMode(); });
+    openTodayBtn.addEventListener("click", (e)=>{ e.preventDefault(); openToday(); });
+
+    toastClose.addEventListener("click", (e)=>{ e.preventDefault(); toast.classList.remove("show"); });
 
     fitToFrame();
     window.addEventListener("resize", fitToFrame);
