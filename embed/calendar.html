@@ -29,39 +29,37 @@
       --h: 440px;
       --cell: 46px;
       --gap: 4px;
+
+      /* ✅ 바깥(iframe 남는 영역) 배경
+         - 노션 배경 비치게 하려면: transparent
+         - 노션에서 투명이 흰색으로 보이면: var(--panel) 로 바꾸면 됨 */
+      --outerbg: transparent; /* <- 필요하면 var(--panel) */
     }
 
     *{ box-sizing:border-box; }
 
-    /* ✅ 요청한 형태 그대로 */
     html,body{
       margin:0;
       padding:0;
       width:100%;
       height:100%;
-      background: var(--panel);         /* ✅ 흰 여백 제거 */
+      background: var(--outerbg);
       color:var(--text);
       font-family: ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace;
       -webkit-font-smoothing: antialiased;
       text-rendering: geometricPrecision;
-      overflow:hidden;                  /* ✅ 바깥 스크롤 방지 */
-    }
-
-    body{
-      display:flex;
-      align-items:flex-start;
-      justify-content:flex-start;
+      overflow:hidden; /* ✅ 바깥 스크롤 제거(모달/리스트에서만 스크롤) */
     }
 
     .stage{
       width:100%;
       height:100%;
-      background: var(--panel);
+      background: var(--outerbg);
       display:flex;
-      align-items:flex-start;
-      justify-content:center;           /* ✅ 가운데 */
-      overflow:hidden;
-      padding: 8px;                     /* ✅ 테두리 잘림 방지 */
+      align-items:flex-start;   /* ✅ 좌상단 고정 */
+      justify-content:flex-start;
+      padding:0;                /* ✅ 여백 0 */
+      margin:0;
     }
 
     .wrap{
@@ -74,7 +72,6 @@
       position:relative;
     }
 
-    /* --- 이하 스타일은 기존 그대로 --- */
     .topbar{
       display:flex;
       align-items:center;
@@ -85,7 +82,11 @@
       gap:6px;
     }
 
-    .leftBtns, .rightBtns{ display:flex; gap:6px; align-items:center; }
+    .leftBtns, .rightBtns{
+      display:flex;
+      gap:6px;
+      align-items:center;
+    }
 
     .btn{
       height:32px;
@@ -127,6 +128,7 @@
       border-bottom:2px solid var(--line2);
       background:#0e1016;
     }
+
     .dow div{
       text-align:center;
       font-size:9px;
@@ -137,6 +139,7 @@
       background:#0b0c10;
       user-select:none;
     }
+
     .dow .sunHead{ color:var(--sun); border-color:rgba(255,143,143,.45); }
     .dow .satHead{ color:var(--sat); border-color:rgba(143,182,255,.45); }
 
@@ -166,29 +169,54 @@
       -webkit-tap-highlight-color: transparent;
     }
     .day:hover{ border-color:var(--accent); }
-    .day.disabled{ opacity:.35; cursor:default; }
+
+    .day.disabled{
+      opacity:.35;
+      cursor:default;
+    }
+    .day.disabled:hover{ border-color:var(--line); }
+
     .day.sun:not(.disabled){ border-color: rgba(255,143,143,.30); }
     .day.sat:not(.disabled){ border-color: rgba(143,182,255,.30); }
+
     .num{ font-size:10px; color:var(--text); }
 
     .todoBadge{
-      position:absolute; left:0; bottom:0; width:18px; height:18px;
+      position:absolute;
+      left:0; bottom:0;
+      width:18px; height:18px;
       clip-path: polygon(0 0, 0 100%, 100% 100%);
-      background: var(--accent); color:#0b0c10;
-      display:flex; align-items:flex-end; justify-content:flex-start;
-      font-size:9px; line-height:1; padding:0 0 2px 3px;
+      background: var(--accent);
+      color:#0b0c10;
+      display:flex;
+      align-items:flex-end;
+      justify-content:flex-start;
+      font-size:9px;
+      line-height:1;
+      padding:0 0 2px 3px;
       box-shadow: inset 0 0 0 2px rgba(11,12,16,.25);
-      user-select:none; pointer-events:none; z-index:1;
+      user-select:none;
+      pointer-events:none;
+      z-index:1;
     }
 
     .doneBadge{
-      position:absolute; right:0; bottom:0; width:18px; height:18px;
+      position:absolute;
+      right:0; bottom:0;
+      width:18px; height:18px;
       clip-path: polygon(100% 0, 0 100%, 100% 100%);
-      background: rgba(124,199,255,.22); color: var(--accent);
-      display:flex; align-items:flex-end; justify-content:flex-end;
-      font-size:9px; line-height:1; padding:0 3px 2px 0;
+      background: rgba(124,199,255,.22);
+      color: var(--accent);
+      display:flex;
+      align-items:flex-end;
+      justify-content:flex-end;
+      font-size:9px;
+      line-height:1;
+      padding:0 3px 2px 0;
       box-shadow: inset 0 0 0 2px rgba(124,199,255,.25);
-      user-select:none; pointer-events:none; z-index:1;
+      user-select:none;
+      pointer-events:none;
+      z-index:1;
     }
 
     .heartMarker{
@@ -199,6 +227,7 @@
       font-size:12px;
       line-height:1;
       color:var(--accent);
+      opacity:1;
       user-select:none;
       pointer-events:none;
       z-index:2;
@@ -210,34 +239,219 @@
       box-shadow: inset 0 0 0 2px rgba(255,224,138,.25);
     }
 
-    /* 모달 스타일/JS는 너가 쓰던 기존 그대로 붙여서 사용 */
-    .modalBack{ position:absolute; inset:0; background: rgba(0,0,0,.55); display:none; align-items:center; justify-content:center; padding:10px; }
+    .modalBack{
+      position:absolute;
+      inset:0;
+      background: rgba(0,0,0,.55);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:10px;
+    }
     .modalBack.show{ display:flex; }
-    .modal{ width: 100%; max-width: 340px; height: 350px; background: #0e1016; border: 2px solid var(--line2); border-radius:0; display:flex; flex-direction:column; overflow:hidden; }
-    .modalHeader{ padding:8px; display:flex; align-items:center; justify-content:space-between; border-bottom:2px solid var(--line2); background:#0b0c10; gap:6px; }
-    .modalTitle{ font-size:10px; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; user-select:none; }
-    .miniBtn{ height:28px; padding:0 8px; border:2px solid var(--line2); background:#0e1016; color:var(--text); border-radius:0; cursor:pointer; font-size:9px; display:flex; align-items:center; justify-content:center; user-select:none; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+
+    .modal{
+      width: 100%;
+      max-width: 340px;
+      height: 350px;
+      background: #0e1016;
+      border: 2px solid var(--line2);
+      border-radius:0;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+    }
+
+    .modalHeader{
+      padding:8px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      border-bottom:2px solid var(--line2);
+      background:#0b0c10;
+      gap:6px;
+    }
+
+    .modalTitle{
+      font-size:10px;
+      color:var(--text);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      flex:1;
+      user-select:none;
+    }
+
+    .miniBtn{
+      height:28px;
+      padding:0 8px;
+      border:2px solid var(--line2);
+      background:#0e1016;
+      color:var(--text);
+      border-radius:0;
+      cursor:pointer;
+      font-size:9px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      user-select:none;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
     .miniBtn:hover{ border-color:var(--accent); }
-    .closeBtn{ width:32px; height:32px; border:2px solid var(--line2); background:#0e1016; color:var(--text); border-radius:0; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center; user-select:none; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+
+    .closeBtn{
+      width:32px;
+      height:32px;
+      border:2px solid var(--line2);
+      background:#0e1016;
+      color:var(--text);
+      border-radius:0;
+      cursor:pointer;
+      font-size:12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      user-select:none;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
     .closeBtn:hover{ border-color:var(--danger); }
-    .modalBody{ padding:8px; display:flex; flex-direction:column; gap:8px; height:100%; min-height:0; }
+
+    .modalBody{
+      padding:8px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      height:100%;
+      min-height:0;
+    }
+
     .addRow{ display:flex; gap:6px; }
-    .taskInput{ flex:1; height:34px; border:2px solid var(--line2); background:#0b0c10; color:var(--text); border-radius:0; outline:none; padding:0 8px; font-size:10px; }
+
+    .taskInput{
+      flex:1;
+      height:34px;
+      border:2px solid var(--line2);
+      background:#0b0c10;
+      color:var(--text);
+      border-radius:0;
+      outline:none;
+      padding:0 8px;
+      font-size:10px;
+    }
     .taskInput::placeholder{ color:#7b8497; }
-    .addBtn{ width:70px; height:34px; border:2px solid var(--line2); background:#0b0c10; color:var(--text); border-radius:0; cursor:pointer; font-size:10px; user-select:none; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+
+    .addBtn{
+      width:70px;
+      height:34px;
+      border:2px solid var(--line2);
+      background:#0b0c10;
+      color:var(--text);
+      border-radius:0;
+      cursor:pointer;
+      font-size:10px;
+      user-select:none;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
     .addBtn:hover{ border-color:var(--accent); }
-    .taskList{ border:2px solid var(--line2); background:#0b0c10; border-radius:0; padding:6px; overflow:auto; flex:1; min-height:0; }
-    .taskItem{ display:flex; align-items:center; justify-content:space-between; gap:8px; padding:6px; border:2px solid var(--line); border-radius:0; margin-bottom:6px; background:#0e1016; }
-    .checkBtn{ width:30px; height:28px; border:2px solid var(--accent); background:transparent; color:var(--text); border-radius:0; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:11px; flex:0 0 auto; user-select:none; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+
+    .taskList{
+      border:2px solid var(--line2);
+      background:#0b0c10;
+      border-radius:0;
+      padding:6px;
+      overflow:auto; /* ✅ 여기서만 스크롤 */
+      flex:1;
+      min-height:0;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .taskItem{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      padding:6px;
+      border:2px solid var(--line);
+      border-radius:0;
+      margin-bottom:6px;
+      background:#0e1016;
+    }
+
+    .checkBtn{
+      width:30px;
+      height:28px;
+      border:2px solid var(--accent);
+      background:transparent;
+      color:var(--text);
+      border-radius:0;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:11px;
+      flex:0 0 auto;
+      user-select:none;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
     .checkBtn.done{ background: var(--accent); color:#0b0c10; }
-    .taskText{ font-size:10px; color:var(--text); line-height:1.25; word-break:break-word; flex:1; }
-    .taskText.done{ color: var(--muted); text-decoration: line-through; opacity:.9; }
-    .editInput{ flex:1; height:30px; border:2px solid var(--line2); background:#0b0c10; color:var(--text); border-radius:0; outline:none; padding:0 8px; font-size:10px; }
+
+    .taskText{
+      font-size:10px;
+      color:var(--text);
+      line-height:1.25;
+      word-break:break-word;
+      flex:1;
+    }
+    .taskText.done{
+      color: var(--muted);
+      text-decoration: line-through;
+      opacity:.9;
+    }
+
+    .editInput{
+      flex:1;
+      height:30px;
+      border:2px solid var(--line2);
+      background:#0b0c10;
+      color:var(--text);
+      border-radius:0;
+      outline:none;
+      padding:0 8px;
+      font-size:10px;
+    }
+
     .taskActions{ display:flex; gap:6px; flex:0 0 auto; }
-    .iconBtn{ width:30px; height:28px; border:2px solid var(--line2); background:#0b0c10; color:var(--text); border-radius:0; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:11px; user-select:none; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+
+    .iconBtn{
+      width:30px;
+      height:28px;
+      border:2px solid var(--line2);
+      background:#0b0c10;
+      color:var(--text);
+      border-radius:0;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:11px;
+      user-select:none;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
     .iconBtn:hover{ border-color:var(--accent); }
     .iconBtn.delete:hover{ border-color:var(--danger); }
-    .help{ font-size:9px; color:var(--muted); opacity:.9; line-height:1.4; user-select:none; }
+
+    .help{
+      font-size:9px;
+      color:var(--muted);
+      opacity:.9;
+      line-height:1.4;
+      user-select:none;
+    }
   </style>
 </head>
 
@@ -269,9 +483,9 @@
           <div class="modalHeader">
             <div class="modalTitle" id="modalTitle">TASK</div>
 
-            <button class="miniBtn" id="hideDoneBtn">HIDE</button>
-            <button class="miniBtn" id="exportBtn">EXPORT</button>
-            <button class="miniBtn" id="importBtn">IMPORT</button>
+            <button class="miniBtn" id="hideDoneBtn" title="완료 숨김 토글">HIDE</button>
+            <button class="miniBtn" id="exportBtn" title="내보내기(JSON)">EXPORT</button>
+            <button class="miniBtn" id="importBtn" title="가져오기(JSON)">IMPORT</button>
 
             <button class="closeBtn" id="closeBtn">X</button>
           </div>
@@ -283,6 +497,7 @@
             </div>
 
             <div class="taskList" id="taskList"></div>
+
             <div class="help">좌하단=총 · 우하단=완료 · ♡/♥=완료상태</div>
           </div>
         </div>
@@ -290,17 +505,573 @@
     </div>
   </div>
 
-  <!-- ✅ 여기 아래 <script>는 너가 쓰던 기존 calendar.js(통째) 그대로 붙이면 됨 -->
-  <!-- (clockBtn 클릭 이벤트만 "/embed/clock.html"로 이동하도록 유지) -->
   <script>
-    /* ⚠️ 너가 기존에 쓰던 calendar.html의 JS를 그대로 붙여 넣어라.
-       단, clockBtn은 아래처럼만 고정하면 된다. */
+    const $ = (sel) => document.querySelector(sel);
 
-    // 예시로 clockBtn만 넣어둠(나머지 JS는 기존 것을 그대로)
-    document.getElementById("clockBtn").addEventListener("click", (e) => {
+    const gridEl = $("#grid");
+    const monthTitleEl = $("#monthTitle");
+
+    const prevBtn = $("#prevBtn");
+    const nextBtn = $("#nextBtn");
+    const todayBtn = $("#todayBtn");
+    const clockBtn = $("#clockBtn");
+
+    const modalBack = $("#modalBack");
+    const closeBtn = $("#closeBtn");
+    const modalTitle = $("#modalTitle");
+
+    const hideDoneBtn = $("#hideDoneBtn");
+    const exportBtn = $("#exportBtn");
+    const importBtn = $("#importBtn");
+
+    const taskInput = $("#taskInput");
+    const addBtn = $("#addBtn");
+    const taskList = $("#taskList");
+
+    const STORE_KEY = "pixel_calendar_tasks_v6";
+    const UI_KEY = "pixel_calendar_ui_v6";
+
+    const LEGACY_KEYS = [
+      "pixel_calendar_tasks_v5_backup_hideDone",
+      "pixel_calendar_tasks_v4_bottomTriangles",
+      "pixel_calendar_tasks_v3_bottomBadges",
+      "pixel_calendar_tasks_v2_heart_preview"
+    ];
+
+    const state = {
+      viewDate: new Date(),
+      selectedISO: null,
+      editingIndex: null,
+      hideDone: false
+    };
+
+    const pad2 = (n) => String(n).padStart(2, "0");
+    const toISO = (y,m,d) => `${y}-${pad2(m)}-${pad2(d)}`;
+
+    const isSameDay = (a, b) =>
+      a.getFullYear() === b.getFullYear() &&
+      a.getMonth() === b.getMonth() &&
+      a.getDate() === b.getDate();
+
+    function safeParse(s){
+      try{ return JSON.parse(s); }catch(e){ return null; }
+    }
+
+    function loadUI(){
+      const ui = safeParse(localStorage.getItem(UI_KEY)) || {};
+      state.hideDone = Boolean(ui.hideDone);
+      hideDoneBtn.textContent = state.hideDone ? "SHOW" : "HIDE";
+    }
+    function saveUI(){
+      localStorage.setItem(UI_KEY, JSON.stringify({ hideDone: state.hideDone }));
+      hideDoneBtn.textContent = state.hideDone ? "SHOW" : "HIDE";
+    }
+
+    function loadAll(){
+      const cur = safeParse(localStorage.getItem(STORE_KEY));
+      if(cur && typeof cur === "object" && !Array.isArray(cur)) return cur;
+
+      for(const k of LEGACY_KEYS){
+        const v = safeParse(localStorage.getItem(k));
+        if(v && typeof v === "object" && !Array.isArray(v)){
+          localStorage.setItem(STORE_KEY, JSON.stringify(v));
+          return v;
+        }
+      }
+      return {};
+    }
+
+    function saveAll(obj){
+      localStorage.setItem(STORE_KEY, JSON.stringify(obj));
+    }
+
+    function normalizeList(list){
+      if(!Array.isArray(list)) return [];
+      return list.map(x => {
+        if(typeof x === "string") return { text:x, done:false };
+        if(x && typeof x === "object"){
+          return { text: String(x.text ?? ""), done: Boolean(x.done) };
+        }
+        return { text:"", done:false };
+      }).filter(t => t.text.trim().length > 0);
+    }
+
+    function getTasks(iso){
+      const all = loadAll();
+      return normalizeList(all[iso]);
+    }
+
+    function setTasks(iso, list){
+      const all = loadAll();
+      all[iso] = normalizeList(list);
+      saveAll(all);
+    }
+
+    function fmtCount(n){
+      return n > 9 ? "9+" : String(n);
+    }
+
+    function render(){
+      gridEl.innerHTML = "";
+
+      const y = state.viewDate.getFullYear();
+      const m = state.viewDate.getMonth();
+
+      monthTitleEl.textContent = `${y}-${pad2(m+1)}`;
+
+      const first = new Date(y, m, 1);
+      const firstDow = first.getDay();
+
+      const last = new Date(y, m+1, 0);
+      const lastDay = last.getDate();
+
+      const prevLast = new Date(y, m, 0).getDate();
+
+      const totalCells = 42;
+
+      for(let i=0; i<totalCells; i++){
+        const cell = document.createElement("div");
+        cell.className = "day";
+
+        const dayNum = i - firstDow + 1;
+
+        let cellDate;
+        let disabled = false;
+        let displayNum;
+
+        if(dayNum < 1){
+          displayNum = prevLast + dayNum;
+          cellDate = new Date(y, m-1, displayNum);
+          disabled = true;
+        }else if(dayNum > lastDay){
+          displayNum = dayNum - lastDay;
+          cellDate = new Date(y, m+1, displayNum);
+          disabled = true;
+        }else{
+          displayNum = dayNum;
+          cellDate = new Date(y, m, displayNum);
+        }
+
+        const iso = toISO(cellDate.getFullYear(), cellDate.getMonth()+1, cellDate.getDate());
+        const dow = cellDate.getDay();
+
+        if(disabled) cell.classList.add("disabled");
+        if(dow === 0) cell.classList.add("sun");
+        if(dow === 6) cell.classList.add("sat");
+
+        const now = new Date();
+        if(isSameDay(cellDate, now) && !disabled) cell.classList.add("today");
+
+        const num = document.createElement("div");
+        num.className = "num";
+        num.textContent = displayNum;
+        cell.appendChild(num);
+
+        const tasks = getTasks(iso);
+        if(tasks.length > 0){
+          const total = tasks.length;
+          const done = tasks.filter(t => t.done).length;
+          const hasUndone = tasks.some(t => !t.done);
+
+          const todoBadge = document.createElement("div");
+          todoBadge.className = "todoBadge";
+          todoBadge.textContent = fmtCount(total);
+          cell.appendChild(todoBadge);
+
+          if(done > 0){
+            const doneBadge = document.createElement("div");
+            doneBadge.className = "doneBadge";
+            doneBadge.textContent = fmtCount(done);
+            cell.appendChild(doneBadge);
+          }
+
+          const heart = document.createElement("div");
+          heart.className = "heartMarker";
+          heart.textContent = hasUndone ? "♡" : "♥";
+          if(!hasUndone) heart.classList.add("doneAll");
+          cell.appendChild(heart);
+        }
+
+        cell.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
+          if(disabled) return;
+          openModal(iso);
+        }, { passive:false });
+
+        gridEl.appendChild(cell);
+      }
+    }
+
+    function openModal(iso){
+      state.selectedISO = iso;
+      state.editingIndex = null;
+
+      modalTitle.textContent = `TASK · ${iso}`;
+      taskInput.value = "";
+      renderTaskList();
+
+      modalBack.classList.add("show");
+      modalBack.setAttribute("aria-hidden", "false");
+      setTimeout(() => taskInput.focus(), 0);
+    }
+
+    function closeModal(){
+      modalBack.classList.remove("show");
+      modalBack.setAttribute("aria-hidden", "true");
+      state.selectedISO = null;
+      state.editingIndex = null;
+    }
+
+    function renderTaskList(){
+      const iso = state.selectedISO;
+      if(!iso) return;
+
+      const all = getTasks(iso);
+      const tasks = state.hideDone ? all.filter(t => !t.done) : all;
+
+      taskList.innerHTML = "";
+
+      if(all.length === 0){
+        const empty = document.createElement("div");
+        empty.className = "help";
+        empty.textContent = "등록된 TASK 없음";
+        taskList.appendChild(empty);
+        return;
+      }
+
+      if(state.hideDone && tasks.length === 0){
+        const empty = document.createElement("div");
+        empty.className = "help";
+        empty.textContent = "미완료 TASK 없음 (완료 숨김 ON)";
+        taskList.appendChild(empty);
+        return;
+      }
+
+      tasks.forEach((task) => {
+        const listAll = getTasks(iso);
+        const idx = listAll.findIndex(t => t.text === task.text && t.done === task.done);
+
+        const item = document.createElement("div");
+        item.className = "taskItem";
+
+        const check = document.createElement("button");
+        check.className = "checkBtn";
+        check.textContent = task.done ? "✓" : "";
+        if(task.done) check.classList.add("done");
+        check.title = "완료 체크";
+        check.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
+          const list = getTasks(iso);
+          if(idx >= 0){
+            list[idx].done = !list[idx].done;
+            setTasks(iso, list);
+          }
+          renderTaskList();
+          render();
+        }, { passive:false });
+
+        item.appendChild(check);
+
+        const text = document.createElement("div");
+        text.className = "taskText";
+        text.textContent = task.text;
+        if(task.done) text.classList.add("done");
+
+        const actions = document.createElement("div");
+        actions.className = "taskActions";
+
+        const edit = document.createElement("button");
+        edit.className = "iconBtn";
+        edit.textContent = "✎";
+        edit.title = "수정";
+        edit.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
+          state.editingIndex = idx;
+          renderTaskListEditMode();
+        }, { passive:false });
+
+        const del = document.createElement("button");
+        del.className = "iconBtn delete";
+        del.textContent = "⌫";
+        del.title = "삭제";
+        del.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
+          const list = getTasks(iso);
+          if(idx >= 0){
+            list.splice(idx, 1);
+            setTasks(iso, list);
+          }
+          renderTaskList();
+          render();
+        }, { passive:false });
+
+        actions.appendChild(edit);
+        actions.appendChild(del);
+
+        item.appendChild(text);
+        item.appendChild(actions);
+
+        taskList.appendChild(item);
+      });
+    }
+
+    function renderTaskListEditMode(){
+      const iso = state.selectedISO;
+      if(!iso) return;
+
+      const tasks = getTasks(iso);
+      const idx = state.editingIndex;
+
+      taskList.innerHTML = "";
+
+      tasks.forEach((task, i) => {
+        const item = document.createElement("div");
+        item.className = "taskItem";
+
+        const check = document.createElement("button");
+        check.className = "checkBtn";
+        check.textContent = task.done ? "✓" : "";
+        if(task.done) check.classList.add("done");
+        check.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
+          const list = getTasks(iso);
+          list[i].done = !list[i].done;
+          setTasks(iso, list);
+          renderTaskListEditMode();
+          render();
+        }, { passive:false });
+
+        item.appendChild(check);
+
+        if(i === idx){
+          const input = document.createElement("input");
+          input.className = "editInput";
+          input.value = task.text;
+          input.maxLength = 60;
+
+          const actions = document.createElement("div");
+          actions.className = "taskActions";
+
+          const save = document.createElement("button");
+          save.className = "iconBtn";
+          save.textContent = "✔";
+          save.title = "저장";
+          save.addEventListener("pointerdown", (e) => {
+            e.preventDefault();
+            const v = input.value.trim();
+            if(!v) return;
+            const list = getTasks(iso);
+            list[i].text = v;
+            setTasks(iso, list);
+            state.editingIndex = null;
+            renderTaskList();
+            render();
+          }, { passive:false });
+
+          const cancel = document.createElement("button");
+          cancel.className = "iconBtn delete";
+          cancel.textContent = "↩";
+          cancel.title = "취소";
+          cancel.addEventListener("pointerdown", (e) => {
+            e.preventDefault();
+            state.editingIndex = null;
+            renderTaskList();
+          }, { passive:false });
+
+          actions.appendChild(save);
+          actions.appendChild(cancel);
+
+          item.appendChild(input);
+          item.appendChild(actions);
+
+          setTimeout(() => input.focus(), 0);
+          input.addEventListener("keydown", (e) => {
+            if(e.key === "Enter") save.click();
+            if(e.key === "Escape") cancel.click();
+          });
+
+          taskList.appendChild(item);
+          return;
+        }
+
+        const text = document.createElement("div");
+        text.className = "taskText";
+        text.textContent = task.text;
+        if(task.done) text.classList.add("done");
+
+        const actions = document.createElement("div");
+        actions.className = "taskActions";
+
+        const edit = document.createElement("button");
+        edit.className = "iconBtn";
+        edit.textContent = "✎";
+        edit.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
+          state.editingIndex = i;
+          renderTaskListEditMode();
+        }, { passive:false });
+
+        const del = document.createElement("button");
+        del.className = "iconBtn delete";
+        del.textContent = "⌫";
+        del.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
+          const list = getTasks(iso);
+          list.splice(i, 1);
+          setTasks(iso, list);
+          renderTaskListEditMode();
+          render();
+        }, { passive:false });
+
+        actions.appendChild(edit);
+        actions.appendChild(del);
+
+        item.appendChild(text);
+        item.appendChild(actions);
+
+        taskList.appendChild(item);
+      });
+    }
+
+    function addTask(){
+      const iso = state.selectedISO;
+      if(!iso) return;
+
+      const val = taskInput.value.trim();
+      if(!val) return;
+
+      const list = getTasks(iso);
+      list.unshift({ text: val, done: false });
+      setTasks(iso, list);
+
+      taskInput.value = "";
+      renderTaskList();
+      render();
+    }
+
+    prevBtn.addEventListener("pointerdown", (e) => {
       e.preventDefault();
-      window.location.href = new URL("/embed/clock.html", window.location.origin).toString();
+      const d = new Date(state.viewDate);
+      d.setMonth(d.getMonth() - 1);
+      state.viewDate = d;
+      render();
+    }, { passive:false });
+
+    nextBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      const d = new Date(state.viewDate);
+      d.setMonth(d.getMonth() + 1);
+      state.viewDate = d;
+      render();
+    }, { passive:false });
+
+    todayBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      state.viewDate = new Date();
+      render();
+    }, { passive:false });
+
+    /* ✅ CLOCK: 같은 iframe에서 시계로 복귀 */
+    clockBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      const url = new URL("/embed/clock.html", window.location.origin);
+      window.location.href = url.toString();
+    }, { passive:false });
+
+    closeBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      closeModal();
+    }, { passive:false });
+
+    modalBack.addEventListener("pointerdown", (e) => {
+      if(e.target === modalBack) closeModal();
+    }, { passive:false });
+
+    taskInput.addEventListener("keydown", (e) => {
+      if(e.key === "Enter") addTask();
+      if(e.key === "Escape") closeModal();
     });
+
+    addBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      addTask();
+    }, { passive:false });
+
+    hideDoneBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      state.hideDone = !state.hideDone;
+      saveUI();
+      renderTaskList();
+    }, { passive:false });
+
+    exportBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      const data = loadAll();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `pixel_calendar_backup_${new Date().toISOString().slice(0,10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    }, { passive:false });
+
+    importBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "application/json";
+      input.addEventListener("change", async () => {
+        const file = input.files?.[0];
+        if(!file) return;
+        try{
+          const text = await file.text();
+          const obj = safeParse(text);
+          if(!obj || typeof obj !== "object" || Array.isArray(obj)){
+            alert("JSON 형식이 올바르지 않아요.");
+            return;
+          }
+          saveAll(obj);
+          render();
+          if(state.selectedISO) renderTaskList();
+          alert("가져오기 완료!");
+        }catch(err){
+          alert("가져오기 실패");
+        }
+      });
+      input.click();
+    }, { passive:false });
+
+    /* ✅ URL 쿼리로 자동 오픈: ?date=YYYY-MM-DD&open=1 */
+    function parseISODateParam(){
+      const sp = new URLSearchParams(location.search);
+      const iso = sp.get("date");
+      const open = sp.get("open");
+      if(!iso) return null;
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null;
+      return { iso, open: open === "1" };
+    }
+
+    function setViewToISO(iso){
+      const [Y,M] = iso.split("-").map(n => parseInt(n,10));
+      if(!Y || !M) return;
+      state.viewDate = new Date(Y, M-1, 1);
+    }
+
+    function bootFromQuery(){
+      const q = parseISODateParam();
+      if(!q) return;
+      setViewToISO(q.iso);
+      render();
+      if(q.open){
+        setTimeout(() => openModal(q.iso), 0);
+      }
+    }
+
+    loadUI();
+    render();
+    bootFromQuery();
   </script>
 </body>
 </html>
