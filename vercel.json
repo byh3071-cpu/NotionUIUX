@@ -2,7 +2,7 @@
   "version": 2,
   "headers": [
     {
-      "source": "/(.*)",
+      "source": "/embed/(.*)",
       "headers": [
         {
           "key": "Content-Security-Policy",
