@@ -25,61 +25,47 @@
       --sun:#ff8f8f;
       --sat:#8fb6ff;
 
-      --baseW: 360;
-      --baseH: 440;
-      --scale: 1;
-
+      --w: 360px;
+      --h: 440px;
       --cell: 46px;
       --gap: 4px;
-
-      /* ✅ 하트 위치 튜닝용 */
-      --heartBottom: 8px; /* 더 내리고 싶으면 4px, 더 올리고 싶으면 12px */
     }
 
     *{ box-sizing:border-box; }
 
-    /* ✅ 흰 여백 방지(iframe 남는 영역도 패널로) */
+    /* ✅ 바깥(iframe 남는 영역)은 "투명" = 노션 배경 비침 */
     html,body{
       margin:0;
       padding:0;
       width:100%;
       height:100%;
-      background: var(--panel);
+      background:transparent;
       color:var(--text);
       font-family: ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace;
       -webkit-font-smoothing: antialiased;
       text-rendering: geometricPrecision;
-      overflow:hidden;
+      overflow:auto; /* ✅ 작은 iframe에서 캘린더/모달이 잘리면 스크롤로 접근 */
     }
-    body{
+
+    /* ✅ 정렬은 '원래처럼' 좌상단 고정 (가운데 정렬 금지) */
+    .stage{
+      width:100%;
+      min-height:100%;
+      background:transparent;
       display:flex;
       align-items:flex-start;
       justify-content:flex-start;
-    }
-    .stage{
-      width:100%;
-      height:100%;
-      background: var(--panel);
-      display:flex;
-      align-items:flex-start;
-      justify-content:center;
-      overflow:hidden;
-      padding:8px;
+      padding:0; /* ✅ 여백 생기면 0 */
     }
 
     .wrap{
-      width: calc(var(--baseW) * 1px);
-      height: calc(var(--baseH) * 1px);
-      zoom: var(--scale);
-
+      width:var(--w);
+      height:var(--h);
       background:var(--panel);
       border:2px solid var(--line2);
       border-radius:0;
       overflow:hidden;
       position:relative;
-    }
-    @supports not (zoom: 1){
-      .wrap{ transform: scale(var(--scale)); transform-origin: top left; }
     }
 
     .topbar{
@@ -138,6 +124,7 @@
       border-bottom:2px solid var(--line2);
       background:#0e1016;
     }
+
     .dow div{
       text-align:center;
       font-size:9px;
@@ -148,6 +135,7 @@
       background:#0b0c10;
       user-select:none;
     }
+
     .dow .sunHead{ color:var(--sun); border-color:rgba(255,143,143,.45); }
     .dow .satHead{ color:var(--sat); border-color:rgba(143,182,255,.45); }
 
@@ -177,7 +165,6 @@
       -webkit-tap-highlight-color: transparent;
     }
     .day:hover{ border-color:var(--accent); }
-
     .day.disabled{ opacity:.35; cursor:default; }
     .day.sun:not(.disabled){ border-color: rgba(255,143,143,.30); }
     .day.sat:not(.disabled){ border-color: rgba(143,182,255,.30); }
@@ -185,7 +172,8 @@
     .num{ font-size:10px; color:var(--text); }
 
     .todoBadge{
-      position:absolute; left:0; bottom:0;
+      position:absolute;
+      left:0; bottom:0;
       width:18px; height:18px;
       clip-path: polygon(0 0, 0 100%, 100% 100%);
       background: var(--accent);
@@ -199,10 +187,12 @@
       box-shadow: inset 0 0 0 2px rgba(11,12,16,.25);
       user-select:none;
       pointer-events:none;
+      z-index:1;
     }
 
     .doneBadge{
-      position:absolute; right:0; bottom:0;
+      position:absolute;
+      right:0; bottom:0;
       width:18px; height:18px;
       clip-path: polygon(100% 0, 0 100%, 100% 100%);
       background: rgba(124,199,255,.22);
@@ -216,24 +206,24 @@
       box-shadow: inset 0 0 0 2px rgba(124,199,255,.25);
       user-select:none;
       pointer-events:none;
+      z-index:1;
     }
 
-    /* ✅ 하트: "너무 위" 문제 방지 -> bottom을 변수로 */
+    /* ✅ 하트 아래로(더 바닥에 붙게) */
     .heartMarker{
       position:absolute;
       left:50%;
-      bottom: var(--heartBottom);
+      bottom:1px;               /* 🔻 더 아래 */
       transform: translateX(-50%);
-      font-size:11px;
-      line-height:1;
+      font-size:12px;
+      line-height:1;            /* 🔻 위로 뜨는 느낌 방지 */
       color:var(--accent);
       opacity:1;
       user-select:none;
       pointer-events:none;
+      z-index:2;
     }
-    .heartMarker.doneAll{
-      filter: drop-shadow(0 0 2px rgba(124,199,255,.25));
-    }
+    .heartMarker.doneAll{ filter: drop-shadow(0 0 2px rgba(124,199,255,.25)); }
 
     .today{
       border-color: var(--today) !important;
@@ -251,13 +241,10 @@
     }
     .modalBack.show{ display:flex; }
 
-    /* ✅ 작은 iframe에서도 안 잘리게: max-height를 viewport 기준으로 */
     .modal{
       width: 100%;
       max-width: 340px;
-      height: min(380px, calc(100vh - 24px));
-      max-height: calc(100vh - 24px);
-
+      height: 350px;
       background: #0e1016;
       border: 2px solid var(--line2);
       border-radius:0;
@@ -327,8 +314,8 @@
       display:flex;
       flex-direction:column;
       gap:8px;
-      flex:1;
-      min-height:0; /* ✅ 내부 스크롤 필수 */
+      height:100%;
+      min-height:0;
     }
 
     .addRow{ display:flex; gap:6px; }
@@ -361,7 +348,6 @@
     }
     .addBtn:hover{ border-color:var(--accent); }
 
-    /* ✅ 여기에서 스크롤이 생김 */
     .taskList{
       border:2px solid var(--line2);
       background:#0b0c10;
@@ -410,7 +396,11 @@
       word-break:break-word;
       flex:1;
     }
-    .taskText.done{ color: var(--muted); text-decoration: line-through; opacity:.9; }
+    .taskText.done{
+      color: var(--muted);
+      text-decoration: line-through;
+      opacity:.9;
+    }
 
     .editInput{
       flex:1;
@@ -498,7 +488,7 @@
 
             <div class="taskList" id="taskList"></div>
 
-            <div class="help">좌하단=총 · 우하단=완료 · ♡/♥=완료상태</div>
+            <div class="help">좌하단=총 할 일 · 우하단=완료 · ♡/♥=완료상태</div>
           </div>
         </div>
       </div>
@@ -611,26 +601,6 @@
       return n > 9 ? "9+" : String(n);
     }
 
-    function fitToFrame(){
-      const rootStyle = getComputedStyle(document.documentElement);
-      const baseW = Number(rootStyle.getPropertyValue("--baseW")) || 360;
-      const baseH = Number(rootStyle.getPropertyValue("--baseH")) || 440;
-
-      const vw = (window.visualViewport && window.visualViewport.width) ? window.visualViewport.width : window.innerWidth;
-      const vh = (window.visualViewport && window.visualViewport.height) ? window.visualViewport.height : window.innerHeight;
-
-      const availW = Math.max(1, vw - 24);
-      const availH = Math.max(1, vh - 24);
-
-      let scale = Math.min(availW / baseW, availH / baseH);
-      if(!isFinite(scale) || scale <= 0) scale = 1;
-
-      scale = Math.min(3, Math.max(0.35, scale));
-      scale = Math.floor(scale * 100) / 100;
-
-      document.documentElement.style.setProperty("--scale", String(scale));
-    }
-
     function render(){
       gridEl.innerHTML = "";
 
@@ -712,11 +682,11 @@
           cell.appendChild(heart);
         }
 
-        cell.addEventListener("pointerdown", (e) => {
+        cell.addEventListener("click", (e) => {
           e.preventDefault();
           if(disabled) return;
           openModal(iso);
-        }, { passive:false });
+        });
 
         gridEl.appendChild(cell);
       }
@@ -778,7 +748,7 @@
         check.className = "checkBtn";
         check.textContent = task.done ? "✓" : "";
         if(task.done) check.classList.add("done");
-        check.addEventListener("pointerdown", (e) => {
+        check.addEventListener("click", (e) => {
           e.preventDefault();
           const list = getTasks(iso);
           if(idx >= 0){
@@ -787,7 +757,7 @@
           }
           renderTaskList();
           render();
-        }, { passive:false });
+        });
 
         item.appendChild(check);
 
@@ -799,10 +769,19 @@
         const actions = document.createElement("div");
         actions.className = "taskActions";
 
+        const edit = document.createElement("button");
+        edit.className = "iconBtn";
+        edit.textContent = "✎";
+        edit.addEventListener("click", (e) => {
+          e.preventDefault();
+          state.editingIndex = idx;
+          renderTaskListEditMode();
+        });
+
         const del = document.createElement("button");
         del.className = "iconBtn delete";
         del.textContent = "⌫";
-        del.addEventListener("pointerdown", (e) => {
+        del.addEventListener("click", (e) => {
           e.preventDefault();
           const list = getTasks(iso);
           if(idx >= 0){
@@ -811,8 +790,125 @@
           }
           renderTaskList();
           render();
-        }, { passive:false });
+        });
 
+        actions.appendChild(edit);
+        actions.appendChild(del);
+
+        item.appendChild(text);
+        item.appendChild(actions);
+
+        taskList.appendChild(item);
+      });
+    }
+
+    function renderTaskListEditMode(){
+      const iso = state.selectedISO;
+      if(!iso) return;
+
+      const tasks = getTasks(iso);
+      const idx = state.editingIndex;
+
+      taskList.innerHTML = "";
+
+      tasks.forEach((task, i) => {
+        const item = document.createElement("div");
+        item.className = "taskItem";
+
+        const check = document.createElement("button");
+        check.className = "checkBtn";
+        check.textContent = task.done ? "✓" : "";
+        if(task.done) check.classList.add("done");
+        check.addEventListener("click", (e) => {
+          e.preventDefault();
+          const list = getTasks(iso);
+          list[i].done = !list[i].done;
+          setTasks(iso, list);
+          renderTaskListEditMode();
+          render();
+        });
+
+        item.appendChild(check);
+
+        if(i === idx){
+          const input = document.createElement("input");
+          input.className = "editInput";
+          input.value = task.text;
+          input.maxLength = 60;
+
+          const actions = document.createElement("div");
+          actions.className = "taskActions";
+
+          const save = document.createElement("button");
+          save.className = "iconBtn";
+          save.textContent = "✔";
+          save.addEventListener("click", (e) => {
+            e.preventDefault();
+            const v = input.value.trim();
+            if(!v) return;
+            const list = getTasks(iso);
+            list[i].text = v;
+            setTasks(iso, list);
+            state.editingIndex = null;
+            renderTaskList();
+            render();
+          });
+
+          const cancel = document.createElement("button");
+          cancel.className = "iconBtn delete";
+          cancel.textContent = "↩";
+          cancel.addEventListener("click", (e) => {
+            e.preventDefault();
+            state.editingIndex = null;
+            renderTaskList();
+          });
+
+          actions.appendChild(save);
+          actions.appendChild(cancel);
+
+          item.appendChild(input);
+          item.appendChild(actions);
+
+          setTimeout(() => input.focus(), 0);
+          input.addEventListener("keydown", (e) => {
+            if(e.key === "Enter") save.click();
+            if(e.key === "Escape") cancel.click();
+          });
+
+          taskList.appendChild(item);
+          return;
+        }
+
+        const text = document.createElement("div");
+        text.className = "taskText";
+        text.textContent = task.text;
+        if(task.done) text.classList.add("done");
+
+        const actions = document.createElement("div");
+        actions.className = "taskActions";
+
+        const edit = document.createElement("button");
+        edit.className = "iconBtn";
+        edit.textContent = "✎";
+        edit.addEventListener("click", (e) => {
+          e.preventDefault();
+          state.editingIndex = i;
+          renderTaskListEditMode();
+        });
+
+        const del = document.createElement("button");
+        del.className = "iconBtn delete";
+        del.textContent = "⌫";
+        del.addEventListener("click", (e) => {
+          e.preventDefault();
+          const list = getTasks(iso);
+          list.splice(i, 1);
+          setTasks(iso, list);
+          renderTaskListEditMode();
+          render();
+        });
+
+        actions.appendChild(edit);
         actions.appendChild(del);
 
         item.appendChild(text);
@@ -838,66 +934,62 @@
       render();
     }
 
-    function goClock(){
-      const url = new URL("/embed/clock.html", window.location.origin);
-      url.searchParams.set("from", "calendar");
-      location.href = url.toString();
-    }
-
-    prevBtn.addEventListener("pointerdown", (e) => {
+    prevBtn.addEventListener("click", (e) => {
       e.preventDefault();
       const d = new Date(state.viewDate);
       d.setMonth(d.getMonth() - 1);
       state.viewDate = d;
       render();
-    }, { passive:false });
+    });
 
-    nextBtn.addEventListener("pointerdown", (e) => {
+    nextBtn.addEventListener("click", (e) => {
       e.preventDefault();
       const d = new Date(state.viewDate);
       d.setMonth(d.getMonth() + 1);
       state.viewDate = d;
       render();
-    }, { passive:false });
+    });
 
-    todayBtn.addEventListener("pointerdown", (e) => {
+    todayBtn.addEventListener("click", (e) => {
       e.preventDefault();
       state.viewDate = new Date();
       render();
-    }, { passive:false });
+    });
 
-    clockBtn.addEventListener("pointerdown", (e) => {
+    /* ✅ CLOCK: 같은 iframe에서 시계로 복귀 */
+    clockBtn.addEventListener("click", (e) => {
       e.preventDefault();
-      goClock();
-    }, { passive:false });
+      const url = new URL("/embed/clock.html", window.location.origin);
+      window.location.href = url.toString();
+    });
 
-    closeBtn.addEventListener("pointerdown", (e) => {
+    closeBtn.addEventListener("click", (e) => {
       e.preventDefault();
       closeModal();
-    }, { passive:false });
+    });
 
-    modalBack.addEventListener("pointerdown", (e) => {
+    modalBack.addEventListener("click", (e) => {
       if(e.target === modalBack) closeModal();
-    }, { passive:false });
+    });
 
     taskInput.addEventListener("keydown", (e) => {
       if(e.key === "Enter") addTask();
       if(e.key === "Escape") closeModal();
     });
 
-    addBtn.addEventListener("pointerdown", (e) => {
+    addBtn.addEventListener("click", (e) => {
       e.preventDefault();
       addTask();
-    }, { passive:false });
+    });
 
-    hideDoneBtn.addEventListener("pointerdown", (e) => {
+    hideDoneBtn.addEventListener("click", (e) => {
       e.preventDefault();
       state.hideDone = !state.hideDone;
       saveUI();
       renderTaskList();
-    }, { passive:false });
+    });
 
-    exportBtn.addEventListener("pointerdown", (e) => {
+    exportBtn.addEventListener("click", (e) => {
       e.preventDefault();
       const data = loadAll();
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
@@ -908,9 +1000,9 @@
       a.click();
       a.remove();
       setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-    }, { passive:false });
+    });
 
-    importBtn.addEventListener("pointerdown", (e) => {
+    importBtn.addEventListener("click", (e) => {
       e.preventDefault();
       const input = document.createElement("input");
       input.type = "file";
@@ -934,7 +1026,7 @@
         }
       });
       input.click();
-    }, { passive:false });
+    });
 
     function parseISODateParam(){
       const sp = new URLSearchParams(location.search);
@@ -962,10 +1054,6 @@
     }
 
     loadUI();
-    fitToFrame();
-    window.addEventListener("resize", fitToFrame);
-    setInterval(fitToFrame, 500);
-
     render();
     bootFromQuery();
   </script>
