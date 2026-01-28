@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ko" data-theme="dark">
+<html lang="ko">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pixel Clock</title>
+  <title>Notion Pixel Clock (Open Calendar)</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,225 +11,323 @@
 
   <style>
     :root{
-      --panel:#111319; --panel2:#0f1117;
-      --card:#0b0c10; --card2:#0e1016;
-      --line:#2a2f3a; --line2:#3a4150;
-      --text:#e9eef7; --muted:#a7b0c2;
-      --accent:#7cc7ff; --today:#ffe08a;
+      --panel:#111319;
+      --panel2:#0f1117;
+      --line:#2a2f3a;
+      --line2:#3a4150;
+      --text:#e9eef7;
+      --muted:#a7b0c2;
+      --accent:#7cc7ff;
 
-      /* ✅ 두번째 스샷(왼쪽 시계) 가로형 비율 */
-      --baseW: 720;
-      --baseH: 320;
+      --baseW: 360;
+      --baseH: 156;
       --scale: 1;
-    }
-    html[data-theme="light"]{
-      --panel:#e3e6ec; --panel2:#d6dae2;
-      --card:#f7f8fb; --card2:#eef1f6;
-      --line:#c8cdd8; --line2:#9aa3b5;
-      --text:#141821; --muted:#5b6476;
-      --accent:#2f66ff; --today:#b36b2a;
     }
 
     *{ box-sizing:border-box; }
     html,body{
-      margin:0; padding:0; width:100%; height:100%;
-      background:var(--panel); color:var(--text);
+      margin:0; padding:0;
+      width:100%; height:100%;
+      background: var(--panel);
+      color:var(--text);
       font-family: ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace;
       -webkit-font-smoothing: antialiased;
       text-rendering: geometricPrecision;
       overflow:hidden;
     }
 
-    /* ✅ 바깥 여백 없이, 테두리 100% 보이게 스케일 */
+    body{
+      display:flex;
+      align-items:flex-start;
+      justify-content:flex-start;
+    }
+
     .stage{
-      width:100%; height:100%;
-      display:flex; align-items:center; justify-content:center;
-      background:var(--panel);
-      padding:0; overflow:hidden;
+      width:100%;
+      height:100%;
+      background: var(--panel);
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      overflow:hidden;
+      padding:8px;
     }
-    .scaler{
-      width: calc(var(--baseW) * 1px * var(--scale));
-      height: calc(var(--baseH) * 1px * var(--scale));
-      display:flex; align-items:flex-start; justify-content:flex-start;
-    }
+
     .wrap{
       width: calc(var(--baseW) * 1px);
       height: calc(var(--baseH) * 1px);
-      transform: scale(var(--scale));
-      transform-origin: top left;
-      border:2px solid var(--line2);
+      zoom: var(--scale);
       background:var(--panel);
+      border:2px solid var(--line2);
+      border-radius:0;
       overflow:hidden;
       display:flex;
       flex-direction:column;
+      pointer-events:auto;
+      position:relative; /* ✅ 모달을 wrap 안에 띄우기 위해 */
     }
 
-    /* TOP */
-    .topbar{
-      display:flex; align-items:center; justify-content:space-between;
-      padding:10px 12px;
+    @supports not (zoom: 1){
+      .wrap{ transform: scale(var(--scale)); transform-origin: top left; }
+    }
+
+    .top{
+      height:36px;
+      display:flex;
+      align-items:center;
+      justify-content:flex-start;
+      padding:6px 8px;
+      padding-right:26px;
       border-bottom:2px solid var(--line2);
       background:linear-gradient(180deg, var(--panel2), var(--panel));
-      gap:10px;
-      flex:0 0 auto;
+      gap:8px;
     }
-    .leftBtns{ display:flex; gap:10px; align-items:center; }
-    .btn{
-      height:42px; min-width:88px;
-      padding:0 12px;
-      background:var(--card2); color:var(--text);
-      border:2px solid var(--line2);
-      border-radius:0;
-      cursor:pointer;
-      font-size:12px;
-      display:flex; align-items:center; justify-content:center;
+
+    .title{
+      font-size:9px;
+      color:var(--muted);
+      letter-spacing:0.5px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
       user-select:none;
+      pointer-events:none;
+      flex:1;
+    }
+
+    .chip{
+      height:24px;
+      padding:0 8px;
+      border:2px solid var(--line2);
+      background:#0e1016;
+      color:var(--text);
+      font-size:9px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      user-select:none;
+      line-height:1;
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
     }
-    .btn:hover{ border-color:var(--accent); }
-    .btn.on{
+    .chip:hover{ border-color:var(--accent); }
+    .chip.on{
       border-color:var(--accent);
-      box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 18%, transparent);
+      box-shadow: inset 0 0 0 2px rgba(124,199,255,.12);
       color:var(--accent);
     }
-    .title{
-      flex:1;
-      text-align:center;
-      font-size:12px;
-      letter-spacing:1px;
-      user-select:none;
-      opacity:.95;
-    }
-    .rightPad{ width:88px; } /* OPEN 버튼 자리였던 공간만 유지 */
 
-    /* BODY */
-    .body{
-      flex:1 1 auto;
+    .main{
+      flex:1;
+      display:flex;
+      align-items:stretch;
+      justify-content:space-between;
+      padding:10px 10px;
+      gap:10px;
       min-height:0;
-      padding:12px 12px;         /* ✅ 세로 여백 줄임 */
-      display:grid;
-      grid-template-columns: 2.2fr 1fr;
-      gap:12px;
-      background:var(--panel);
     }
-    .panel{
-      border:2px solid var(--line2);
-      background:linear-gradient(180deg, var(--card2), var(--card));
-      padding:14px 14px;         /* ✅ 세로 여백 줄임 */
+
+    .leftBox{
+      flex:1;
+      border:2px solid var(--line);
+      background:#0b0c10;
+      padding:12px 12px;
+      min-width:0;
       display:flex;
       flex-direction:column;
       justify-content:center;
-      gap:10px;
       overflow:hidden;
     }
 
-    .metaLine{
-      font-size:11px;
+    .dateRow{
+      font-size:9px;
       color:var(--muted);
-      opacity:.95;
+      line-height:1.45;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      margin-bottom:8px;
+    }
+
+    .timeRow{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      white-space:nowrap;
+      overflow:hidden;
+    }
+
+    .time{
+      font-size:18px;
+      color:var(--text);
+      letter-spacing:1px;
+      display:inline-block;
+      line-height:1.45;
+      padding:2px 0 6px;
+    }
+
+    .cursor{
+      font-size:14px;
+      color:var(--accent);
+      display:inline-block;
+      line-height:1.45;
+      padding:2px 0 6px;
+      opacity:1;
+      user-select:none;
+      pointer-events:none;
+    }
+
+    .note{
+      margin-top:10px;
+      font-size:8px;
+      color:rgba(233,238,247,.75);
+      line-height:1.45;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
     }
 
-    .timeRow{
-      display:flex;
-      align-items:flex-end;
-      gap:10px;
-    }
-    .time{
-      font-size:52px;            /* ✅ 시간은 크게 */
-      letter-spacing:1px;
-      line-height:1;
-    }
-    .blink{
-      width:14px; height:14px;
-      border:2px solid var(--line2);
-      background: var(--accent);
-      margin-bottom:10px;
-      opacity:1;
-    }
-
-    .todoLine{
-      font-size:12px;            /* ✅ 나머지 글씨 너무 작던 것 보정 */
-      color:var(--muted);
-      margin-top:6px;
-    }
-    .todoLine b{ color:var(--text); }
-
-    /* RIGHT panel blocks */
-    .block{
-      border:2px solid var(--line2);
-      background:var(--card2);
-      padding:12px 12px;
+    .rightBox{
+      width:112px;
+      border:2px solid var(--line);
+      background:#0b0c10;
+      padding:8px;
       display:flex;
       flex-direction:column;
+      justify-content:center;
       gap:8px;
+      overflow:hidden;
     }
-    .blockTitle{
-      font-size:11px;
+
+    .meterLabel{
+      font-size:8px;
       color:var(--muted);
-      letter-spacing:.5px;
+      opacity:.95;
+      line-height:1;
+      user-select:none;
     }
-    .bar{
-      height:14px;
+
+    .meter{
+      height:10px;
       border:2px solid var(--line2);
-      background:var(--card);
+      background:#0e1016;
       position:relative;
       overflow:hidden;
     }
-    .fill{
-      position:absolute; top:0; left:0; bottom:0;
+    .bar{
+      position:absolute;
+      left:0; top:0; bottom:0;
       width:0%;
-      background: color-mix(in srgb, var(--accent) 70%, transparent);
+      background:var(--accent);
     }
-    .small{
-      font-size:11px;
+
+    .meterText{
+      font-size:8px;
+      color:rgba(233,238,247,.75);
+      line-height:1.2;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      min-height:10px;
+    }
+
+    @media (max-width: 340px){
+      .rightBox{ display:none; }
+    }
+
+    /* =========================
+       ✅ 캘린더 모달 (노션 안에서 유지)
+       ========================= */
+    .calModal{
+      position:absolute;
+      inset:0;
+      display:none;
+      align-items:stretch;
+      justify-content:stretch;
+      background:rgba(0,0,0,.55);
+      padding:8px;
+      z-index:99;
+    }
+    .calModal.on{ display:flex; }
+
+    .calPanel{
+      width:100%;
+      height:100%;
+      border:2px solid var(--line2);
+      background:var(--panel);
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+    }
+
+    .calTop{
+      height:34px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      padding:6px 8px;
+      border-bottom:2px solid var(--line2);
+      background:linear-gradient(180deg, var(--panel2), var(--panel));
+    }
+    .calTitle{
+      font-size:9px;
       color:var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      user-select:none;
+      flex:1;
     }
-    .small b{ color:var(--text); }
+
+    .calFrame{
+      width:100%;
+      height:100%;
+      border:0;
+      background:#000;
+    }
   </style>
 </head>
 
 <body>
   <div class="stage">
-    <div class="scaler">
-      <div class="wrap">
-        <div class="topbar">
-          <div class="leftBtns">
-            <button class="btn" id="btn24">24H</button>
+    <div class="wrap" id="wrap">
+      <div class="top">
+        <button class="chip on" id="modeBtn" title="12/24 토글">24H</button>
+        <button class="chip" id="openTodayBtn" title="캘린더(모달)에서 오늘 열기">OPEN</button>
+        <div class="title">PIXEL CLOCK</div>
+      </div>
+
+      <div class="main">
+        <div class="leftBox">
+          <div class="dateRow" id="dateText">0000-00-00 (월) · TODAY 0/0</div>
+          <div class="timeRow">
+            <div class="time" id="timeText">00:00</div>
+            <div class="cursor" id="cursor">■</div>
           </div>
-          <div class="title">PIXEL CLOCK</div>
-          <div class="rightPad"></div>
+          <div class="note" id="noteText">오늘 할 일: 0 / 0</div>
         </div>
 
-        <div class="body">
-          <div class="panel">
-            <div class="metaLine" id="metaLine">0000-00-00 · TODAY 0/0</div>
+        <div class="rightBox">
+          <div class="meterLabel">DAY</div>
+          <div class="meter"><div class="bar" id="dayBar"></div></div>
 
-            <div class="timeRow">
-              <div class="time" id="timeText">00:00</div>
-              <div class="blink" id="blinkBox"></div>
-            </div>
-
-            <div class="todoLine" id="todoLine">오늘 할 일 : <b>0</b> / <b>0</b></div>
-          </div>
-
-          <div class="panel" style="gap:10px;">
-            <div class="block">
-              <div class="blockTitle">DAY</div>
-              <div class="bar"><div class="fill" id="dayFill"></div></div>
-            </div>
-
-            <div class="block">
-              <div class="blockTitle">TODAY TASK</div>
-              <div class="bar"><div class="fill" id="taskFill"></div></div>
-              <div class="small" id="taskInfo"><b>0</b>/<b>0</b> - <b>0%</b></div>
-            </div>
-          </div>
+          <div class="meterLabel">TODAY TASK</div>
+          <div class="meter"><div class="bar" id="taskBar"></div></div>
+          <div class="meterText" id="taskPctText">0/0 · 0%</div>
         </div>
+      </div>
 
+      <!-- ✅ 캘린더 모달(노션 안) -->
+      <div class="calModal" id="calModal" aria-hidden="true">
+        <div class="calPanel">
+          <div class="calTop">
+            <div class="calTitle" id="calTitle">CALENDAR</div>
+            <button class="chip" id="closeCalBtn" title="닫기">CLOSE</button>
+          </div>
+          <iframe class="calFrame" id="calFrame" title="calendar"></iframe>
+        </div>
       </div>
     </div>
   </div>
@@ -237,134 +335,178 @@
   <script>
     const $ = (s) => document.querySelector(s);
 
-    const CAL_STORE_KEY = "pixel_calendar_tasks_v6";
-    const CAL_UI_KEY    = "pixel_calendar_ui_v6";
-    const CLOCK_UI_KEY  = "pixel_clock_ui_v2";
+    const dateText  = $("#dateText");
+    const timeText  = $("#timeText");
+    const cursorEl  = $("#cursor");
+    const noteText  = $("#noteText");
+    const dayBar    = $("#dayBar");
+    const taskBar   = $("#taskBar");
+    const taskPctText = $("#taskPctText");
+    const modeBtn   = $("#modeBtn");
+    const openTodayBtn = $("#openTodayBtn");
 
-    const metaLine = $("#metaLine");
-    const timeText = $("#timeText");
-    const blinkBox = $("#blinkBox");
-    const todoLine = $("#todoLine");
+    const calModal = $("#calModal");
+    const calFrame = $("#calFrame");
+    const calTitle = $("#calTitle");
+    const closeCalBtn = $("#closeCalBtn");
 
-    const dayFill  = $("#dayFill");
-    const taskFill = $("#taskFill");
-    const taskInfo = $("#taskInfo");
+    const state = { is24h: true };
+    const DOW_KR = ["일","월","화","수","목","금","토"];
 
-    const btn24 = $("#btn24");
+    const STORE_KEYS = [
+      "pixel_calendar_tasks_v6",
+      "pixel_calendar_tasks_v5_backup_hideDone",
+      "pixel_calendar_tasks_v4_bottomTriangles",
+      "pixel_calendar_tasks_v3_bottomBadges",
+      "pixel_calendar_tasks_v2_heart_preview",
+    ];
 
-    const pad2 = (n) => String(n).padStart(2, "0");
-    const dayK = ["일","월","화","수","목","금","토"];
-
-    function safeParse(s){ try{ return JSON.parse(s); }catch(e){ return null; } }
-    function toISO(d){ return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`; }
+    const pad2 = (n) => String(n).padStart(2,"0");
+    const toISO = (d) => `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+    const safeParse = (json) => { try { return JSON.parse(json); } catch(e){ return null; } };
 
     function normalizeList(list){
       if(!Array.isArray(list)) return [];
       return list.map(x => {
         if(typeof x === "string") return { text:x, done:false };
-        if(x && typeof x === "object") return { text:String(x.text ?? ""), done:Boolean(x.done) };
+        if(x && typeof x === "object") return { text: String(x.text ?? ""), done: Boolean(x.done) };
         return { text:"", done:false };
       }).filter(t => t.text.trim().length > 0);
     }
 
-    function getTodayTasks(){
-      const iso = toISO(new Date());
-      const all = safeParse(localStorage.getItem(CAL_STORE_KEY)) || {};
-      const list = normalizeList(all[iso]);
+    function loadAllFromAnyKey(){
+      for(const k of STORE_KEYS){
+        const raw = localStorage.getItem(k);
+        if(!raw) continue;
+        const parsed = safeParse(raw);
+        if(parsed && typeof parsed === "object" && !Array.isArray(parsed)) return parsed;
+      }
+      return {};
+    }
+
+    function getTodayProgress(iso){
+      const data = loadAllFromAnyKey();
+      const list = normalizeList(data[iso]);
       const total = list.length;
       const done = list.filter(t => t.done).length;
-      return { iso, total, done };
+      return { done, total };
     }
 
-    function applyThemeFromCalendar(){
-      const ui = safeParse(localStorage.getItem(CAL_UI_KEY)) || {};
-      const isLight = ui.isLight === true;
-      document.documentElement.setAttribute("data-theme", isLight ? "light" : "dark");
+    function formatTime(d){
+      let h = d.getHours();
+      const m = d.getMinutes();
+      if(!state.is24h){
+        const ampm = h < 12 ? "AM" : "PM";
+        h = h % 12; if(h === 0) h = 12;
+        return `${pad2(h)}:${pad2(m)} ${ampm}`;
+      }
+      return `${pad2(h)}:${pad2(m)}`;
     }
 
-    function loadClockUI(){
-      const ui = safeParse(localStorage.getItem(CLOCK_UI_KEY)) || {};
-      return { is24: ui.is24 === true };
-    }
-    function saveClockUI(is24){
-      localStorage.setItem(CLOCK_UI_KEY, JSON.stringify({ is24: !!is24 }));
-    }
-
-    function fmtTime(now, is24){
-      let h = now.getHours();
-      const m = now.getMinutes();
-      if(is24) return `${pad2(h)}:${pad2(m)}`;
-      const hh = ((h + 11) % 12) + 1;
-      return `${pad2(hh)}:${pad2(m)}`;
-    }
-
-    function renderMeta(){
-      applyThemeFromCalendar();
-      const now = new Date();
-      const iso = toISO(now);
-      const dow = dayK[now.getDay()];
-
-      const { total, done } = getTodayTasks();
-      metaLine.textContent = `${iso} (${dow}) · TODAY ${done}/${total}`;
-      todoLine.innerHTML   = `오늘 할 일 : <b>${done}</b> / <b>${total}</b>`;
-
-      const sec = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
-      const dayPct = Math.max(0, Math.min(100, (sec / 86400) * 100));
-      dayFill.style.width = `${dayPct.toFixed(2)}%`;
-
-      const taskPct = total > 0 ? (done / total) * 100 : 0;
-      taskFill.style.width = `${taskPct.toFixed(2)}%`;
-      taskInfo.innerHTML = `<b>${done}</b>/<b>${total}</b> - <b>${Math.round(taskPct)}%</b>`;
+    function calcDayProgress(d){
+      const total = 24*60*60;
+      const now = d.getHours()*3600 + d.getMinutes()*60 + d.getSeconds();
+      return Math.max(0, Math.min(1, now/total));
     }
 
     function fitToFrame(){
       const rootStyle = getComputedStyle(document.documentElement);
-      const baseW = Number(rootStyle.getPropertyValue("--baseW")) || 720;
-      const baseH = Number(rootStyle.getPropertyValue("--baseH")) || 320;
+      const baseW = Number(rootStyle.getPropertyValue("--baseW")) || 360;
+      const baseH = Number(rootStyle.getPropertyValue("--baseH")) || 156;
 
       const vw = (window.visualViewport && window.visualViewport.width) ? window.visualViewport.width : window.innerWidth;
       const vh = (window.visualViewport && window.visualViewport.height) ? window.visualViewport.height : window.innerHeight;
 
-      let scale = Math.min(vw / baseW, vh / baseH);
+      const availW = Math.max(1, vw - 24);
+      const availH = Math.max(1, vh - 24);
+
+      let scale = Math.min(availW / baseW, availH / baseH);
       if(!isFinite(scale) || scale <= 0) scale = 1;
 
-      /* ✅ “테두리 100% 보이기” 우선: 너무 작게 떨어지지 않게만 최소값 */
-      scale = Math.min(3, Math.max(0.45, scale));
+      scale = Math.min(3, Math.max(0.55, scale));
       scale = Math.floor(scale * 100) / 100;
+
       document.documentElement.style.setProperty("--scale", String(scale));
     }
 
-    let clockUI = loadClockUI();
-    function sync24Btn(){
-      btn24.classList.toggle("on", clockUI.is24);
-      btn24.textContent = "24H";
-    }
-    btn24.addEventListener("pointerdown", (e) => {
-      e.preventDefault();
-      clockUI.is24 = !clockUI.is24;
-      saveClockUI(clockUI.is24);
-      sync24Btn();
-    }, { passive:false });
-
-    let blinkOn = true;
     function tick(){
-      applyThemeFromCalendar();
-      const now = new Date();
-      timeText.textContent = fmtTime(now, clockUI.is24);
-      blinkOn = !blinkOn;
-      blinkBox.style.opacity = blinkOn ? "1" : "0.15";
-      renderMeta();
+      const d = new Date();
+      const iso = toISO(d);
+
+      const y = d.getFullYear();
+      const mo = d.getMonth() + 1;
+      const da = d.getDate();
+      const dow = DOW_KR[d.getDay()];
+
+      const { done, total } = getTodayProgress(iso);
+
+      dateText.textContent = `${y}-${pad2(mo)}-${pad2(da)} (${dow}) · TODAY ${done}/${total}`;
+      timeText.textContent = formatTime(d);
+      cursorEl.style.opacity = (d.getSeconds() % 2 === 0) ? "1" : "0.15";
+
+      dayBar.style.width = `${Math.round(calcDayProgress(d) * 100)}%`;
+
+      const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+      taskBar.style.width = `${pct}%`;
+      taskPctText.textContent = `${done}/${total} · ${pct}%`;
+
+      noteText.textContent = `오늘 할 일: ${done} / ${total}`;
     }
 
-    sync24Btn();
+    function toggleMode(){
+      state.is24h = !state.is24h;
+      modeBtn.textContent = state.is24h ? "24H" : "12H";
+      modeBtn.classList.toggle("on", state.is24h);
+      tick();
+    }
+
+    function openCalendarFor(iso){
+      const url = new URL("/embed/calendar.html", window.location.origin);
+      url.searchParams.set("date", iso);
+      url.searchParams.set("open", "1");
+
+      calTitle.textContent = `CALENDAR · ${iso}`;
+      calFrame.src = url.toString();
+
+      calModal.classList.add("on");
+      calModal.setAttribute("aria-hidden", "false");
+    }
+
+    function closeCalendar(){
+      calModal.classList.remove("on");
+      calModal.setAttribute("aria-hidden", "true");
+      // 필요하면 캐시 유지하려면 아래 줄 주석 처리
+      calFrame.src = "about:blank";
+    }
+
+    function openToday(){
+      const iso = toISO(new Date());
+      // ✅ 노션에서 새 웹창으로 튀는 "페이지 이동" 대신,
+      // ✅ clock.html 안에서 캘린더를 모달로 띄움
+      openCalendarFor(iso);
+    }
+
+    modeBtn.addEventListener("click", (e)=>{ e.preventDefault(); toggleMode(); });
+    openTodayBtn.addEventListener("click", (e)=>{ e.preventDefault(); openToday(); });
+
+    closeCalBtn.addEventListener("click", (e)=>{ e.preventDefault(); closeCalendar(); });
+
+    // 모달 배경 클릭 닫기
+    calModal.addEventListener("click", (e)=>{
+      if(e.target === calModal) closeCalendar();
+    });
+
+    // ESC 닫기
+    window.addEventListener("keydown", (e)=>{
+      if(e.key === "Escape" && calModal.classList.contains("on")) closeCalendar();
+    });
+
     fitToFrame();
-    renderMeta();
-
     window.addEventListener("resize", fitToFrame);
-    if(window.visualViewport) window.visualViewport.addEventListener("resize", fitToFrame);
+    setInterval(fitToFrame, 500);
 
-    setInterval(tick, 500);
-    setInterval(fitToFrame, 600);
+    tick();
+    setInterval(tick, 1000);
   </script>
 </body>
 </html>
