@@ -9,17 +9,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   
-    .top{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:8px;
-      padding:8px 8px;
-      border-bottom:2px solid var(--line2);
-      background: linear-gradient(180deg, var(--panel2), var(--panel));
-      flex:0 0 auto;
-    }
-  
   <style>
     :root{
       --panel:#111319;
@@ -33,6 +22,17 @@
       --baseW: 360;
       --baseH: 156;
       --scale: 1;
+    }
+
+        .top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      padding:8px 8px;
+      border-bottom:2px solid var(--line2);
+      background: linear-gradient(180deg, var(--panel2), var(--panel));
+      flex:0 0 auto;
     }
 
     *{ box-sizing:border-box; }
@@ -300,33 +300,33 @@
 <body>
   <div class="stage">
     <div class="scaler" id="scaler">
-    <div class="wrap" id="wrap">
-      <div class="top">
-        <button class="chip on" id="modeBtn" title="12/24 토글">24H</button>
-        <button class="chip" id="openTodayBtn" title="캘린더(모달)에서 오늘 열기">OPEN</button>
-        <div class="title">PIXEL CLOCK</div>
-      </div>
+      <div class="wrap" id="wrap">
+        <div class="top">
+          <button class="chip on" id="modeBtn" title="12/24 토글">24H</button>
+          <button class="chip" id="openTodayBtn" title="캘린더(모달)에서 오늘 열기">OPEN</button>
+          <div class="title">PIXEL CLOCK</div>
+        </div>
 
-      <div class="main">
-        <div class="leftBox">
-          <div class="dateRow" id="dateText">0000-00-00 (월) · TODAY 0/0</div>
-          <div class="timeRow">
-            <div class="time" id="timeText">00:00</div>
-            <div class="cursor" id="cursor">■</div>
+        <div class="main">
+          <div class="leftBox">
+            <div class="dateRow" id="dateText">0000-00-00 (월) · TODAY 0/0</div>
+            <div class="timeRow">
+              <div class="time" id="timeText">00:00</div>
+              <div class="cursor" id="cursor">■</div>
+            </div>
+            <div class="note" id="noteText">오늘 할 일: 0 / 0</div>
           </div>
-          <div class="note" id="noteText">오늘 할 일: 0 / 0</div>
-        </div>
 
-        <div class="rightBox">
-          <div class="meterLabel">DAY</div>
-          <div class="meter"><div class="bar" id="dayBar"></div></div>
+          <div class="rightBox">
+            <div class="meterLabel">DAY</div>
+            <div class="meter"><div class="bar" id="dayBar"></div></div>
 
-          <div class="meterLabel">TODAY TASK</div>
-          <div class="meter"><div class="bar" id="taskBar"></div></div>
-          <div class="meterText" id="taskPctText">0/0 · 0%</div>
+            <div class="meterLabel">TODAY TASK</div>
+            <div class="meter"><div class="bar" id="taskBar"></div></div>
+            <div class="meterText" id="taskPctText">0/0 · 0%</div>
+          </div>
         </div>
       </div>
-     </div>
 
       <!-- ✅ 캘린더 모달(노션 안) -->
       <div class="calModal" id="calModal" aria-hidden="true">
@@ -340,6 +340,7 @@
       </div>
     </div>
   </div>
+</body>
 
   <script>
     const $ = (s) => document.querySelector(s);
