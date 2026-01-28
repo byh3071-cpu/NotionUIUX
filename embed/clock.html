@@ -19,7 +19,7 @@
       --accent:#7cc7ff; --today:#ffe08a;
 
       /* ✅ LAYOUT: 두번째 스샷(가로형) 비율로 원복 */
-      --baseW: 520;
+      --baseW: 480;
       --baseH: 320;
       --scale: 1;
     }
@@ -116,16 +116,16 @@
     .body{
       flex:1 1 auto;
       min-height:0;
-      padding:12px 12px;
+      padding:10px 10px;
       display:grid;
-      grid-template-columns: 1.7fr 1fr;
-      gap:12px;
+      grid-template-columns: 1.45fr 0.85fr;
+      gap:10px;
       background:var(--panel);
     }
     .panel{
       border:2px solid var(--line2);
       background:linear-gradient(180deg, var(--card2), var(--card));
-      padding:14px 14px;
+      padding:12px 12px;
       display:flex;
       flex-direction:column;
       justify-content:center;
@@ -171,18 +171,18 @@
     .block{
       border:2px solid var(--line2);
       background:var(--card2);
-      padding:12px 12px;
+      padding:10px 10px;
       display:flex;
       flex-direction:column;
-      gap:10px;
+      gap:8px;
     }
     .blockTitle{
-      font-size:12px;
+      font-size:11px;
       color:var(--muted);
       letter-spacing:.5px;
     }
     .bar{
-      height:14px;
+      height:12px;
       border:2px solid var(--line2);
       background:var(--card);
       position:relative;
@@ -194,7 +194,7 @@
       background: color-mix(in srgb, var(--accent) 70%, transparent);
     }
     .small{
-      font-size:12px;
+      font-size:11px;
       color:var(--muted);
     }
     .small b{ color:var(--text); }
@@ -338,7 +338,7 @@
 
     function fitToFrame(){
       const rootStyle = getComputedStyle(document.documentElement);
-      const baseW = Number(rootStyle.getPropertyValue("--baseW")) || 520;
+      const baseW = Number(rootStyle.getPropertyValue("--baseW")) || 480;
       const baseH = Number(rootStyle.getPropertyValue("--baseH")) || 320;
 
       const vw = (window.visualViewport && window.visualViewport.width) ? window.visualViewport.width : window.innerWidth;
