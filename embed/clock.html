@@ -11,6 +11,7 @@
 
   <style>
     :root{
+      /* ===== DARK ===== */
       --panel:#111319;
       --panel2:#0f1117;
       --card:#0b0c10;
@@ -20,12 +21,13 @@
       --text:#e9eef7;
       --muted:#a7b0c2;
       --accent:#7cc7ff;
-      --today:#ffe08a;
 
+      /* ===== LAYOUT ===== */
       --baseW: 360;
       --baseH: 520;
       --scale: 1;
     }
+
     html[data-theme="light"]{
       --panel:#e3e6ec;
       --panel2:#d6dae2;
@@ -36,28 +38,28 @@
       --text:#141821;
       --muted:#5b6476;
       --accent:#2f66ff;
-      --today:#b36b2a;
     }
 
     *{ box-sizing:border-box; }
     html,body{
       margin:0; padding:0;
       width:100%; height:100%;
-      background: var(--panel);
+      background:var(--panel);
       color:var(--text);
       font-family: ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace;
-      overflow:hidden;
       -webkit-font-smoothing: antialiased;
       text-rendering: geometricPrecision;
+      overflow:hidden;
     }
 
     .stage{
       width:100%; height:100%;
-      background: var(--panel);
       display:flex;
       align-items:center;
       justify-content:center;
+      background:var(--panel);
       overflow:hidden;
+      padding:0;
     }
     .scaler{
       width: calc(var(--baseW) * 1px * var(--scale));
@@ -71,29 +73,36 @@
       height: calc(var(--baseH) * 1px);
       transform: scale(var(--scale));
       transform-origin: top left;
+
       background:var(--panel);
       border:2px solid var(--line2);
       border-radius:0;
       overflow:hidden;
-      position:relative;
+
       display:flex;
       flex-direction:column;
+      position:relative;
     }
 
+    /* ===== TOP BAR ===== */
     .topbar{
       display:flex;
       align-items:center;
       justify-content:space-between;
-      padding:8px;
+      padding:8px 8px;
       border-bottom:2px solid var(--line2);
       background:linear-gradient(180deg, var(--panel2), var(--panel));
-      gap:6px;
+      gap:8px;
       flex:0 0 auto;
     }
-    .leftBtns, .rightBtns{
-      display:flex;
-      gap:6px;
-      align-items:center;
+    .title{
+      flex:1;
+      text-align:center;
+      font-size:11px;
+      user-select:none;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
     .btn{
       height:32px;
@@ -112,73 +121,69 @@
       transition: transform .05s ease;
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
+      min-width:76px;
     }
     .btn:active{ transform: translateY(1px); }
     .btn:hover{ border-color:var(--accent); }
 
-    .title{
-      flex:1;
-      text-align:center;
-      font-size:11px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      user-select:none;
-    }
-
-    .content{
+    /* ===== BODY ===== */
+    .body{
       flex:1 1 auto;
       min-height:0;
-      padding:10px;
       display:flex;
-      flex-direction:column;
-      gap:10px;
-      align-items:stretch;
+      align-items:center;
       justify-content:center;
+      padding:14px;
       background:var(--panel);
     }
 
-    .card{
+    .clockCard{
+      width:100%;
       border:2px solid var(--line2);
-      background: var(--card2);
-      border-radius:0;
-      padding:14px 12px;
+      background:linear-gradient(180deg, var(--card2), var(--card));
+      padding:18px 12px;
       display:flex;
       flex-direction:column;
       gap:10px;
     }
 
     .time{
-      font-size:26px;
-      line-height:1.2;
+      font-size:24px;
       letter-spacing:1px;
       text-align:center;
-      color:var(--text);
-    }
-    .date{
-      font-size:11px;
-      text-align:center;
-      color:var(--muted);
+      user-select:none;
     }
 
-    .miniRow{
-      display:flex;
-      gap:8px;
-      align-items:center;
-      justify-content:space-between;
+    .date{
+      font-size:10px;
+      color:var(--muted);
+      text-align:center;
+      user-select:none;
     }
-    .chip{
+
+    .metaRow{
+      display:flex;
+      gap:10px;
+      margin-top:4px;
+    }
+    .metaBox{
       flex:1;
-      border:2px solid var(--line);
-      background: var(--card);
+      border:2px solid var(--line2);
+      background:var(--card2);
       padding:10px 8px;
       text-align:center;
       font-size:10px;
       color:var(--text);
-      border-radius:0;
+      user-select:none;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
-    .chip strong{ color:var(--accent); font-weight:700; }
+    .metaBox span{
+      color:var(--accent);
+    }
 
+    /* ===== BOTTOM BAR ===== */
     .bottomBar{
       flex:0 0 auto;
       height:74px;
@@ -217,27 +222,21 @@
 
 <body>
   <div class="stage">
-    <div class="scaler">
+    <div class="scaler" id="scaler">
       <div class="wrap">
-
         <div class="topbar">
-          <div class="leftBtns">
-            <button class="btn" id="calBtn">CAL</button>
-          </div>
-          <div class="title" id="title">CLOCK</div>
-          <div class="rightBtns">
-            <button class="btn" id="todayJumpBtn">TODAY</button>
-          </div>
+          <button class="btn" id="todayBtn">TODAY</button>
+          <div class="title">CLOCK</div>
+          <div style="width:76px;"></div>
         </div>
 
-        <div class="content">
-          <div class="card">
+        <div class="body">
+          <div class="clockCard">
             <div class="time" id="timeText">00:00:00</div>
             <div class="date" id="dateText">0000-00-00 (DAY)</div>
-
-            <div class="miniRow">
-              <div class="chip">WEEK <strong id="weekText">00</strong></div>
-              <div class="chip">TZ <strong>KST</strong></div>
+            <div class="metaRow">
+              <div class="metaBox" id="weekText">WEEK <span>00</span></div>
+              <div class="metaBox" id="tzText">TZ <span>KST</span></div>
             </div>
           </div>
         </div>
@@ -245,137 +244,113 @@
         <div class="bottomBar">
           <button class="bigBtn" id="lightBtn">LIGHT</button>
         </div>
-
       </div>
     </div>
   </div>
 
-<script>
-  const $ = (s) => document.querySelector(s);
+  <script>
+    const $ = (s) => document.querySelector(s);
 
-  const calBtn = $("#calBtn");
-  const todayJumpBtn = $("#todayJumpBtn");
-  const lightBtn = $("#lightBtn");
+    const timeText = $("#timeText");
+    const dateText = $("#dateText");
+    const weekText = $("#weekText");
+    const tzText = $("#tzText");
+    const todayBtn = $("#todayBtn");
+    const lightBtn = $("#lightBtn");
 
-  const timeText = $("#timeText");
-  const dateText = $("#dateText");
-  const weekText = $("#weekText");
+    const UI_KEY = "pixel_clock_ui_v1";
 
-  const UI_KEY = "pixel_calendar_ui_v6"; // ✅ calendar와 공유 (테마 연동)
+    const pad2 = (n) => String(n).padStart(2, "0");
+    const dayNames = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
 
-  const state = {
-    isLight: false
-  };
+    function safeParse(s){
+      try{ return JSON.parse(s); }catch(e){ return null; }
+    }
 
-  const pad2 = (n) => String(n).padStart(2, "0");
+    function applyTheme(isLight){
+      document.documentElement.setAttribute("data-theme", isLight ? "light" : "dark");
+      lightBtn.classList.toggle("on", isLight);
+      lightBtn.textContent = isLight ? "DARK" : "LIGHT";
+    }
 
-  function safeParse(s){
-    try{ return JSON.parse(s); }catch(e){ return null; }
-  }
+    function loadUI(){
+      const ui = safeParse(localStorage.getItem(UI_KEY)) || {};
+      const isLight = Boolean(ui.isLight);
+      applyTheme(isLight);
+    }
 
-  function syncLightBtn(){
-    lightBtn.classList.toggle("on", state.isLight);
-    lightBtn.textContent = state.isLight ? "DARK" : "LIGHT";
-  }
+    function saveUI(){
+      const isLight = document.documentElement.getAttribute("data-theme") === "light";
+      localStorage.setItem(UI_KEY, JSON.stringify({ isLight }));
+    }
 
-  function applyTheme(isLight){
-    document.documentElement.setAttribute("data-theme", isLight ? "light" : "dark");
-    syncLightBtn();
-  }
+    function getISOWeek(d){
+      // ISO week number
+      const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+      const dayNum = date.getUTCDay() || 7;
+      date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+      const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
+      const weekNo = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+      return weekNo;
+    }
 
-  function loadUI(){
-    const ui = safeParse(localStorage.getItem(UI_KEY)) || {};
-    state.isLight = Boolean(ui.isLight);
-    applyTheme(state.isLight);
-  }
+    function renderNow(){
+      const now = new Date();
+      const hh = pad2(now.getHours());
+      const mm = pad2(now.getMinutes());
+      const ss = pad2(now.getSeconds());
+      timeText.textContent = `${hh}:${mm}:${ss}`;
 
-  function saveUI(){
-    const ui = safeParse(localStorage.getItem(UI_KEY)) || {};
-    localStorage.setItem(UI_KEY, JSON.stringify({ ...ui, isLight: state.isLight }));
-    syncLightBtn();
-  }
+      const y = now.getFullYear();
+      const m = pad2(now.getMonth() + 1);
+      const da = pad2(now.getDate());
+      const dn = dayNames[now.getDay()];
+      dateText.textContent = `${y}-${m}-${da} (${dn})`;
 
-  function fitToFrame(){
-    const rootStyle = getComputedStyle(document.documentElement);
-    const baseW = Number(rootStyle.getPropertyValue("--baseW")) || 360;
-    const baseH = Number(rootStyle.getPropertyValue("--baseH")) || 520;
+      const wk = pad2(getISOWeek(now));
+      weekText.innerHTML = `WEEK <span>${wk}</span>`;
+      tzText.innerHTML = `TZ <span>KST</span>`;
+    }
 
-    const vw = (window.visualViewport && window.visualViewport.width) ? window.visualViewport.width : window.innerWidth;
-    const vh = (window.visualViewport && window.visualViewport.height) ? window.visualViewport.height : window.innerHeight;
+    function fitToFrame(){
+      const rootStyle = getComputedStyle(document.documentElement);
+      const baseW = Number(rootStyle.getPropertyValue("--baseW")) || 360;
+      const baseH = Number(rootStyle.getPropertyValue("--baseH")) || 520;
 
-    const availW = Math.max(1, vw);
-    const availH = Math.max(1, vh);
+      const vw = (window.visualViewport && window.visualViewport.width) ? window.visualViewport.width : window.innerWidth;
+      const vh = (window.visualViewport && window.visualViewport.height) ? window.visualViewport.height : window.innerHeight;
 
-    let scale = Math.min(availW / baseW, availH / baseH);
-    if(!isFinite(scale) || scale <= 0) scale = 1;
+      const availW = Math.max(1, vw);
+      const availH = Math.max(1, vh);
 
-    scale = Math.min(3, Math.max(0.55, scale));
-    scale = Math.floor(scale * 100) / 100;
+      let scale = Math.min(availW / baseW, availH / baseH);
+      if(!isFinite(scale) || scale <= 0) scale = 1;
+      scale = Math.min(3, Math.max(0.55, scale));
+      scale = Math.floor(scale * 100) / 100;
 
-    document.documentElement.style.setProperty("--scale", String(scale));
-  }
+      document.documentElement.style.setProperty("--scale", String(scale));
+    }
 
-  function getWeekNumber(d){
-    // ISO week number
-    const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-    const dayNum = date.getUTCDay() || 7;
-    date.setUTCDate(date.getUTCDate() + 4 - dayNum);
-    const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
-    return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
-  }
+    // events
+    todayBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      renderNow();
+    }, { passive:false });
 
-  function tick(){
-    const now = new Date();
-    const hh = pad2(now.getHours());
-    const mm = pad2(now.getMinutes());
-    const ss = pad2(now.getSeconds());
-    timeText.textContent = `${hh}:${mm}:${ss}`;
+    lightBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      const cur = document.documentElement.getAttribute("data-theme") === "light";
+      applyTheme(!cur);
+      saveUI();
+    }, { passive:false });
 
-    const y = now.getFullYear();
-    const m = pad2(now.getMonth()+1);
-    const da = pad2(now.getDate());
-
-    const days = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
-    const dow = days[now.getDay()];
-
-    dateText.textContent = `${y}-${m}-${da} (${dow})`;
-    weekText.textContent = pad2(getWeekNumber(now));
-  }
-
-  // ✅ CAL 이동 (OPEN 없음)
-  calBtn.addEventListener("pointerdown", (e) => {
-    e.preventDefault();
-    const url = new URL("/embed/calendar.html", window.location.origin);
-    window.location.href = url.toString();
-  }, { passive:false });
-
-  // TODAY 버튼: 캘린더의 이번 달로 이동 (open 없이 date만 전달)
-  todayJumpBtn.addEventListener("pointerdown", (e) => {
-    e.preventDefault();
-    const now = new Date();
-    const iso = `${now.getFullYear()}-${pad2(now.getMonth()+1)}-${pad2(now.getDate())}`;
-    const url = new URL("/embed/calendar.html", window.location.origin);
-    url.searchParams.set("date", iso);
-    window.location.href = url.toString();
-  }, { passive:false });
-
-  lightBtn.addEventListener("pointerdown", (e) => {
-    e.preventDefault();
-    state.isLight = !state.isLight;
-    applyTheme(state.isLight);
-    saveUI();
-  }, { passive:false });
-
-  // boot
-  loadUI();
-  fitToFrame();
-  window.addEventListener("resize", fitToFrame);
-  if(window.visualViewport){
-    window.visualViewport.addEventListener("resize", fitToFrame);
-    window.visualViewport.addEventListener("scroll", fitToFrame);
-  }
-  tick();
-  setInterval(tick, 250);
-</script>
+    // boot
+    loadUI();
+    renderNow();
+    fitToFrame();
+    window.addEventListener("resize", fitToFrame);
+    setInterval(fitToFrame, 500);
+    setInterval(renderNow, 250);
+  </script>
 </body>
 </html>
