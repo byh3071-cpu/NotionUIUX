@@ -19,7 +19,7 @@
       --accent:#7cc7ff; --today:#ffe08a;
 
       /* ✅ LAYOUT: 두번째 스샷(가로형) 비율로 원복 */
-      --baseW: 720;
+      --baseW: 520;
       --baseH: 320;
       --scale: 1;
     }
@@ -74,7 +74,7 @@
     /* TOP */
     .topbar{
       display:flex; align-items:center; justify-content:space-between;
-      padding:10px 12px;
+      padding:8px 10px;
       border-bottom:2px solid var(--line2);
       background:linear-gradient(180deg, var(--panel2), var(--panel));
       gap:10px;
@@ -83,8 +83,9 @@
     }
     .leftBtns{ display:flex; gap:10px; align-items:center; }
     .btn{
-      height:42px; min-width:88px;
-      padding:0 12px;
+      height:40px; 
+      min-width:72px;
+      padding:0 11px;
       background:var(--card2); color:var(--text);
       border:2px solid var(--line2);
       border-radius:0;
@@ -109,22 +110,22 @@
       user-select:none;
       opacity:.95;
     }
-    .rightPad{ width:88px; }
+    .rightPad{ width:0px; }
 
     /* BODY */
     .body{
       flex:1 1 auto;
       min-height:0;
-      padding:14px 14px;
+      padding:12px 12px;
       display:grid;
       grid-template-columns: 1.7fr 1fr;
-      gap:14px;
+      gap:12px;
       background:var(--panel);
     }
     .panel{
       border:2px solid var(--line2);
       background:linear-gradient(180deg, var(--card2), var(--card));
-      padding:16px 16px;
+      padding:14px 14px;
       display:flex;
       flex-direction:column;
       justify-content:center;
@@ -133,7 +134,7 @@
     }
 
     .metaLine{
-      font-size:10px;
+      font-size:11px;
       color:var(--muted);
       opacity:.95;
       white-space:nowrap;
@@ -160,7 +161,7 @@
     }
 
     .todoLine{
-      font-size:11px;
+      font-size:12px;
       color:var(--muted);
       margin-top:6px;
     }
@@ -176,7 +177,7 @@
       gap:10px;
     }
     .blockTitle{
-      font-size:11px;
+      font-size:12px;
       color:var(--muted);
       letter-spacing:.5px;
     }
@@ -193,7 +194,7 @@
       background: color-mix(in srgb, var(--accent) 70%, transparent);
     }
     .small{
-      font-size:11px;
+      font-size:12px;
       color:var(--muted);
     }
     .small b{ color:var(--text); }
@@ -337,7 +338,7 @@
 
     function fitToFrame(){
       const rootStyle = getComputedStyle(document.documentElement);
-      const baseW = Number(rootStyle.getPropertyValue("--baseW")) || 720;
+      const baseW = Number(rootStyle.getPropertyValue("--baseW")) || 520;
       const baseH = Number(rootStyle.getPropertyValue("--baseH")) || 320;
 
       const vw = (window.visualViewport && window.visualViewport.width) ? window.visualViewport.width : window.innerWidth;
