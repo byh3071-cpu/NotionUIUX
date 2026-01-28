@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Notion Pixel Clock</title>
+  <title>Pixel Clock</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,239 +11,229 @@
 
   <style>
     :root{
-      /* ===== DARK ===== */
-      --panel:#111319;
-      --panel2:#0f1117;
-      --card:#0b0c10;
-      --card2:#0e1016;
-      --line:#2a2f3a;
-      --line2:#3a4150;
-      --text:#e9eef7;
-      --muted:#a7b0c2;
-      --accent:#7cc7ff;
+      /* THEME */
+      --panel:#111319; --panel2:#0f1117;
+      --card:#0b0c10; --card2:#0e1016;
+      --line:#2a2f3a; --line2:#3a4150;
+      --text:#e9eef7; --muted:#a7b0c2;
+      --accent:#7cc7ff; --today:#ffe08a;
 
-      /* ===== LAYOUT ===== */
-      --baseW: 360;
-      --baseH: 520;
+      /* LAYOUT (스샷 비율 느낌) */
+      --baseW: 720;
+      --baseH: 320;
       --scale: 1;
     }
-
     html[data-theme="light"]{
-      --panel:#e3e6ec;
-      --panel2:#d6dae2;
-      --card:#f7f8fb;
-      --card2:#eef1f6;
-      --line:#c8cdd8;
-      --line2:#9aa3b5;
-      --text:#141821;
-      --muted:#5b6476;
-      --accent:#2f66ff;
+      --panel:#e3e6ec; --panel2:#d6dae2;
+      --card:#f7f8fb; --card2:#eef1f6;
+      --line:#c8cdd8; --line2:#9aa3b5;
+      --text:#141821; --muted:#5b6476;
+      --accent:#2f66ff; --today:#b36b2a;
     }
-
     *{ box-sizing:border-box; }
     html,body{
-      margin:0; padding:0;
-      width:100%; height:100%;
-      background:var(--panel);
-      color:var(--text);
+      margin:0; padding:0; width:100%; height:100%;
+      background:var(--panel); color:var(--text);
       font-family: ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace;
       -webkit-font-smoothing: antialiased;
       text-rendering: geometricPrecision;
       overflow:hidden;
     }
 
+    /* === no margin frame + scaling === */
     .stage{
       width:100%; height:100%;
-      display:flex;
-      align-items:center;
-      justify-content:center;
+      display:flex; align-items:center; justify-content:center;
       background:var(--panel);
-      overflow:hidden;
-      padding:0;
+      padding:0; overflow:hidden;
     }
     .scaler{
       width: calc(var(--baseW) * 1px * var(--scale));
       height: calc(var(--baseH) * 1px * var(--scale));
-      display:flex;
-      align-items:flex-start;
-      justify-content:flex-start;
+      display:flex; align-items:flex-start; justify-content:flex-start;
     }
     .wrap{
       width: calc(var(--baseW) * 1px);
       height: calc(var(--baseH) * 1px);
       transform: scale(var(--scale));
       transform-origin: top left;
-
-      background:var(--panel);
       border:2px solid var(--line2);
       border-radius:0;
+      background:var(--panel);
       overflow:hidden;
-
       display:flex;
       flex-direction:column;
-      position:relative;
     }
 
-    /* ===== TOP BAR ===== */
+    /* TOP */
     .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:8px 8px;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:10px 12px;
       border-bottom:2px solid var(--line2);
       background:linear-gradient(180deg, var(--panel2), var(--panel));
-      gap:8px;
+      gap:10px;
       flex:0 0 auto;
     }
-    .title{
-      flex:1;
-      text-align:center;
-      font-size:11px;
-      user-select:none;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
+    .leftBtns{ display:flex; gap:10px; align-items:center; }
     .btn{
-      height:32px;
-      padding:0 10px;
-      background:var(--card2);
-      color:var(--text);
+      height:42px; min-width:88px;
+      padding:0 12px;
+      background:var(--card2); color:var(--text);
       border:2px solid var(--line2);
-      border-radius:0;
-      cursor:pointer;
-      font-size:10px;
-      line-height:1;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      user-select:none;
-      transition: transform .05s ease;
-      touch-action: manipulation;
-      -webkit-tap-highlight-color: transparent;
-      min-width:76px;
-    }
-    .btn:active{ transform: translateY(1px); }
-    .btn:hover{ border-color:var(--accent); }
-
-    /* ===== BODY ===== */
-    .body{
-      flex:1 1 auto;
-      min-height:0;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:14px;
-      background:var(--panel);
-    }
-
-    .clockCard{
-      width:100%;
-      border:2px solid var(--line2);
-      background:linear-gradient(180deg, var(--card2), var(--card));
-      padding:18px 12px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
-
-    .time{
-      font-size:24px;
-      letter-spacing:1px;
-      text-align:center;
-      user-select:none;
-    }
-
-    .date{
-      font-size:10px;
-      color:var(--muted);
-      text-align:center;
-      user-select:none;
-    }
-
-    .metaRow{
-      display:flex;
-      gap:10px;
-      margin-top:4px;
-    }
-    .metaBox{
-      flex:1;
-      border:2px solid var(--line2);
-      background:var(--card2);
-      padding:10px 8px;
-      text-align:center;
-      font-size:10px;
-      color:var(--text);
-      user-select:none;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-    .metaBox span{
-      color:var(--accent);
-    }
-
-    /* ===== BOTTOM BAR ===== */
-    .bottomBar{
-      flex:0 0 auto;
-      height:74px;
-      border-top:2px solid var(--line2);
-      background:linear-gradient(180deg, var(--panel), var(--panel2));
-      display:flex;
-      align-items:center;
-      justify-content:flex-end;
-      padding:10px;
-      gap:10px;
-    }
-    .bigBtn{
-      width:120px;
-      height:46px;
-      border:2px solid var(--line2);
-      background:var(--card2);
-      color:var(--text);
       border-radius:0;
       cursor:pointer;
       font-size:12px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
+      display:flex; align-items:center; justify-content:center;
       user-select:none;
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
     }
-    .bigBtn:hover{ border-color:var(--accent); }
-    .bigBtn.on{
+    .btn:hover{ border-color:var(--accent); }
+    .btn.on{
       border-color:var(--accent);
       box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 18%, transparent);
       color:var(--accent);
     }
+    .title{
+      flex:1;
+      text-align:center;
+      font-size:12px;
+      letter-spacing:1px;
+      user-select:none;
+      opacity:.95;
+    }
+    .rightPad{ width:88px; } /* 스샷처럼 오른쪽 여백 느낌 */
+
+    /* BODY */
+    .body{
+      flex:1 1 auto;
+      min-height:0;
+      padding:16px 14px;
+      display:grid;
+      grid-template-columns: 1.7fr 1fr;
+      gap:14px;
+      background:var(--panel);
+    }
+    .panel{
+      border:2px solid var(--line2);
+      background:linear-gradient(180deg, var(--card2), var(--card));
+      padding:18px 16px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      gap:10px;
+      overflow:hidden;
+    }
+
+    .metaLine{
+      font-size:10px;
+      color:var(--muted);
+      opacity:.95;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .timeRow{
+      display:flex;
+      align-items:flex-end;
+      gap:10px;
+    }
+    .time{
+      font-size:44px;
+      letter-spacing:1px;
+      line-height:1;
+    }
+    .blink{
+      width:14px; height:14px;
+      border:2px solid var(--line2);
+      background: var(--accent);
+      margin-bottom:8px;
+      opacity:1;
+    }
+
+    .todoLine{
+      font-size:11px;
+      color:var(--muted);
+      margin-top:6px;
+    }
+    .todoLine b{ color:var(--text); }
+
+    /* RIGHT panel: progress blocks */
+    .block{
+      border:2px solid var(--line2);
+      background:var(--card2);
+      padding:14px 12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .blockTitle{
+      font-size:11px;
+      color:var(--muted);
+      letter-spacing:.5px;
+    }
+    .bar{
+      height:14px;
+      border:2px solid var(--line2);
+      background:var(--card);
+      position:relative;
+      overflow:hidden;
+    }
+    .fill{
+      position:absolute; top:0; left:0; bottom:0;
+      width:0%;
+      background: color-mix(in srgb, var(--accent) 70%, transparent);
+    }
+    .small{
+      font-size:11px;
+      color:var(--muted);
+    }
+    .small b{ color:var(--text); }
   </style>
 </head>
 
 <body>
   <div class="stage">
-    <div class="scaler" id="scaler">
+    <div class="scaler">
       <div class="wrap">
         <div class="topbar">
-          <button class="btn" id="todayBtn">TODAY</button>
-          <div class="title">CLOCK</div>
-          <div style="width:76px;"></div>
+          <div class="leftBtns">
+            <button class="btn" id="btn24">24H</button>
+            <!-- ✅ OPEN 버튼 완전 삭제 (캘린더 전환/모달 오픈 없음) -->
+          </div>
+          <div class="title">PIXEL CLOCK</div>
+          <div class="rightPad"></div>
         </div>
 
         <div class="body">
-          <div class="clockCard">
-            <div class="time" id="timeText">00:00:00</div>
-            <div class="date" id="dateText">0000-00-00 (DAY)</div>
-            <div class="metaRow">
-              <div class="metaBox" id="weekText">WEEK <span>00</span></div>
-              <div class="metaBox" id="tzText">TZ <span>KST</span></div>
+          <!-- LEFT -->
+          <div class="panel">
+            <div class="metaLine" id="metaLine">0000-00-00 · TODAY 0/0</div>
+
+            <div class="timeRow">
+              <div class="time" id="timeText">00:00</div>
+              <div class="blink" id="blinkBox"></div>
+            </div>
+
+            <div class="todoLine" id="todoLine">오늘 할 일 : <b>0</b> / <b>0</b></div>
+          </div>
+
+          <!-- RIGHT -->
+          <div class="panel" style="gap:14px;">
+            <div class="block">
+              <div class="blockTitle">DAY</div>
+              <div class="bar"><div class="fill" id="dayFill"></div></div>
+            </div>
+
+            <div class="block">
+              <div class="blockTitle">TODAY TASK</div>
+              <div class="bar"><div class="fill" id="taskFill"></div></div>
+              <div class="small" id="taskInfo"><b>0</b>/<b>0</b> - <b>0%</b></div>
             </div>
           </div>
         </div>
 
-        <div class="bottomBar">
-          <button class="bigBtn" id="lightBtn">LIGHT</button>
-        </div>
       </div>
     </div>
   </div>
@@ -251,71 +241,103 @@
   <script>
     const $ = (s) => document.querySelector(s);
 
-    const timeText = $("#timeText");
-    const dateText = $("#dateText");
-    const weekText = $("#weekText");
-    const tzText = $("#tzText");
-    const todayBtn = $("#todayBtn");
-    const lightBtn = $("#lightBtn");
+    // calendar와 동일 키를 읽어서 "오늘 TASK" 연동
+    const CAL_STORE_KEY = "pixel_calendar_tasks_v6";
+    const CAL_UI_KEY    = "pixel_calendar_ui_v6";
 
-    const UI_KEY = "pixel_clock_ui_v1";
+    const CLOCK_UI_KEY  = "pixel_clock_ui_v2";
+
+    const metaLine = $("#metaLine");
+    const timeText = $("#timeText");
+    const blinkBox = $("#blinkBox");
+    const todoLine = $("#todoLine");
+
+    const dayFill  = $("#dayFill");
+    const taskFill = $("#taskFill");
+    const taskInfo = $("#taskInfo");
+
+    const btn24 = $("#btn24");
 
     const pad2 = (n) => String(n).padStart(2, "0");
-    const dayNames = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
+    const dayK = ["일","월","화","수","목","금","토"];
 
-    function safeParse(s){
-      try{ return JSON.parse(s); }catch(e){ return null; }
+    function safeParse(s){ try{ return JSON.parse(s); }catch(e){ return null; } }
+
+    function toISO(d){
+      return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
     }
 
-    function applyTheme(isLight){
+    function normalizeList(list){
+      if(!Array.isArray(list)) return [];
+      return list.map(x => {
+        if(typeof x === "string") return { text:x, done:false };
+        if(x && typeof x === "object") return { text:String(x.text ?? ""), done:Boolean(x.done) };
+        return { text:"", done:false };
+      }).filter(t => t.text.trim().length > 0);
+    }
+
+    function getTodayTasks(){
+      const iso = toISO(new Date());
+      const all = safeParse(localStorage.getItem(CAL_STORE_KEY)) || {};
+      const list = normalizeList(all[iso]);
+      const total = list.length;
+      const done = list.filter(t => t.done).length;
+      return { iso, total, done };
+    }
+
+    function applyThemeFromCalendar(){
+      const ui = safeParse(localStorage.getItem(CAL_UI_KEY)) || {};
+      const isLight = ui.isLight === true;
       document.documentElement.setAttribute("data-theme", isLight ? "light" : "dark");
-      lightBtn.classList.toggle("on", isLight);
-      lightBtn.textContent = isLight ? "DARK" : "LIGHT";
     }
 
-    function loadUI(){
-      const ui = safeParse(localStorage.getItem(UI_KEY)) || {};
-      const isLight = Boolean(ui.isLight);
-      applyTheme(isLight);
+    function loadClockUI(){
+      const ui = safeParse(localStorage.getItem(CLOCK_UI_KEY)) || {};
+      return { is24: ui.is24 === true };
     }
 
-    function saveUI(){
-      const isLight = document.documentElement.getAttribute("data-theme") === "light";
-      localStorage.setItem(UI_KEY, JSON.stringify({ isLight }));
+    function saveClockUI(is24){
+      localStorage.setItem(CLOCK_UI_KEY, JSON.stringify({ is24: !!is24 }));
     }
 
-    function getISOWeek(d){
-      // ISO week number
-      const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-      const dayNum = date.getUTCDay() || 7;
-      date.setUTCDate(date.getUTCDate() + 4 - dayNum);
-      const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
-      const weekNo = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
-      return weekNo;
+    function fmtTime(now, is24){
+      let h = now.getHours();
+      const m = now.getMinutes();
+      if(is24){
+        return `${pad2(h)}:${pad2(m)}`;
+      }else{
+        const hh = ((h + 11) % 12) + 1;
+        return `${pad2(hh)}:${pad2(m)}`;
+      }
     }
 
-    function renderNow(){
+    function render(){
+      applyThemeFromCalendar();
+
       const now = new Date();
-      const hh = pad2(now.getHours());
-      const mm = pad2(now.getMinutes());
-      const ss = pad2(now.getSeconds());
-      timeText.textContent = `${hh}:${mm}:${ss}`;
+      const iso = toISO(now);
+      const dow = dayK[now.getDay()];
 
-      const y = now.getFullYear();
-      const m = pad2(now.getMonth() + 1);
-      const da = pad2(now.getDate());
-      const dn = dayNames[now.getDay()];
-      dateText.textContent = `${y}-${m}-${da} (${dn})`;
+      const { total, done } = getTodayTasks();
 
-      const wk = pad2(getISOWeek(now));
-      weekText.innerHTML = `WEEK <span>${wk}</span>`;
-      tzText.innerHTML = `TZ <span>KST</span>`;
+      metaLine.textContent = `${iso} (${dow}) · TODAY ${done}/${total}`;
+      todoLine.innerHTML   = `오늘 할 일 : <b>${done}</b> / <b>${total}</b>`;
+
+      // DAY progress (0~100)
+      const sec = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
+      const dayPct = Math.max(0, Math.min(100, (sec / 86400) * 100));
+      dayFill.style.width = `${dayPct.toFixed(2)}%`;
+
+      // TASK progress (0~100)
+      const taskPct = total > 0 ? (done / total) * 100 : 0;
+      taskFill.style.width = `${taskPct.toFixed(2)}%`;
+      taskInfo.innerHTML = `<b>${done}</b>/<b>${total}</b> - <b>${Math.round(taskPct)}%</b>`;
     }
 
     function fitToFrame(){
       const rootStyle = getComputedStyle(document.documentElement);
-      const baseW = Number(rootStyle.getPropertyValue("--baseW")) || 360;
-      const baseH = Number(rootStyle.getPropertyValue("--baseH")) || 520;
+      const baseW = Number(rootStyle.getPropertyValue("--baseW")) || 720;
+      const baseH = Number(rootStyle.getPropertyValue("--baseH")) || 320;
 
       const vw = (window.visualViewport && window.visualViewport.width) ? window.visualViewport.width : window.innerWidth;
       const vh = (window.visualViewport && window.visualViewport.height) ? window.visualViewport.height : window.innerHeight;
@@ -325,32 +347,47 @@
 
       let scale = Math.min(availW / baseW, availH / baseH);
       if(!isFinite(scale) || scale <= 0) scale = 1;
+
+      // 노션 iframe에서도 여백 안 남게 안정 구간
       scale = Math.min(3, Math.max(0.55, scale));
       scale = Math.floor(scale * 100) / 100;
 
       document.documentElement.style.setProperty("--scale", String(scale));
     }
 
-    // events
-    todayBtn.addEventListener("pointerdown", (e) => {
+    // 24H toggle (OPEN 없음)
+    let clockUI = loadClockUI();
+    function sync24Btn(){
+      btn24.classList.toggle("on", clockUI.is24);
+      btn24.textContent = "24H";
+    }
+
+    btn24.addEventListener("pointerdown", (e) => {
       e.preventDefault();
-      renderNow();
+      clockUI.is24 = !clockUI.is24;
+      saveClockUI(clockUI.is24);
+      sync24Btn();
     }, { passive:false });
 
-    lightBtn.addEventListener("pointerdown", (e) => {
-      e.preventDefault();
-      const cur = document.documentElement.getAttribute("data-theme") === "light";
-      applyTheme(!cur);
-      saveUI();
-    }, { passive:false });
+    // blink
+    let blinkOn = true;
+
+    function tick(){
+      applyThemeFromCalendar();
+      const now = new Date();
+      timeText.textContent = fmtTime(now, clockUI.is24);
+      blinkOn = !blinkOn;
+      blinkBox.style.opacity = blinkOn ? "1" : "0.15";
+      render();
+    }
 
     // boot
-    loadUI();
-    renderNow();
+    sync24Btn();
     fitToFrame();
+    render();
     window.addEventListener("resize", fitToFrame);
     setInterval(fitToFrame, 500);
-    setInterval(renderNow, 250);
+    setInterval(tick, 500);
   </script>
 </body>
 </html>
