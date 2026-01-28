@@ -47,16 +47,20 @@
       height:100%;
       background: var(--panel);
       display:flex;
-      align-items:flex-start;
+      align-items:center;
       justify-content:center;
       overflow:hidden;
-      padding:8px;
+      padding:0px;
     }
 
     .wrap{
       width: calc(var(--baseW) * 1px);
       height: calc(var(--baseH) * 1px);
-      zoom: var(--scale);
+    
+      /* ✅ zoom 제거, transform만 */
+      transform: scale(var(--scale));
+      transform-origin: top left;
+    
       background:var(--panel);
       border:2px solid var(--line2);
       border-radius:0;
@@ -64,23 +68,22 @@
       display:flex;
       flex-direction:column;
       pointer-events:auto;
-      position:relative; /* ✅ 모달을 wrap 안에 띄우기 위해 */
     }
 
-    @supports not (zoom: 1){
-      .wrap{ transform: scale(var(--scale)); transform-origin: top left; }
-    }
-
-    .top{
-      height:36px;
+    .wrap{
+      width: calc(var(--baseW) * 1px);
+      height: calc(var(--baseH) * 1px);
+    
+      transform: scale(var(--scale));
+      transform-origin: top left;
+    
+      background:var(--panel);
+      border:2px solid var(--line2);
+      border-radius:0;
+      overflow:hidden;
       display:flex;
-      align-items:center;
-      justify-content:flex-start;
-      padding:6px 8px;
-      padding-right:26px;
-      border-bottom:2px solid var(--line2);
-      background:linear-gradient(180deg, var(--panel2), var(--panel));
-      gap:8px;
+      flex-direction:column;
+      pointer-events:auto;
     }
 
     .title{
@@ -281,17 +284,19 @@
       flex:1;
     }
 
-    .calFrame{
+       .calFrame{
       width:100%;
       height:100%;
       border:0;
-      background:#000;
+      background: var(--panel);
+      display:block;
     }
   </style>
 </head>
 
 <body>
   <div class="stage">
+    <div class="scaler" id="scaler">
     <div class="wrap" id="wrap">
       <div class="top">
         <button class="chip on" id="modeBtn" title="12/24 토글">24H</button>
@@ -318,6 +323,7 @@
           <div class="meterText" id="taskPctText">0/0 · 0%</div>
         </div>
       </div>
+     </div>
 
       <!-- ✅ 캘린더 모달(노션 안) -->
       <div class="calModal" id="calModal" aria-hidden="true">
@@ -417,8 +423,8 @@
       const vw = (window.visualViewport && window.visualViewport.width) ? window.visualViewport.width : window.innerWidth;
       const vh = (window.visualViewport && window.visualViewport.height) ? window.visualViewport.height : window.innerHeight;
 
-      const availW = Math.max(1, vw - 24);
-      const availH = Math.max(1, vh - 24);
+      const availW = Math.max(1, vw);
+      const availH = Math.max(1, vh);
 
       let scale = Math.min(availW / baseW, availH / baseH);
       if(!isFinite(scale) || scale <= 0) scale = 1;
