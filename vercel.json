@@ -1,8 +1,8 @@
 {
   "version": 2,
   "rewrites": [
-    { "source": "/embed", "destination": "/embed/calendar.html" },
-    { "source": "/embed/", "destination": "/embed/calendar.html" },
+    { "source": "/embed", "destination": "/embed/clock.html" },
+    { "source": "/embed/", "destination": "/embed/clock.html" },
 
     { "source": "/embed/clock", "destination": "/embed/clock.html" },
     { "source": "/embed/clock/", "destination": "/embed/clock.html" },
