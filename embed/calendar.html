@@ -11,7 +11,6 @@
 
   <style>
     :root{
-      /* ===== DARK ===== */
       --panel:#111319;
       --panel2:#0f1117;
       --card:#0b0c10;
@@ -26,15 +25,13 @@
       --sun:#ff8f8f;
       --sat:#8fb6ff;
 
-      /* ===== LAYOUT ===== */
       --baseW: 360;
-      --baseH: 520; /* 하단바 포함 */
+      --baseH: 520;
       --scale: 1;
       --cell: 46px;
       --gap: 4px;
     }
 
-    /* ===== LIGHT (회색 패널 + 밝은 카드) ===== */
     html[data-theme="light"]{
       --panel:#e3e6ec;
       --panel2:#d6dae2;
@@ -52,7 +49,6 @@
     }
 
     *{ box-sizing:border-box; }
-
     html,body{
       margin:0; padding:0;
       width:100%; height:100%;
@@ -64,7 +60,6 @@
       overflow:hidden;
     }
 
-    /* ===== clock.html처럼 스케일+센터링 안정화 ===== */
     .stage{
       width:100%; height:100%;
       background: var(--panel);
@@ -106,11 +101,7 @@
       gap:6px;
       flex:0 0 auto;
     }
-    .leftBtns, .rightBtns{
-      display:flex;
-      gap:6px;
-      align-items:center;
-    }
+    .leftBtns, .rightBtns{ display:flex; gap:6px; align-items:center; }
     .btn{
       height:32px;
       padding:0 10px;
@@ -131,7 +122,6 @@
     }
     .btn:active{ transform: translateY(1px); }
     .btn:hover{ border-color:var(--accent); }
-
     .monthTitle{
       flex:1;
       text-align:center;
@@ -163,14 +153,8 @@
       background:var(--card);
       user-select:none;
     }
-    .dow .sunHead{
-      color:var(--sun);
-      border-color:color-mix(in srgb, var(--sun) 35%, var(--line));
-    }
-    .dow .satHead{
-      color:var(--sat);
-      border-color:color-mix(in srgb, var(--sat) 35%, var(--line));
-    }
+    .dow .sunHead{ color:var(--sun); border-color:color-mix(in srgb, var(--sun) 35%, var(--line)); }
+    .dow .satHead{ color:var(--sat); border-color:color-mix(in srgb, var(--sat) 35%, var(--line)); }
 
     /* ===== GRID ===== */
     .grid{
@@ -203,7 +187,7 @@
     .day:hover{ border-color:var(--accent); }
     .day.disabled{
       cursor:default;
-      opacity: .58;
+      opacity:.58;
       background: color-mix(in srgb, var(--card) 70%, var(--panel));
     }
     .day.disabled:hover{ border-color:var(--line); }
@@ -211,7 +195,7 @@
     .day.sat:not(.disabled){ border-color: color-mix(in srgb, var(--sat) 25%, var(--line)); }
 
     .num{ font-size:10px; color:var(--text); }
-    .day.disabled .num{ color: var(--muted); opacity: .9; }
+    .day.disabled .num{ color: var(--muted); opacity:.9; }
 
     .today{
       border-color: var(--today) !important;
@@ -220,57 +204,40 @@
 
     /* ===== BADGES ===== */
     .todoBadge{
-      position:absolute;
-      left:0;
-      bottom:0;
-      width:18px;
-      height:18px;
+      position:absolute; left:0; bottom:0;
+      width:18px; height:18px;
       clip-path: polygon(0 0, 0 100%, 100% 100%);
       background: var(--accent);
-      color: #fff;
-      display:flex;
-      align-items:flex-end;
-      justify-content:flex-start;
-      font-size:9px;
-      line-height:1;
+      color:#fff;
+      display:flex; align-items:flex-end; justify-content:flex-start;
+      font-size:9px; line-height:1;
       padding:0 0 2px 3px;
-      user-select:none;
-      pointer-events:none;
+      user-select:none; pointer-events:none;
       z-index:2;
       text-shadow: 0 1px 0 rgba(0,0,0,.35);
       box-shadow: inset 0 0 0 2px rgba(255,255,255,.18), 0 1px 0 rgba(0,0,0,.10);
     }
     .doneBadge{
-      position:absolute;
-      right:0;
-      bottom:0;
-      width:18px;
-      height:18px;
+      position:absolute; right:0; bottom:0;
+      width:18px; height:18px;
       clip-path: polygon(100% 0, 0 100%, 100% 100%);
       background: color-mix(in srgb, var(--accent) 22%, transparent);
       color: var(--accent);
-      display:flex;
-      align-items:flex-end;
-      justify-content:flex-end;
-      font-size:9px;
-      line-height:1;
+      display:flex; align-items:flex-end; justify-content:flex-end;
+      font-size:9px; line-height:1;
       padding:0 3px 2px 0;
-      user-select:none;
-      pointer-events:none;
+      user-select:none; pointer-events:none;
       z-index:2;
       text-shadow: 0 1px 0 rgba(255,255,255,.25);
       box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent);
     }
     .heartMarker{
-      position:absolute;
-      left:50%;
-      bottom:6px;
+      position:absolute; left:50%; bottom:6px;
       transform: translateX(-50%);
       font-size:12px;
       line-height:1.2;
       color:var(--accent);
-      user-select:none;
-      pointer-events:none;
+      user-select:none; pointer-events:none;
       z-index:3;
       text-shadow: 0 1px 0 rgba(0,0,0,.28), 0 0 2px rgba(0,0,0,.10);
     }
@@ -283,22 +250,20 @@
 
     /* ===== TASK MODAL ===== */
     .modalBack{
-      position:absolute;
-      inset:0;
+      position:absolute; inset:0;
       background: rgba(0,0,0,.55);
       display:none;
-      align-items:center;
-      justify-content:center;
+      align-items:center; justify-content:center;
       padding:10px;
       z-index:50;
     }
     .modalBack.show{ display:flex; }
     .modal{
-      width: 100%;
-      max-width: 340px;
-      height: 350px;
-      background: var(--card2);
-      border: 2px solid var(--line2);
+      width:100%;
+      max-width:340px;
+      height:350px;
+      background:var(--card2);
+      border:2px solid var(--line2);
       border-radius:0;
       display:flex;
       flex-direction:column;
@@ -310,7 +275,7 @@
       align-items:center;
       justify-content:space-between;
       border-bottom:2px solid var(--line2);
-      background: var(--card);
+      background:var(--card);
       gap:6px;
     }
     .modalTitle{
@@ -339,25 +304,20 @@
       -webkit-tap-highlight-color: transparent;
     }
     .miniBtn:hover{ border-color:var(--accent); }
-
     .closeBtn{
-      width:32px;
-      height:32px;
+      width:32px; height:32px;
       border:2px solid var(--line2);
       background:var(--card2);
       color:var(--text);
       border-radius:0;
       cursor:pointer;
       font-size:12px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
+      display:flex; align-items:center; justify-content:center;
       user-select:none;
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
     }
     .closeBtn:hover{ border-color:var(--danger); }
-
     .modalBody{
       padding:8px;
       display:flex;
@@ -380,8 +340,7 @@
     }
     .taskInput::placeholder{ color:color-mix(in srgb, var(--muted) 80%, transparent); }
     .addBtn{
-      width:70px;
-      height:34px;
+      width:70px; height:34px;
       border:2px solid var(--line2);
       background:var(--card);
       color:var(--text);
@@ -416,8 +375,7 @@
       background:var(--card2);
     }
     .checkBtn{
-      width:30px;
-      height:28px;
+      width:30px; height:28px;
       border:2px solid var(--accent);
       background:transparent;
       color:var(--text);
@@ -432,8 +390,7 @@
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
     }
-    .checkBtn.done{ background: var(--accent); color:#fff; }
-
+    .checkBtn.done{ background:var(--accent); color:#fff; }
     .taskText{
       font-size:10px;
       color:var(--text);
@@ -442,7 +399,7 @@
       flex:1;
     }
     .taskText.done{
-      color: var(--muted);
+      color:var(--muted);
       text-decoration: line-through;
       opacity:.9;
     }
@@ -459,8 +416,7 @@
     }
     .taskActions{ display:flex; gap:6px; flex:0 0 auto; }
     .iconBtn{
-      width:30px;
-      height:28px;
+      width:30px; height:28px;
       border:2px solid var(--line2);
       background:var(--card);
       color:var(--text);
@@ -497,7 +453,11 @@
       padding:10px;
       gap:10px;
     }
-    .bottomLeft{ display:flex; gap:10px; align-items:center; }
+    .bottomLeft{
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
     .bigBtn{
       width:120px;
       height:46px;
@@ -521,10 +481,9 @@
       color:var(--accent);
     }
 
-    /* ===== BACKUP LIST / MEMO MODAL ===== */
+    /* ===== SHEETS ===== */
     .sheetBack{
-      position:absolute;
-      inset:0;
+      position:absolute; inset:0;
       background: rgba(0,0,0,.45);
       display:none;
       align-items:flex-end;
@@ -654,14 +613,16 @@
   <div class="stage">
     <div class="scaler" id="scaler">
       <div class="wrap" id="app">
+
         <div class="topbar">
           <div class="leftBtns">
             <button class="btn" id="prevBtn">◀</button>
             <button class="btn" id="nextBtn">▶</button>
           </div>
+
           <div class="monthTitle" id="monthTitle">0000-00</div>
+
           <div class="rightBtns">
-            <button class="btn" id="clockBtn">CLOCK</button>
             <button class="btn" id="todayBtn">TODAY</button>
           </div>
         </div>
@@ -735,761 +696,705 @@
     </div>
   </div>
 
-<script>
-  const $ = (sel) => document.querySelector(sel);
+  <script>
+    const $ = (sel) => document.querySelector(sel);
 
-  const gridEl = $("#grid");
-  const monthTitleEl = $("#monthTitle");
-  const prevBtn = $("#prevBtn");
-  const nextBtn = $("#nextBtn");
-  const todayBtn = $("#todayBtn");
-  const clockBtn = $("#clockBtn");
+    const gridEl = $("#grid");
+    const monthTitleEl = $("#monthTitle");
+    const prevBtn = $("#prevBtn");
+    const nextBtn = $("#nextBtn");
+    const todayBtn = $("#todayBtn");
 
-  const modalBack = $("#modalBack");
-  const closeBtn = $("#closeBtn");
-  const modalTitle = $("#modalTitle");
-  const hideDoneBtn = $("#hideDoneBtn");
-  const taskInput = $("#taskInput");
-  const addBtn = $("#addBtn");
-  const taskList = $("#taskList");
+    const modalBack = $("#modalBack");
+    const closeBtn = $("#closeBtn");
+    const modalTitle = $("#modalTitle");
+    const hideDoneBtn = $("#hideDoneBtn");
+    const taskInput = $("#taskInput");
+    const addBtn = $("#addBtn");
+    const taskList = $("#taskList");
 
-  const backupBtn = $("#backupBtn");
-  const listBtn = $("#listBtn");
-  const lightBtn = $("#lightBtn");
+    const backupBtn = $("#backupBtn");
+    const listBtn = $("#listBtn");
+    const lightBtn = $("#lightBtn");
 
-  const listSheetBack = $("#listSheetBack");
-  const closeListSheetBtn = $("#closeListSheetBtn");
-  const backupListEl = $("#backupList");
+    const listSheetBack = $("#listSheetBack");
+    const closeListSheetBtn = $("#closeListSheetBtn");
+    const backupListEl = $("#backupList");
 
-  const memoSheetBack = $("#memoSheetBack");
-  const closeMemoSheetBtn = $("#closeMemoSheetBtn");
-  const memoInput = $("#memoInput");
-  const doBackupBtn = $("#doBackupBtn");
+    const memoSheetBack = $("#memoSheetBack");
+    const closeMemoSheetBtn = $("#closeMemoSheetBtn");
+    const memoInput = $("#memoInput");
+    const doBackupBtn = $("#doBackupBtn");
 
-  const STORE_KEY = "pixel_calendar_tasks_v6";
-  const UI_KEY = "pixel_calendar_ui_v6";
-  const BACKUP_KEY = "pixel_calendar_backups_v1";
+    const STORE_KEY = "pixel_calendar_tasks_v6";
+    const UI_KEY = "pixel_calendar_ui_v6";
+    const BACKUP_KEY = "pixel_calendar_backups_v1";
 
-  const LEGACY_KEYS = [
-    "pixel_calendar_tasks_v5_backup_hideDone",
-    "pixel_calendar_tasks_v4_bottomTriangles",
-    "pixel_calendar_tasks_v3_bottomBadges",
-    "pixel_calendar_tasks_v2_heart_preview"
-  ];
+    const LEGACY_KEYS = [
+      "pixel_calendar_tasks_v5_backup_hideDone",
+      "pixel_calendar_tasks_v4_bottomTriangles",
+      "pixel_calendar_tasks_v3_bottomBadges",
+      "pixel_calendar_tasks_v2_heart_preview"
+    ];
 
-  const state = {
-    viewDate: new Date(),
-    selectedISO: null,
-    editingIndex: null,
-    hideDone: false,
-    isLight: false
-  };
+    const state = {
+      viewDate: new Date(),
+      selectedISO: null,
+      editingIndex: null,
+      hideDone: false,
+      isLight: false
+    };
 
-  const pad2 = (n) => String(n).padStart(2, "0");
-  const toISO = (y, m, d) => `${y}-${pad2(m)}-${pad2(d)}`;
-  const isSameDay = (a, b) =>
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate();
+    const pad2 = (n) => String(n).padStart(2, "0");
+    const toISO = (y,m,d) => `${y}-${pad2(m)}-${pad2(d)}`;
 
-  function safeParse(s){
-    try{ return JSON.parse(s); }catch(e){ return null; }
-  }
+    const isSameDay = (a, b) =>
+      a.getFullYear() === b.getFullYear() &&
+      a.getMonth() === b.getMonth() &&
+      a.getDate() === b.getDate();
 
-  function syncUiButtons(){
-    hideDoneBtn.textContent = state.hideDone ? "SHOW" : "HIDE";
-    lightBtn.classList.toggle("on", state.isLight);
-    lightBtn.textContent = state.isLight ? "DARK" : "LIGHT";
-  }
+    function safeParse(s){
+      try{ return JSON.parse(s); }catch(e){ return null; }
+    }
 
-  function applyTheme(isLight){
-    document.documentElement.setAttribute("data-theme", isLight ? "light" : "dark");
-    syncUiButtons();
-  }
+    function applyTheme(isLight){
+      document.documentElement.setAttribute("data-theme", isLight ? "light" : "dark");
+      lightBtn.classList.toggle("on", isLight);
+      lightBtn.textContent = isLight ? "DARK" : "LIGHT";
+    }
 
-  function loadUI(){
-    const ui = safeParse(localStorage.getItem(UI_KEY)) || {};
-    state.hideDone = Boolean(ui.hideDone);
-    state.isLight = Boolean(ui.isLight);
-    applyTheme(state.isLight);
-  }
+    function loadUI(){
+      const ui = safeParse(localStorage.getItem(UI_KEY)) || {};
+      state.hideDone = confirmBool(ui.hideDone);
+      state.isLight = confirmBool(ui.isLight);
+      hideDoneBtn.textContent = state.hideDone ? "SHOW" : "HIDE";
+      applyTheme(state.isLight);
+    }
 
-  function saveUI(){
-    const prev = safeParse(localStorage.getItem(UI_KEY)) || {};
-    localStorage.setItem(
-      UI_KEY,
-      JSON.stringify({
-        ...prev,               // hideDone 외 다른 값이 미래에 생겨도 보존
+    function confirmBool(v){ return v === true; }
+
+    function saveUI(){
+      localStorage.setItem(UI_KEY, JSON.stringify({
         hideDone: state.hideDone,
         isLight: state.isLight
-      })
-    );
-    syncUiButtons();
-  }
-
-  function loadAll(){
-    const cur = safeParse(localStorage.getItem(STORE_KEY));
-    if(cur && typeof cur === "object" && !Array.isArray(cur)) return cur;
-
-    for(const k of LEGACY_KEYS){
-      const v = safeParse(localStorage.getItem(k));
-      if(v && typeof v === "object" && !Array.isArray(v)){
-        localStorage.setItem(STORE_KEY, JSON.stringify(v));
-        return v;
-      }
-    }
-    return {};
-  }
-
-  function saveAll(obj){
-    localStorage.setItem(STORE_KEY, JSON.stringify(obj));
-  }
-
-  function normalizeList(list){
-    if(!Array.isArray(list)) return [];
-    return list.map(x => {
-      if(typeof x === "string") return { text:x, done:false };
-      if(x && typeof x === "object"){
-        return { text: String(x.text ?? ""), done: Boolean(x.done) };
-      }
-      return { text:"", done:false };
-    }).filter(t => t.text.trim().length > 0);
-  }
-
-  function getTasks(iso){
-    const all = loadAll();
-    return normalizeList(all[iso]);
-  }
-
-  function setTasks(iso, list){
-    const all = loadAll();
-    all[iso] = normalizeList(list);
-    saveAll(all);
-  }
-
-  function fmtCount(n){
-    return n > 9 ? "9+" : String(n);
-  }
-
-  /* ===== backup utils ===== */
-  function loadBackups(){
-    const arr = safeParse(localStorage.getItem(BACKUP_KEY));
-    return Array.isArray(arr) ? arr : [];
-  }
-
-  function saveBackups(arr){
-    localStorage.setItem(BACKUP_KEY, JSON.stringify(arr));
-  }
-
-  function makeBackup(memo){
-    const data = loadAll();
-    const now = new Date();
-    const ts = now.toISOString();
-    const item = {
-      id: String(now.getTime()),
-      ts,
-      memo: (memo || "").trim(),
-      data
-    };
-    const list = loadBackups();
-    list.unshift(item);
-    saveBackups(list.slice(0, 10)); // 최근 10개만
-  }
-
-  function fmtTS(ts){
-    const d = new Date(ts);
-    if(!isFinite(d.getTime())) return ts;
-    const y = d.getFullYear();
-    const m = pad2(d.getMonth()+1);
-    const da = pad2(d.getDate());
-    const hh = pad2(d.getHours());
-    const mm = pad2(d.getMinutes());
-    return `${y}-${m}-${da} ${hh}:${mm}`;
-  }
-
-  function renderBackupList(){
-    const list = loadBackups();
-    backupListEl.innerHTML = "";
-
-    if(list.length === 0){
-      const empty = document.createElement("div");
-      empty.className = "help";
-      empty.textContent = "백업 없음 (BACKUP으로 수동 저장)";
-      backupListEl.appendChild(empty);
-      return;
+      }));
+      hideDoneBtn.textContent = state.hideDone ? "SHOW" : "HIDE";
+      lightBtn.classList.toggle("on", state.isLight);
+      lightBtn.textContent = state.isLight ? "DARK" : "LIGHT";
     }
 
-    list.forEach((b) => {
-      const row = document.createElement("div");
-      row.className = "backupRow";
+    function loadAll(){
+      const cur = safeParse(localStorage.getItem(STORE_KEY));
+      if(cur && typeof cur === "object" && !Array.isArray(cur)) return cur;
 
-      const meta = document.createElement("div");
-      meta.className = "backupMeta";
-
-      const t1 = document.createElement("div");
-      t1.className = "t1";
-      t1.textContent = fmtTS(b.ts);
-
-      const t2 = document.createElement("div");
-      t2.className = "t2";
-      t2.textContent = b.memo ? `memo: ${b.memo}` : "memo: (없음)";
-
-      meta.appendChild(t1);
-      meta.appendChild(t2);
-
-      const restore = document.createElement("button");
-      restore.className = "restoreBtn";
-      restore.textContent = "RESTORE";
-      restore.addEventListener("click", (e) => {
-        e.preventDefault();
-
-        const ok = confirm(
-`복원할까요?
-
-- 백업: ${fmtTS(b.ts)}
-- 메모: ${b.memo || "(없음)"}
-
-현재 TASK 데이터는 백업 시점으로 바뀝니다.`
-        );
-        if(!ok) return;
-
-        if(!b.data || typeof b.data !== "object" || Array.isArray(b.data)){
-          alert("백업 데이터가 손상됐어요.");
-          return;
+      for(const k of LEGACY_KEYS){
+        const v = safeParse(localStorage.getItem(k));
+        if(v && typeof v === "object" && !Array.isArray(v)){
+          localStorage.setItem(STORE_KEY, JSON.stringify(v));
+          return v;
         }
-
-        saveAll(b.data);
-        render();
-        if(state.selectedISO) renderTaskList();
-        alert("복원 완료!");
-      });
-
-      row.appendChild(meta);
-      row.appendChild(restore);
-      backupListEl.appendChild(row);
-    });
-  }
-
-  /* ===== layout fit ===== */
-  function fitToFrame(){
-    const rootStyle = getComputedStyle(document.documentElement);
-    const baseW = Number(rootStyle.getPropertyValue("--baseW")) || 360;
-    const baseH = Number(rootStyle.getPropertyValue("--baseH")) || 520;
-
-    const vw = (window.visualViewport && window.visualViewport.width) ? window.visualViewport.width : window.innerWidth;
-    const vh = (window.visualViewport && window.visualViewport.height) ? window.visualViewport.height : window.innerHeight;
-
-    const availW = Math.max(1, vw);
-    const availH = Math.max(1, vh);
-
-    let scale = Math.min(availW / baseW, availH / baseH);
-    if(!isFinite(scale) || scale <= 0) scale = 1;
-
-    scale = Math.min(3, Math.max(0.55, scale));
-    scale = Math.floor(scale * 100) / 100;
-
-    document.documentElement.style.setProperty("--scale", String(scale));
-  }
-
-  function render(){
-    gridEl.innerHTML = "";
-
-    const y = state.viewDate.getFullYear();
-    const m = state.viewDate.getMonth();
-    monthTitleEl.textContent = `${y}-${pad2(m+1)}`;
-
-    const first = new Date(y, m, 1);
-    const firstDow = first.getDay();
-    const last = new Date(y, m+1, 0);
-    const lastDay = last.getDate();
-    const prevLast = new Date(y, m, 0).getDate();
-
-    const totalCells = 42;
-
-    for(let i=0; i<totalCells; i++){
-      const cell = document.createElement("div");
-      cell.className = "day";
-
-      const dayNum = i - firstDow + 1;
-      let cellDate;
-      let disabled = false;
-      let displayNum;
-
-      if(dayNum < 1){
-        displayNum = prevLast + dayNum;
-        cellDate = new Date(y, m-1, displayNum);
-        disabled = true;
-      }else if(dayNum > lastDay){
-        displayNum = dayNum - lastDay;
-        cellDate = new Date(y, m+1, displayNum);
-        disabled = true;
-      }else{
-        displayNum = dayNum;
-        cellDate = new Date(y, m, displayNum);
       }
+      return {};
+    }
 
-      const iso = toISO(cellDate.getFullYear(), cellDate.getMonth()+1, cellDate.getDate());
-      const dow = cellDate.getDay();
+    function saveAll(obj){
+      localStorage.setItem(STORE_KEY, JSON.stringify(obj));
+    }
 
-      if(disabled) cell.classList.add("disabled");
-      if(dow === 0) cell.classList.add("sun");
-      if(dow === 6) cell.classList.add("sat");
+    function normalizeList(list){
+      if(!Array.isArray(list)) return [];
+      return list.map(x => {
+        if(typeof x === "string") return { text:x, done:false };
+        if(x && typeof x === "object"){
+          return { text: String(x.text ?? ""), done: Boolean(x.done) };
+        }
+        return { text:"", done:false };
+      }).filter(t => t.text.trim().length > 0);
+    }
 
+    function getTasks(iso){
+      const all = loadAll();
+      return normalizeList(all[iso]);
+    }
+
+    function setTasks(iso, list){
+      const all = loadAll();
+      all[iso] = normalizeList(list);
+      saveAll(all);
+    }
+
+    function fmtCount(n){ return n > 9 ? "9+" : String(n); }
+
+    /* ===== backups ===== */
+    function loadBackups(){
+      const arr = safeParse(localStorage.getItem(BACKUP_KEY));
+      return Array.isArray(arr) ? arr : [];
+    }
+    function saveBackups(arr){
+      localStorage.setItem(BACKUP_KEY, JSON.stringify(arr));
+    }
+    function makeBackup(memo){
+      const data = loadAll();
       const now = new Date();
-      if(isSameDay(cellDate, now) && !disabled) cell.classList.add("today");
+      const ts = now.toISOString();
+      const item = { id: String(now.getTime()), ts, memo: (memo || "").trim(), data };
 
-      const num = document.createElement("div");
-      num.className = "num";
-      num.textContent = String(displayNum);
-      cell.appendChild(num);
+      const list = loadBackups();
+      list.unshift(item);
+      saveBackups(list.slice(0, 10));
+    }
+    function fmtTS(ts){
+      const d = new Date(ts);
+      if(!isFinite(d.getTime())) return ts;
+      const y = d.getFullYear();
+      const m = pad2(d.getMonth()+1);
+      const da = pad2(d.getDate());
+      const hh = pad2(d.getHours());
+      const mm = pad2(d.getMinutes());
+      return `${y}-${m}-${da} ${hh}:${mm}`;
+    }
 
-      const tasks = getTasks(iso);
-      if(tasks.length > 0){
-        const total = tasks.length;
-        const done = tasks.filter(t => t.done).length;
-        const hasUndone = tasks.some(t => !t.done);
+    function renderBackupList(){
+      const list = loadBackups();
+      backupListEl.innerHTML = "";
 
-        const todoBadge = document.createElement("div");
-        todoBadge.className = "todoBadge";
-        todoBadge.textContent = fmtCount(total);
-        cell.appendChild(todoBadge);
-
-        if(done > 0){
-          const doneBadge = document.createElement("div");
-          doneBadge.className = "doneBadge";
-          doneBadge.textContent = fmtCount(done);
-          cell.appendChild(doneBadge);
-        }
-
-        const heart = document.createElement("div");
-        heart.className = "heartMarker";
-        heart.textContent = hasUndone ? "♡" : "♥";
-        if(!hasUndone) heart.classList.add("doneAll");
-        cell.appendChild(heart);
+      if(list.length === 0){
+        const empty = document.createElement("div");
+        empty.className = "help";
+        empty.textContent = "백업 없음 (BACKUP으로 수동 저장)";
+        backupListEl.appendChild(empty);
+        return;
       }
 
-      cell.addEventListener("pointerdown", (e) => {
-        e.preventDefault();
-        if(disabled) return;
-        openModal(iso);
-      }, { passive:false });
+      list.forEach((b) => {
+        const row = document.createElement("div");
+        row.className = "backupRow";
 
-      gridEl.appendChild(cell);
-    }
-  }
+        const meta = document.createElement("div");
+        meta.className = "backupMeta";
 
-  function openModal(iso){
-    state.selectedISO = iso;
-    state.editingIndex = null;
-    modalTitle.textContent = `TASK · ${iso}`;
-    taskInput.value = "";
-    renderTaskList();
-    modalBack.classList.add("show");
-    modalBack.setAttribute("aria-hidden", "false");
-    setTimeout(() => taskInput.focus(), 0);
-  }
+        const t1 = document.createElement("div");
+        t1.className = "t1";
+        t1.textContent = fmtTS(b.ts);
 
-  function closeModal(){
-    modalBack.classList.remove("show");
-    modalBack.setAttribute("aria-hidden", "true");
-    state.selectedISO = null;
-    state.editingIndex = null;
-  }
+        const t2 = document.createElement("div");
+        t2.className = "t2";
+        t2.textContent = b.memo ? `memo: ${b.memo}` : "memo: (없음)";
 
-  function renderTaskList(){
-    const iso = state.selectedISO;
-    if(!iso) return;
+        meta.appendChild(t1);
+        meta.appendChild(t2);
 
-    const all = getTasks(iso);
-    const tasks = state.hideDone ? all.filter(t => !t.done) : all;
+        const restore = document.createElement("button");
+        restore.className = "restoreBtn";
+        restore.textContent = "RESTORE";
+        restore.addEventListener("click", (e) => {
+          e.preventDefault();
 
-    taskList.innerHTML = "";
+          const ok = confirm(
+            `복원할까요?\n\n- 백업: ${fmtTS(b.ts)}\n- 메모: ${b.memo || "(없음)"}\n\n현재 TASK 데이터는 백업 시점으로 바뀝니다.`
+          );
+          if(!ok) return;
 
-    if(all.length === 0){
-      const empty = document.createElement("div");
-      empty.className = "help";
-      empty.textContent = "등록된 TASK 없음";
-      taskList.appendChild(empty);
-      return;
-    }
+          if(!b.data || typeof b.data !== "object" || Array.isArray(b.data)){
+            alert("백업 데이터가 손상됐어요.");
+            return;
+          }
 
-    if(state.hideDone && tasks.length === 0){
-      const empty = document.createElement("div");
-      empty.className = "help";
-      empty.textContent = "미완료 TASK 없음 (완료 숨김 ON)";
-      taskList.appendChild(empty);
-      return;
+          saveAll(b.data);
+          render();
+          if(state.selectedISO) renderTaskList();
+          alert("복원 완료!");
+        });
+
+        row.appendChild(meta);
+        row.appendChild(restore);
+        backupListEl.appendChild(row);
+      });
     }
 
-    tasks.forEach((task) => {
-      const listAll = getTasks(iso);
-      const idx = listAll.findIndex(t => t.text === task.text && t.done === task.done);
+    /* ===== layout fit ===== */
+    function fitToFrame(){
+      const rootStyle = getComputedStyle(document.documentElement);
+      const baseW = Number(rootStyle.getPropertyValue("--baseW")) || 360;
+      const baseH = Number(rootStyle.getPropertyValue("--baseH")) || 520;
 
-      const item = document.createElement("div");
-      item.className = "taskItem";
+      const vw = (window.visualViewport && window.visualViewport.width) ? window.visualViewport.width : window.innerWidth;
+      const vh = (window.visualViewport && window.visualViewport.height) ? window.visualViewport.height : window.innerHeight;
 
-      const check = document.createElement("button");
-      check.className = "checkBtn";
-      check.textContent = task.done ? "✓" : "";
-      if(task.done) check.classList.add("done");
-      check.title = "완료 체크";
-      check.addEventListener("pointerdown", (e) => {
-        e.preventDefault();
-        const list = getTasks(iso);
-        if(idx >= 0){
-          list[idx].done = !list[idx].done;
-          setTasks(iso, list);
+      const availW = Math.max(1, vw);
+      const availH = Math.max(1, vh);
+
+      let scale = Math.min(availW / baseW, availH / baseH);
+      if(!isFinite(scale) || scale <= 0) scale = 1;
+      scale = Math.min(3, Math.max(0.55, scale));
+      scale = Math.floor(scale * 100) / 100;
+
+      document.documentElement.style.setProperty("--scale", String(scale));
+    }
+
+    function render(){
+      gridEl.innerHTML = "";
+
+      const y = state.viewDate.getFullYear();
+      const m = state.viewDate.getMonth();
+      monthTitleEl.textContent = `${y}-${pad2(m+1)}`;
+
+      const first = new Date(y, m, 1);
+      const firstDow = first.getDay();
+      const last = new Date(y, m+1, 0);
+      const lastDay = last.getDate();
+      const prevLast = new Date(y, m, 0).getDate();
+
+      const totalCells = 42;
+
+      for(let i=0; i<totalCells; i++){
+        const cell = document.createElement("div");
+        cell.className = "day";
+
+        const dayNum = i - firstDow + 1;
+
+        let cellDate;
+        let disabled = false;
+        let displayNum;
+
+        if(dayNum < 1){
+          displayNum = prevLast + dayNum;
+          cellDate = new Date(y, m-1, displayNum);
+          disabled = true;
+        }else if(dayNum > lastDay){
+          displayNum = dayNum - lastDay;
+          cellDate = new Date(y, m+1, displayNum);
+          disabled = true;
+        }else{
+          displayNum = dayNum;
+          cellDate = new Date(y, m, displayNum);
         }
-        renderTaskList();
-        render();
-      }, { passive:false });
-      item.appendChild(check);
 
-      const text = document.createElement("div");
-      text.className = "taskText";
-      text.textContent = task.text;
-      if(task.done) text.classList.add("done");
+        const iso = toISO(cellDate.getFullYear(), cellDate.getMonth()+1, cellDate.getDate());
+        const dow = cellDate.getDay();
 
-      const actions = document.createElement("div");
-      actions.className = "taskActions";
+        if(disabled) cell.classList.add("disabled");
+        if(dow === 0) cell.classList.add("sun");
+        if(dow === 6) cell.classList.add("sat");
 
-      const edit = document.createElement("button");
-      edit.className = "iconBtn";
-      edit.textContent = "✎";
-      edit.title = "수정";
-      edit.addEventListener("pointerdown", (e) => {
-        e.preventDefault();
-        state.editingIndex = idx;
-        renderTaskListEditMode();
-      }, { passive:false });
+        const now = new Date();
+        if(isSameDay(cellDate, now) && !disabled) cell.classList.add("today");
 
-      const del = document.createElement("button");
-      del.className = "iconBtn delete";
-      del.textContent = "⌫";
-      del.title = "삭제";
-      del.addEventListener("pointerdown", (e) => {
-        e.preventDefault();
-        const list = getTasks(iso);
-        if(idx >= 0){
-          list.splice(idx, 1);
-          setTasks(iso, list);
+        const num = document.createElement("div");
+        num.className = "num";
+        num.textContent = displayNum;
+        cell.appendChild(num);
+
+        const tasks = getTasks(iso);
+        if(tasks.length > 0){
+          const total = tasks.length;
+          const done = tasks.filter(t => t.done).length;
+          const hasUndone = tasks.some(t => !t.done);
+
+          const todoBadge = document.createElement("div");
+          todoBadge.className = "todoBadge";
+          todoBadge.textContent = fmtCount(total);
+          cell.appendChild(todoBadge);
+
+          if(done > 0){
+            const doneBadge = document.createElement("div");
+            doneBadge.className = "doneBadge";
+            doneBadge.textContent = fmtCount(done);
+            cell.appendChild(doneBadge);
+          }
+
+          const heart = document.createElement("div");
+          heart.className = "heartMarker";
+          heart.textContent = hasUndone ? "♡" : "♥";
+          if(!hasUndone) heart.classList.add("doneAll");
+          cell.appendChild(heart);
         }
-        renderTaskList();
-        render();
-      }, { passive:false });
 
-      actions.appendChild(edit);
-      actions.appendChild(del);
+        cell.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
+          if(disabled) return;
+          openModal(iso);
+        }, { passive:false });
 
-      item.appendChild(text);
-      item.appendChild(actions);
-      taskList.appendChild(item);
-    });
-  }
+        gridEl.appendChild(cell);
+      }
+    }
 
-  function renderTaskListEditMode(){
-    const iso = state.selectedISO;
-    if(!iso) return;
+    function openModal(iso){
+      state.selectedISO = iso;
+      state.editingIndex = null;
+      modalTitle.textContent = `TASK · ${iso}`;
+      taskInput.value = "";
+      renderTaskList();
+      modalBack.classList.add("show");
+      modalBack.setAttribute("aria-hidden", "false");
+      setTimeout(() => taskInput.focus(), 0);
+    }
 
-    const tasks = getTasks(iso);
-    const idx = state.editingIndex;
+    function closeModal(){
+      modalBack.classList.remove("show");
+      modalBack.setAttribute("aria-hidden", "true");
+      state.selectedISO = null;
+      state.editingIndex = null;
+    }
 
-    taskList.innerHTML = "";
+    function renderTaskList(){
+      const iso = state.selectedISO;
+      if(!iso) return;
 
-    tasks.forEach((task, i) => {
-      const item = document.createElement("div");
-      item.className = "taskItem";
+      const all = getTasks(iso);
+      const tasks = state.hideDone ? all.filter(t => !t.done) : all;
 
-      const check = document.createElement("button");
-      check.className = "checkBtn";
-      check.textContent = task.done ? "✓" : "";
-      if(task.done) check.classList.add("done");
-      check.addEventListener("pointerdown", (e) => {
-        e.preventDefault();
-        const list = getTasks(iso);
-        list[i].done = !list[i].done;
-        setTasks(iso, list);
-        renderTaskListEditMode();
-        render();
-      }, { passive:false });
-      item.appendChild(check);
+      taskList.innerHTML = "";
 
-      if(i === idx){
-        const input = document.createElement("input");
-        input.className = "editInput";
-        input.value = task.text;
-        input.maxLength = 60;
+      if(all.length === 0){
+        const empty = document.createElement("div");
+        empty.className = "help";
+        empty.textContent = "등록된 TASK 없음";
+        taskList.appendChild(empty);
+        return;
+      }
+
+      if(state.hideDone && tasks.length === 0){
+        const empty = document.createElement("div");
+        empty.className = "help";
+        empty.textContent = "미완료 TASK 없음 (완료 숨김 ON)";
+        taskList.appendChild(empty);
+        return;
+      }
+
+      // NOTE: 동일 text/상태 중복이 있을 수 있어, index를 직접 매핑
+      tasks.forEach((task) => {
+        const listAll = getTasks(iso);
+        const idx = listAll.findIndex(t => t.text === task.text && t.done === task.done);
+
+        const item = document.createElement("div");
+        item.className = "taskItem";
+
+        const check = document.createElement("button");
+        check.className = "checkBtn";
+        check.textContent = task.done ? "✓" : "";
+        if(task.done) check.classList.add("done");
+        check.title = "완료 체크";
+        check.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
+          const list = getTasks(iso);
+          if(idx >= 0){
+            list[idx].done = !list[idx].done;
+            setTasks(iso, list);
+          }
+          renderTaskList();
+          render();
+        }, { passive:false });
+        item.appendChild(check);
+
+        const text = document.createElement("div");
+        text.className = "taskText";
+        text.textContent = task.text;
+        if(task.done) text.classList.add("done");
 
         const actions = document.createElement("div");
         actions.className = "taskActions";
 
-        const save = document.createElement("button");
-        save.className = "iconBtn";
-        save.textContent = "✔";
-        save.title = "저장";
-        save.addEventListener("pointerdown", (e) => {
+        const edit = document.createElement("button");
+        edit.className = "iconBtn";
+        edit.textContent = "✎";
+        edit.title = "수정";
+        edit.addEventListener("pointerdown", (e) => {
           e.preventDefault();
-          const v = input.value.trim();
-          if(!v) return;
+          state.editingIndex = idx;
+          renderTaskListEditMode();
+        }, { passive:false });
+
+        const del = document.createElement("button");
+        del.className = "iconBtn delete";
+        del.textContent = "⌫";
+        del.title = "삭제";
+        del.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
           const list = getTasks(iso);
-          list[i].text = v;
-          setTasks(iso, list);
-          state.editingIndex = null;
+          if(idx >= 0){
+            list.splice(idx, 1);
+            setTasks(iso, list);
+          }
           renderTaskList();
           render();
         }, { passive:false });
 
-        const cancel = document.createElement("button");
-        cancel.className = "iconBtn delete";
-        cancel.textContent = "↩";
-        cancel.title = "취소";
-        cancel.addEventListener("pointerdown", (e) => {
+        actions.appendChild(edit);
+        actions.appendChild(del);
+
+        item.appendChild(text);
+        item.appendChild(actions);
+        taskList.appendChild(item);
+      });
+    }
+
+    function renderTaskListEditMode(){
+      const iso = state.selectedISO;
+      if(!iso) return;
+
+      const tasks = getTasks(iso);
+      const idx = state.editingIndex;
+
+      taskList.innerHTML = "";
+
+      tasks.forEach((task, i) => {
+        const item = document.createElement("div");
+        item.className = "taskItem";
+
+        const check = document.createElement("button");
+        check.className = "checkBtn";
+        check.textContent = task.done ? "✓" : "";
+        if(task.done) check.classList.add("done");
+        check.addEventListener("pointerdown", (e) => {
           e.preventDefault();
-          state.editingIndex = null;
-          renderTaskList();
+          const list = getTasks(iso);
+          list[i].done = !list[i].done;
+          setTasks(iso, list);
+          renderTaskListEditMode();
+          render();
         }, { passive:false });
 
-        actions.appendChild(save);
-        actions.appendChild(cancel);
+        item.appendChild(check);
 
-        item.appendChild(input);
+        if(i === idx){
+          const input = document.createElement("input");
+          input.className = "editInput";
+          input.value = task.text;
+          input.maxLength = 60;
+
+          const actions = document.createElement("div");
+          actions.className = "taskActions";
+
+          const save = document.createElement("button");
+          save.className = "iconBtn";
+          save.textContent = "✔";
+          save.title = "저장";
+          save.addEventListener("pointerdown", (e) => {
+            e.preventDefault();
+            const v = input.value.trim();
+            if(!v) return;
+            const list = getTasks(iso);
+            list[i].text = v;
+            setTasks(iso, list);
+            state.editingIndex = null;
+            renderTaskList();
+            render();
+          }, { passive:false });
+
+          const cancel = document.createElement("button");
+          cancel.className = "iconBtn delete";
+          cancel.textContent = "↩";
+          cancel.title = "취소";
+          cancel.addEventListener("pointerdown", (e) => {
+            e.preventDefault();
+            state.editingIndex = null;
+            renderTaskList();
+          }, { passive:false });
+
+          actions.appendChild(save);
+          actions.appendChild(cancel);
+
+          item.appendChild(input);
+          item.appendChild(actions);
+
+          setTimeout(() => input.focus(), 0);
+          input.addEventListener("keydown", (e) => {
+            if(e.key === "Enter") save.click();
+            if(e.key === "Escape") cancel.click();
+          });
+
+          taskList.appendChild(item);
+          return;
+        }
+
+        const text = document.createElement("div");
+        text.className = "taskText";
+        text.textContent = task.text;
+        if(task.done) text.classList.add("done");
+
+        const actions = document.createElement("div");
+        actions.className = "taskActions";
+
+        const edit = document.createElement("button");
+        edit.className = "iconBtn";
+        edit.textContent = "✎";
+        edit.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
+          state.editingIndex = i;
+          renderTaskListEditMode();
+        }, { passive:false });
+
+        const del = document.createElement("button");
+        del.className = "iconBtn delete";
+        del.textContent = "⌫";
+        del.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
+          const list = getTasks(iso);
+          list.splice(i, 1);
+          setTasks(iso, list);
+          renderTaskListEditMode();
+          render();
+        }, { passive:false });
+
+        actions.appendChild(edit);
+        actions.appendChild(del);
+
+        item.appendChild(text);
         item.appendChild(actions);
-
         taskList.appendChild(item);
+      });
+    }
 
-        setTimeout(() => input.focus(), 0);
-        input.addEventListener("keydown", (e) => {
-          if(e.key === "Enter") save.click();
-          if(e.key === "Escape") cancel.click();
-        });
+    function addTask(){
+      const iso = state.selectedISO;
+      if(!iso) return;
 
-        return;
-      }
+      const val = taskInput.value.trim();
+      if(!val) return;
 
-      const text = document.createElement("div");
-      text.className = "taskText";
-      text.textContent = task.text;
-      if(task.done) text.classList.add("done");
+      const list = getTasks(iso);
+      list.unshift({ text: val, done: false });
+      setTasks(iso, list);
 
-      const actions = document.createElement("div");
-      actions.className = "taskActions";
+      taskInput.value = "";
+      renderTaskList();
+      render();
+    }
 
-      const edit = document.createElement("button");
-      edit.className = "iconBtn";
-      edit.textContent = "✎";
-      edit.addEventListener("pointerdown", (e) => {
-        e.preventDefault();
-        state.editingIndex = i;
-        renderTaskListEditMode();
-      }, { passive:false });
+    /* ===== top navigation ===== */
+    prevBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      const d = new Date(state.viewDate);
+      d.setMonth(d.getMonth() - 1);
+      state.viewDate = d;
+      render();
+    }, { passive:false });
 
-      const del = document.createElement("button");
-      del.className = "iconBtn delete";
-      del.textContent = "⌫";
-      del.addEventListener("pointerdown", (e) => {
-        e.preventDefault();
-        const list = getTasks(iso);
-        list.splice(i, 1);
-        setTasks(iso, list);
-        renderTaskListEditMode();
-        render();
-      }, { passive:false });
+    nextBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      const d = new Date(state.viewDate);
+      d.setMonth(d.getMonth() + 1);
+      state.viewDate = d;
+      render();
+    }, { passive:false });
 
-      actions.appendChild(edit);
-      actions.appendChild(del);
+    todayBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      state.viewDate = new Date();
+      render();
+    }, { passive:false });
 
-      item.appendChild(text);
-      item.appendChild(actions);
-      taskList.appendChild(item);
+    /* ===== task modal ===== */
+    closeBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      closeModal();
+    }, { passive:false });
+
+    modalBack.addEventListener("pointerdown", (e) => {
+      if(e.target === modalBack) closeModal();
+    }, { passive:false });
+
+    taskInput.addEventListener("keydown", (e) => {
+      if(e.key === "Enter") addTask();
+      if(e.key === "Escape") closeModal();
     });
-  }
 
-  function addTask(){
-    const iso = state.selectedISO;
-    if(!iso) return;
+    addBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      addTask();
+    }, { passive:false });
 
-    const val = taskInput.value.trim();
-    if(!val) return;
+    hideDoneBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      state.hideDone = !state.hideDone;
+      saveUI();
+      renderTaskList();
+    }, { passive:false });
 
-    const list = getTasks(iso);
-    list.unshift({ text: val, done: false });
-    setTasks(iso, list);
+    /* ===== bottom bar actions ===== */
+    function openListSheet(){
+      renderBackupList();
+      listSheetBack.classList.add("show");
+      listSheetBack.setAttribute("aria-hidden", "false");
+    }
+    function closeListSheet(){
+      listSheetBack.classList.remove("show");
+      listSheetBack.setAttribute("aria-hidden", "true");
+    }
+    function openMemoSheet(){
+      memoInput.value = "";
+      memoSheetBack.classList.add("show");
+      memoSheetBack.setAttribute("aria-hidden", "false");
+      setTimeout(() => memoInput.focus(), 0);
+    }
+    function closeMemoSheet(){
+      memoSheetBack.classList.remove("show");
+      memoSheetBack.setAttribute("aria-hidden", "true");
+    }
 
-    taskInput.value = "";
-    renderTaskList();
-    render();
-  }
+    backupBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      openMemoSheet();
+    }, { passive:false });
 
-  /* ===== query boot: ?date=YYYY-MM-DD (OPEN 기능 제거: open=1 무시) ===== */
-  function parseISODateParam(){
-    const sp = new URLSearchParams(location.search);
-    const iso = sp.get("date");
-    if(!iso) return null;
-    if(!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null;
-    return { iso };
-  }
+    listBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      openListSheet();
+    }, { passive:false });
 
-  function setViewToISO(iso){
-    const [Y, M] = iso.split("-").map(n => parseInt(n,10));
-    if(!Y || !M) return;
-    state.viewDate = new Date(Y, M-1, 1);
-  }
+    lightBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      state.isLight = !state.isLight;
+      applyTheme(state.isLight);
+      saveUI();
+    }, { passive:false });
 
-  function bootFromQuery(){
-    const q = parseISODateParam();
-    if(!q) return;
-    setViewToISO(q.iso);
-    render();
-    // ✅ OPEN 자동 모달 호출 제거
-  }
+    closeListSheetBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      closeListSheet();
+    }, { passive:false });
 
-  /* ===== top navigation ===== */
-  prevBtn.addEventListener("pointerdown", (e) => {
-    e.preventDefault();
-    const d = new Date(state.viewDate);
-    d.setMonth(d.getMonth() - 1);
-    state.viewDate = d;
-    render();
-  }, { passive:false });
+    listSheetBack.addEventListener("pointerdown", (e) => {
+      if(e.target === listSheetBack) closeListSheet();
+    }, { passive:false });
 
-  nextBtn.addEventListener("pointerdown", (e) => {
-    e.preventDefault();
-    const d = new Date(state.viewDate);
-    d.setMonth(d.getMonth() + 1);
-    state.viewDate = d;
-    render();
-  }, { passive:false });
+    closeMemoSheetBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      closeMemoSheet();
+    }, { passive:false });
 
-  todayBtn.addEventListener("pointerdown", (e) => {
-    e.preventDefault();
-    state.viewDate = new Date();
-    render();
-  }, { passive:false });
+    memoSheetBack.addEventListener("pointerdown", (e) => {
+      if(e.target === memoSheetBack) closeMemoSheet();
+    }, { passive:false });
 
-  /* ✅ CLOCK로 복귀 */
-  clockBtn.addEventListener("pointerdown", (e) => {
-    e.preventDefault();
-    const url = new URL("/embed/clock.html", window.location.origin);
-    window.location.href = url.toString();
-  }, { passive:false });
+    memoInput.addEventListener("keydown", (e) => {
+      if(e.key === "Enter") doBackupBtn.click();
+      if(e.key === "Escape") closeMemoSheet();
+    });
 
-  /* ===== task modal ===== */
-  closeBtn.addEventListener("pointerdown", (e) => {
-    e.preventDefault();
-    closeModal();
-  }, { passive:false });
+    doBackupBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      makeBackup(memoInput.value);
+      closeMemoSheet();
+      alert("백업 저장 완료!");
+    }, { passive:false });
 
-  modalBack.addEventListener("pointerdown", (e) => {
-    if(e.target === modalBack) closeModal();
-  }, { passive:false });
+    window.addEventListener("keydown", (e) => {
+      if(e.key !== "Escape") return;
+      if(memoSheetBack.classList.contains("show")) return closeMemoSheet();
+      if(listSheetBack.classList.contains("show")) return closeListSheet();
+      if(modalBack.classList.contains("show")) return closeModal();
+    });
 
-  taskInput.addEventListener("keydown", (e) => {
-    if(e.key === "Enter") addTask();
-    if(e.key === "Escape") closeModal();
-  });
-
-  addBtn.addEventListener("pointerdown", (e) => {
-    e.preventDefault();
-    addTask();
-  }, { passive:false });
-
-  hideDoneBtn.addEventListener("pointerdown", (e) => {
-    e.preventDefault();
-    state.hideDone = !state.hideDone;
+    // boot
+    loadUI();
     saveUI();
-    renderTaskList();
-  }, { passive:false });
-
-  /* ===== bottom bar actions ===== */
-  function openListSheet(){
-    renderBackupList();
-    listSheetBack.classList.add("show");
-    listSheetBack.setAttribute("aria-hidden", "false");
-  }
-  function closeListSheet(){
-    listSheetBack.classList.remove("show");
-    listSheetBack.setAttribute("aria-hidden", "true");
-  }
-  function openMemoSheet(){
-    memoInput.value = "";
-    memoSheetBack.classList.add("show");
-    memoSheetBack.setAttribute("aria-hidden", "false");
-    setTimeout(()=> memoInput.focus(), 0);
-  }
-  function closeMemoSheet(){
-    memoSheetBack.classList.remove("show");
-    memoSheetBack.setAttribute("aria-hidden", "true");
-  }
-
-  backupBtn.addEventListener("pointerdown", (e)=>{
-    e.preventDefault();
-    openMemoSheet();
-  }, { passive:false });
-
-  listBtn.addEventListener("pointerdown", (e)=>{
-    e.preventDefault();
-    openListSheet();
-  }, { passive:false });
-
-  lightBtn.addEventListener("pointerdown", (e)=>{
-    e.preventDefault();
-    state.isLight = !state.isLight;
-    applyTheme(state.isLight);
-    saveUI();
-  }, { passive:false });
-
-  /* list sheet close */
-  closeListSheetBtn.addEventListener("pointerdown", (e)=>{
-    e.preventDefault();
-    closeListSheet();
-  }, { passive:false });
-
-  listSheetBack.addEventListener("pointerdown", (e)=>{
-    if(e.target === listSheetBack) closeListSheet();
-  }, { passive:false });
-
-  /* memo sheet close */
-  closeMemoSheetBtn.addEventListener("pointerdown", (e)=>{
-    e.preventDefault();
-    closeMemoSheet();
-  }, { passive:false });
-
-  memoSheetBack.addEventListener("pointerdown", (e)=>{
-    if(e.target === memoSheetBack) closeMemoSheet();
-  }, { passive:false });
-
-  memoInput.addEventListener("keydown", (e)=>{
-    if(e.key === "Enter") doBackupBtn.click();
-    if(e.key === "Escape") closeMemoSheet();
-  });
-
-  doBackupBtn.addEventListener("pointerdown", (e)=>{
-    e.preventDefault();
-    makeBackup(memoInput.value);
-    closeMemoSheet();
-    alert("백업 저장 완료!");
-  }, { passive:false });
-
-  /* ESC: 우선순위로 열린 것 닫기 */
-  window.addEventListener("keydown", (e)=>{
-    if(e.key !== "Escape") return;
-    if(memoSheetBack.classList.contains("show")) return closeMemoSheet();
-    if(listSheetBack.classList.contains("show")) return closeListSheet();
-    if(modalBack.classList.contains("show")) return closeModal();
-  });
-
-  /* ===== boot ===== */
-  loadUI();
-  saveUI();
-  render();
-  bootFromQuery();
-
-  fitToFrame();
-  window.addEventListener("resize", fitToFrame);
-  if(window.visualViewport){
-    window.visualViewport.addEventListener("resize", fitToFrame);
-    window.visualViewport.addEventListener("scroll", fitToFrame);
-  }
-</script>
+    render();
+    fitToFrame();
+    window.addEventListener("resize", fitToFrame);
+    setInterval(fitToFrame, 500);
+  </script>
 </body>
 </html>
