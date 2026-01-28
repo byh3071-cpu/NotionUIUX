@@ -32,32 +32,30 @@
 
       /* ===== LAYOUT ===== */
       --baseW: 360;
-      --baseH: 520; /* 하단바 포함 */
+      --baseH: 520;
       --scale: 1;
 
       --cell: 46px;
       --gap: 4px;
     }
 
-    /* ===== LIGHT (회색 패널 + 살짝 밝은 카드 느낌) ===== */
     html[data-theme="light"]{
-      --panel:#e1e5ec;
-      --panel2:#d4d9e3;
+      --panel:#e3e6ec;
+      --panel2:#d6dae2;
       --card:#f7f8fb;
-      --card2:#eef2f7;
+      --card2:#eef1f6;
 
-      --line:#c7ccd7;
-      --line2:#97a1b4;
+      --line:#c8cdd8;
+      --line2:#9aa3b5;
 
-      --text:#111522;
-      --muted:#4f5a70;
+      --text:#141821;
+      --muted:#5b6476;
 
-      /* ✅ 라이트에서 뱃지/하트가 “너무 하얗게” 뜨지 않도록 살짝 톤다운 */
-      --accent:#2a57d8;
-      --today:#9a5b20;
-      --danger:#c93b3b;
+      --accent:#2f66ff;
+      --today:#b36b2a;
+      --danger:#d64545;
 
-      --sun:#b94848;
+      --sun:#c75252;
       --sat:#2f57c9;
     }
 
@@ -73,30 +71,19 @@
       font-family: ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace;
       -webkit-font-smoothing: antialiased;
       text-rendering: geometricPrecision;
-      overflow:hidden;
+
+      /* ✅ 축소 금지 정책 → iframe이 작으면 스크롤 */
+      overflow:auto;
     }
 
-    /* ✅ “여백이 보이는” 가장 큰 이유는 center 정렬 때문이라,
-       캘린더는 clock처럼 fit은 유지하되 배치를 좌상단으로 고정 */
     .stage{
-      width:100%;
-      height:100%;
+      min-width:100%;
+      min-height:100%;
       background: var(--panel);
-      display:flex;
-      align-items:flex-start;     /* ✅ center → start */
-      justify-content:flex-start; /* ✅ center → start */
-      overflow:hidden;
-      padding:0;
-      position:relative;
-    }
-
-    /* ✅ scaler는 “클릭영역” 보정용. 크기를 100%로 두고 wrap만 스케일 */
-    .scaler{
-      width:100%;
-      height:100%;
       display:flex;
       align-items:flex-start;
       justify-content:flex-start;
+      padding:0;
     }
 
     .wrap{
@@ -221,15 +208,13 @@
     }
     .day:hover{ border-color:var(--accent); }
 
-    /* ✅ 다음달/이전달 숫자 “가려짐(너무 연함)” 개선 */
     .day.disabled{
       cursor:default;
-      opacity: .78; /* ✅ 0.58 → 0.78 */
+      opacity: .78;
       background: color-mix(in srgb, var(--card) 78%, var(--panel));
-      filter: saturate(.95);
     }
     html[data-theme="light"] .day.disabled{
-      opacity: .86; /* 라이트는 더 또렷하게 */
+      opacity: .86;
       background: color-mix(in srgb, var(--card) 88%, var(--panel));
     }
     .day.disabled:hover{ border-color:var(--line); }
@@ -242,11 +227,8 @@
       color:var(--text);
     }
     .day.disabled .num{
-      color: color-mix(in srgb, var(--text) 40%, var(--muted));
+      color: color-mix(in srgb, var(--text) 45%, var(--muted));
       opacity: 1;
-    }
-    html[data-theme="light"] .day.disabled .num{
-      color: color-mix(in srgb, var(--text) 55%, var(--muted));
     }
 
     .today{
@@ -254,7 +236,7 @@
       box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--today) 35%, transparent);
     }
 
-    /* ===== BADGES (라이트에서 “묻힘/너무 밝음” 개선) ===== */
+    /* ===== BADGES ===== */
     .todoBadge{
       position:absolute;
       left:0; bottom:0;
@@ -277,14 +259,13 @@
         0 1px 0 rgba(0,0,0,.10);
     }
 
-    /* ✅ 라이트에서 오른쪽 하단(완료) 삼각형이 너무 “연하게+밝게” 떠서 톤 정리 */
     .doneBadge{
       position:absolute;
       right:0; bottom:0;
       width:18px; height:18px;
       clip-path: polygon(100% 0, 0 100%, 100% 100%);
-      background: color-mix(in srgb, var(--accent) 16%, transparent); /* ✅ 22% → 16% */
-      color: color-mix(in srgb, var(--accent) 90%, var(--text));     /* ✅ 더 또렷 */
+      background: color-mix(in srgb, var(--accent) 16%, transparent);
+      color: color-mix(in srgb, var(--accent) 90%, var(--text));
       display:flex;
       align-items:flex-end;
       justify-content:flex-end;
@@ -298,15 +279,7 @@
       box-shadow:
         inset 0 0 0 2px color-mix(in srgb, var(--accent) 22%, transparent);
     }
-    html[data-theme="light"] .doneBadge{
-      background: color-mix(in srgb, var(--accent) 12%, transparent);
-      color: color-mix(in srgb, var(--accent) 92%, #000);
-      text-shadow: 0 1px 0 rgba(255,255,255,.35);
-    }
 
-    /* ✅ 하트가 흰 배경에서 “너무 밝게/묻히게” 보이는 문제 해결:
-       - 하트 색을 accent 그대로 쓰되
-       - 얇은 외곽선 느낌(그림자) + 살짝 어둡게 필터 */
     .heartMarker{
       position:absolute;
       left:50%;
@@ -319,15 +292,8 @@
       pointer-events:none;
       z-index:3;
       text-shadow:
-        0 1px 0 rgba(0,0,0,.22),
-        0 0 2px rgba(0,0,0,.10);
-      filter: saturate(1.0);
-    }
-    html[data-theme="light"] .heartMarker{
-      text-shadow:
         0 1px 0 rgba(0,0,0,.28),
         0 0 2px rgba(0,0,0,.12);
-      filter: saturate(.98) brightness(.95); /* ✅ “밝아서 뜸” 완화 */
     }
     .heartMarker.doneAll{
       filter: drop-shadow(0 0 2px color-mix(in srgb, var(--accent) 30%, transparent));
@@ -509,7 +475,7 @@
     }
 
     .editInput{
-           flex:1;
+      flex:1;
       height:30px;
       border:2px solid var(--line2);
       background:var(--card);
@@ -737,92 +703,90 @@
 
 <body>
   <div class="stage">
-    <div class="scaler" id="scaler">
-      <div class="wrap" id="app">
+    <div class="wrap" id="app">
 
-        <div class="topbar">
-          <div class="leftBtns">
-            <button class="btn" id="prevBtn">◀</button>
-            <button class="btn" id="nextBtn">▶</button>
-          </div>
-
-          <div class="monthTitle" id="monthTitle">0000-00</div>
-
-          <div class="rightBtns">
-            <button class="btn" id="clockBtn">CLOCK</button>
-            <button class="btn" id="todayBtn">TODAY</button>
-          </div>
+      <div class="topbar">
+        <div class="leftBtns">
+          <button class="btn" id="prevBtn">◀</button>
+          <button class="btn" id="nextBtn">▶</button>
         </div>
 
-        <div class="dow">
-          <div class="sunHead">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div class="satHead">토</div>
+        <div class="monthTitle" id="monthTitle">0000-00</div>
+
+        <div class="rightBtns">
+          <button class="btn" id="clockBtn">CLOCK</button>
+          <button class="btn" id="todayBtn">TODAY</button>
         </div>
-
-        <div class="grid" id="grid"></div>
-
-        <!-- TASK MODAL -->
-        <div class="modalBack" id="modalBack" aria-hidden="true">
-          <div class="modal" role="dialog" aria-modal="true">
-            <div class="modalHeader">
-              <div class="modalTitle" id="modalTitle">TASK</div>
-              <button class="miniBtn" id="hideDoneBtn" title="완료 숨김 토글">HIDE</button>
-              <button class="closeBtn" id="closeBtn">X</button>
-            </div>
-
-            <div class="modalBody">
-              <div class="addRow">
-                <input class="taskInput" id="taskInput" placeholder="할 일 입력" maxlength="60" />
-                <button class="addBtn" id="addBtn">추가</button>
-              </div>
-
-              <div class="taskList" id="taskList"></div>
-
-              <div class="help">좌하단=총 · 우하단=완료 · ♡/♥=완료상태</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- BOTTOM BAR -->
-        <div class="bottomBar">
-          <div class="bottomLeft">
-            <button class="bigBtn" id="backupBtn">BACKUP</button>
-            <button class="bigBtn" id="listBtn">LIST</button>
-          </div>
-          <button class="bigBtn" id="lightBtn">LIGHT</button>
-        </div>
-
-        <!-- BACKUP LIST SHEET -->
-        <div class="sheetBack" id="listSheetBack" aria-hidden="true">
-          <div class="sheet">
-            <div class="sheetHeader">
-              <div class="sheetTitle">BACKUP LIST (최근 10개)</div>
-              <button class="miniBtn" id="closeListSheetBtn">CLOSE</button>
-            </div>
-            <div class="sheetBody">
-              <div class="sheetList" id="backupList"></div>
-              <div class="help">RESTORE 클릭 시 현재 TASK 데이터가 백업 시점으로 복원됨</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- MEMO + BACKUP SHEET -->
-        <div class="sheetBack" id="memoSheetBack" aria-hidden="true">
-          <div class="sheet" style="height:170px;">
-            <div class="sheetHeader">
-              <div class="sheetTitle">NEW BACKUP</div>
-              <button class="miniBtn" id="closeMemoSheetBtn">CLOSE</button>
-            </div>
-            <div class="sheetBody">
-              <div class="memoRow">
-                <input class="memoInput" id="memoInput" placeholder="메모 입력 (선택)" maxlength="40" />
-                <button class="doBackupBtn" id="doBackupBtn">SAVE</button>
-              </div>
-              <div class="help">수동 백업만 저장됨 · 자동 백업 없음</div>
-            </div>
-          </div>
-        </div>
-
       </div>
+
+      <div class="dow">
+        <div class="sunHead">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div class="satHead">토</div>
+      </div>
+
+      <div class="grid" id="grid"></div>
+
+      <!-- TASK MODAL -->
+      <div class="modalBack" id="modalBack" aria-hidden="true">
+        <div class="modal" role="dialog" aria-modal="true">
+          <div class="modalHeader">
+            <div class="modalTitle" id="modalTitle">TASK</div>
+            <button class="miniBtn" id="hideDoneBtn" title="완료 숨김 토글">HIDE</button>
+            <button class="closeBtn" id="closeBtn">X</button>
+          </div>
+
+          <div class="modalBody">
+            <div class="addRow">
+              <input class="taskInput" id="taskInput" placeholder="할 일 입력" maxlength="60" />
+              <button class="addBtn" id="addBtn">추가</button>
+            </div>
+
+            <div class="taskList" id="taskList"></div>
+
+            <div class="help">좌하단=총 · 우하단=완료 · ♡/♥=완료상태</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTTOM BAR -->
+      <div class="bottomBar">
+        <div class="bottomLeft">
+          <button class="bigBtn" id="backupBtn">BACKUP</button>
+          <button class="bigBtn" id="listBtn">LIST</button>
+        </div>
+        <button class="bigBtn" id="lightBtn">LIGHT</button>
+      </div>
+
+      <!-- BACKUP LIST SHEET -->
+      <div class="sheetBack" id="listSheetBack" aria-hidden="true">
+        <div class="sheet">
+          <div class="sheetHeader">
+            <div class="sheetTitle">BACKUP LIST (최근 10개)</div>
+            <button class="miniBtn" id="closeListSheetBtn">CLOSE</button>
+          </div>
+          <div class="sheetBody">
+            <div class="sheetList" id="backupList"></div>
+            <div class="help">RESTORE 클릭 시 현재 TASK 데이터가 백업 시점으로 복원됨</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MEMO + BACKUP SHEET -->
+      <div class="sheetBack" id="memoSheetBack" aria-hidden="true">
+        <div class="sheet" style="height:170px;">
+          <div class="sheetHeader">
+            <div class="sheetTitle">NEW BACKUP</div>
+            <button class="miniBtn" id="closeMemoSheetBtn">CLOSE</button>
+          </div>
+          <div class="sheetBody">
+            <div class="memoRow">
+              <input class="memoInput" id="memoInput" placeholder="메모 입력 (선택)" maxlength="40" />
+              <button class="doBackupBtn" id="doBackupBtn">SAVE</button>
+            </div>
+            <div class="help">수동 백업만 저장됨 · 자동 백업 없음</div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -889,6 +853,12 @@
       try{ return JSON.parse(s); }catch(e){ return null; }
     }
 
+    function applyTheme(isLight){
+      document.documentElement.setAttribute("data-theme", isLight ? "light" : "dark");
+      lightBtn.classList.toggle("on", isLight);
+      lightBtn.textContent = isLight ? "DARK" : "LIGHT";
+    }
+
     function loadUI(){
       const ui = safeParse(localStorage.getItem(UI_KEY)) || {};
       state.hideDone = Boolean(ui.hideDone);
@@ -897,6 +867,7 @@
       hideDoneBtn.textContent = state.hideDone ? "SHOW" : "HIDE";
       applyTheme(state.isLight);
     }
+
     function saveUI(){
       localStorage.setItem(UI_KEY, JSON.stringify({
         hideDone: state.hideDone,
@@ -905,12 +876,6 @@
       hideDoneBtn.textContent = state.hideDone ? "SHOW" : "HIDE";
       lightBtn.classList.toggle("on", state.isLight);
       lightBtn.textContent = state.isLight ? "DARK" : "LIGHT";
-    }
-
-    function applyTheme(isLight){
-      document.documentElement.setAttribute("data-theme", isLight ? "light" : "dark");
-      lightBtn.classList.toggle("on", isLight);
-      lightBtn.textContent = isLight ? "DARK" : "LIGHT";
     }
 
     function loadAll(){
@@ -980,7 +945,7 @@
       const list = loadBackups();
       list.unshift(item);
 
-      const trimmed = list.slice(0, 10); /* ✅ 최근 10개만 */
+      const trimmed = list.slice(0, 10);
       saveBackups(trimmed);
     }
 
@@ -1052,24 +1017,15 @@
       });
     }
 
-    /* ===== layout fit (calendar도 clock처럼) ===== */
+    // ✅ 축소 금지: scale < 1 안 됨 (작으면 스크롤)
     function fitToFrame(){
-      const rootStyle = getComputedStyle(document.documentElement);
-      const baseW = Number(rootStyle.getPropertyValue("--baseW")) || 360;
-      const baseH = Number(rootStyle.getPropertyValue("--baseH")) || 520;
+      const baseW = 360, baseH = 520;
+      const vw = (window.visualViewport?.width) ?? window.innerWidth;
+      const vh = (window.visualViewport?.height) ?? window.innerHeight;
 
-      const vw = (window.visualViewport && window.visualViewport.width) ? window.visualViewport.width : window.innerWidth;
-      const vh = (window.visualViewport && window.visualViewport.height) ? window.visualViewport.height : window.innerHeight;
-
-      /* ✅ -24 같은 여백 보정 “없음” */
-      const availW = Math.max(1, vw);
-      const availH = Math.max(1, vh);
-
-      let scale = Math.min(availW / baseW, availH / baseH);
+      let scale = Math.min(vw / baseW, vh / baseH);
       if(!isFinite(scale) || scale <= 0) scale = 1;
-
-      scale = Math.min(3, Math.max(0.55, scale));
-      scale = Math.floor(scale * 100) / 100;
+      scale = Math.max(1, Math.min(3, Math.floor(scale * 100) / 100));
 
       document.documentElement.style.setProperty("--scale", String(scale));
     }
@@ -1155,11 +1111,11 @@
           cell.appendChild(heart);
         }
 
-        cell.addEventListener("pointerdown", (e) => {
-          e.preventDefault();
-          if(disabled) return;
-          openModal(iso);
-        }, { passive:false });
+        const open = () => { if(!disabled) openModal(iso); };
+
+        // ✅ Notion 호환: pointerdown + click 둘 다
+        cell.addEventListener("pointerdown", (e) => { e.preventDefault(); open(); }, { passive:false });
+        cell.addEventListener("click", (e) => { e.preventDefault(); open(); });
 
         gridEl.appendChild(cell);
       }
@@ -1175,7 +1131,9 @@
 
       modalBack.classList.add("show");
       modalBack.setAttribute("aria-hidden", "false");
-      setTimeout(() => taskInput.focus(), 0);
+
+      // ✅ Notion에서 focus가 종종 막혀서 try/catch
+      setTimeout(() => { try{ taskInput.focus(); }catch(_){} }, 0);
     }
 
     function closeModal(){
@@ -1222,8 +1180,8 @@
         check.textContent = task.done ? "✓" : "";
         if(task.done) check.classList.add("done");
         check.title = "완료 체크";
-        check.addEventListener("pointerdown", (e) => {
-          e.preventDefault();
+
+        const toggle = () => {
           const list = getTasks(iso);
           if(idx >= 0){
             list[idx].done = !list[idx].done;
@@ -1231,7 +1189,10 @@
           }
           renderTaskList();
           render();
-        }, { passive:false });
+        };
+
+        check.addEventListener("pointerdown", (e)=>{ e.preventDefault(); toggle(); }, {passive:false});
+        check.addEventListener("click", (e)=>{ e.preventDefault(); toggle(); });
 
         item.appendChild(check);
 
@@ -1247,18 +1208,15 @@
         edit.className = "iconBtn";
         edit.textContent = "✎";
         edit.title = "수정";
-        edit.addEventListener("pointerdown", (e) => {
-          e.preventDefault();
-          state.editingIndex = idx;
-          renderTaskListEditMode();
-        }, { passive:false });
+        const doEdit = () => { state.editingIndex = idx; renderTaskListEditMode(); };
+        edit.addEventListener("pointerdown", (e)=>{ e.preventDefault(); doEdit(); }, {passive:false});
+        edit.addEventListener("click", (e)=>{ e.preventDefault(); doEdit(); });
 
         const del = document.createElement("button");
         del.className = "iconBtn delete";
         del.textContent = "⌫";
         del.title = "삭제";
-        del.addEventListener("pointerdown", (e) => {
-          e.preventDefault();
+        const doDel = () => {
           const list = getTasks(iso);
           if(idx >= 0){
             list.splice(idx, 1);
@@ -1266,7 +1224,9 @@
           }
           renderTaskList();
           render();
-        }, { passive:false });
+        };
+        del.addEventListener("pointerdown", (e)=>{ e.preventDefault(); doDel(); }, {passive:false});
+        del.addEventListener("click", (e)=>{ e.preventDefault(); doDel(); });
 
         actions.appendChild(edit);
         actions.appendChild(del);
@@ -1295,14 +1255,16 @@
         check.className = "checkBtn";
         check.textContent = task.done ? "✓" : "";
         if(task.done) check.classList.add("done");
-        check.addEventListener("pointerdown", (e) => {
-          e.preventDefault();
+
+        const toggle = () => {
           const list = getTasks(iso);
           list[i].done = !list[i].done;
           setTasks(iso, list);
           renderTaskListEditMode();
           render();
-        }, { passive:false });
+        };
+        check.addEventListener("pointerdown", (e)=>{ e.preventDefault(); toggle(); }, {passive:false});
+        check.addEventListener("click", (e)=>{ e.preventDefault(); toggle(); });
 
         item.appendChild(check);
 
@@ -1319,8 +1281,7 @@
           save.className = "iconBtn";
           save.textContent = "✔";
           save.title = "저장";
-          save.addEventListener("pointerdown", (e) => {
-            e.preventDefault();
+          const doSave = () => {
             const v = input.value.trim();
             if(!v) return;
             const list = getTasks(iso);
@@ -1329,17 +1290,17 @@
             state.editingIndex = null;
             renderTaskList();
             render();
-          }, { passive:false });
+          };
+          save.addEventListener("pointerdown", (e)=>{ e.preventDefault(); doSave(); }, {passive:false});
+          save.addEventListener("click", (e)=>{ e.preventDefault(); doSave(); });
 
           const cancel = document.createElement("button");
           cancel.className = "iconBtn delete";
           cancel.textContent = "↩";
           cancel.title = "취소";
-          cancel.addEventListener("pointerdown", (e) => {
-            e.preventDefault();
-            state.editingIndex = null;
-            renderTaskList();
-          }, { passive:false });
+          const doCancel = () => { state.editingIndex = null; renderTaskList(); };
+          cancel.addEventListener("pointerdown", (e)=>{ e.preventDefault(); doCancel(); }, {passive:false});
+          cancel.addEventListener("click", (e)=>{ e.preventDefault(); doCancel(); });
 
           actions.appendChild(save);
           actions.appendChild(cancel);
@@ -1347,10 +1308,10 @@
           item.appendChild(input);
           item.appendChild(actions);
 
-          setTimeout(() => input.focus(), 0);
+          setTimeout(() => { try{ input.focus(); }catch(_){} }, 0);
           input.addEventListener("keydown", (e) => {
-            if(e.key === "Enter") save.click();
-            if(e.key === "Escape") cancel.click();
+            if(e.key === "Enter") doSave();
+            if(e.key === "Escape") doCancel();
           });
 
           taskList.appendChild(item);
@@ -1368,23 +1329,22 @@
         const edit = document.createElement("button");
         edit.className = "iconBtn";
         edit.textContent = "✎";
-        edit.addEventListener("pointerdown", (e) => {
-          e.preventDefault();
-          state.editingIndex = i;
-          renderTaskListEditMode();
-        }, { passive:false });
+        const doEdit = () => { state.editingIndex = i; renderTaskListEditMode(); };
+        edit.addEventListener("pointerdown", (e)=>{ e.preventDefault(); doEdit(); }, {passive:false});
+        edit.addEventListener("click", (e)=>{ e.preventDefault(); doEdit(); });
 
         const del = document.createElement("button");
         del.className = "iconBtn delete";
         del.textContent = "⌫";
-        del.addEventListener("pointerdown", (e) => {
-          e.preventDefault();
+        const doDel = () => {
           const list = getTasks(iso);
           list.splice(i, 1);
           setTasks(iso, list);
           renderTaskListEditMode();
           render();
-        }, { passive:false });
+        };
+        del.addEventListener("pointerdown", (e)=>{ e.preventDefault(); doDel(); }, {passive:false});
+        del.addEventListener("click", (e)=>{ e.preventDefault(); doDel(); });
 
         actions.appendChild(edit);
         actions.appendChild(del);
@@ -1434,68 +1394,64 @@
       setViewToISO(q.iso);
       render();
       if(q.open){
-        setTimeout(() => openModal(q.iso), 0);
+        // ✅ 렌더 이후 모달 열기
+        setTimeout(() => openModal(q.iso), 50);
       }
     }
 
-    /* ===== top navigation ===== */
-    prevBtn.addEventListener("pointerdown", (e) => {
-      e.preventDefault();
-      const d = new Date(state.viewDate);
-      d.setMonth(d.getMonth() - 1);
-      state.viewDate = d;
-      render();
-    }, { passive:false });
+    /* ===== navigation ===== */
+    const onPrev = () => { const d = new Date(state.viewDate); d.setMonth(d.getMonth()-1); state.viewDate = d; render(); };
+    const onNext = () => { const d = new Date(state.viewDate); d.setMonth(d.getMonth()+1); state.viewDate = d; render(); };
+    const onToday = () => { state.viewDate = new Date(); render(); };
 
-    nextBtn.addEventListener("pointerdown", (e) => {
-      e.preventDefault();
-      const d = new Date(state.viewDate);
-      d.setMonth(d.getMonth() + 1);
-      state.viewDate = d;
-      render();
-    }, { passive:false });
+    prevBtn.addEventListener("pointerdown", (e)=>{ e.preventDefault(); onPrev(); }, {passive:false});
+    prevBtn.addEventListener("click", (e)=>{ e.preventDefault(); onPrev(); });
 
-    todayBtn.addEventListener("pointerdown", (e) => {
-      e.preventDefault();
-      state.viewDate = new Date();
-      render();
-    }, { passive:false });
+    nextBtn.addEventListener("pointerdown", (e)=>{ e.preventDefault(); onNext(); }, {passive:false});
+    nextBtn.addEventListener("click", (e)=>{ e.preventDefault(); onNext(); });
 
-    /* ✅ CLOCK: 같은 iframe에서 시계로 복귀 */
-    clockBtn.addEventListener("pointerdown", (e) => {
-      e.preventDefault();
-      const url = new URL("/embed/clock.html", window.location.origin);
+    todayBtn.addEventListener("pointerdown", (e)=>{ e.preventDefault(); onToday(); }, {passive:false});
+    todayBtn.addEventListener("click", (e)=>{ e.preventDefault(); onToday(); });
+
+    /* ✅ CLOCK 복귀: 상대경로 */
+    function goClock(){
+      const url = new URL("./clock.html", window.location.href);
+      url.search = "";
       window.location.href = url.toString();
-    }, { passive:false });
+    }
+    clockBtn.addEventListener("pointerdown", (e)=>{ e.preventDefault(); goClock(); }, {passive:false});
+    clockBtn.addEventListener("click", (e)=>{ e.preventDefault(); goClock(); });
 
-    /* ===== task modal ===== */
-    closeBtn.addEventListener("pointerdown", (e) => {
-      e.preventDefault();
-      closeModal();
-    }, { passive:false });
+    /* ===== modal ===== */
+    const doClose = () => closeModal();
+    closeBtn.addEventListener("pointerdown", (e)=>{ e.preventDefault(); doClose(); }, {passive:false});
+    closeBtn.addEventListener("click", (e)=>{ e.preventDefault(); doClose(); });
 
-    modalBack.addEventListener("pointerdown", (e) => {
-      if(e.target === modalBack) closeModal();
-    }, { passive:false });
+    modalBack.addEventListener("pointerdown", (e)=>{ if(e.target === modalBack) closeModal(); }, {passive:false});
+    modalBack.addEventListener("click", (e)=>{ if(e.target === modalBack) closeModal(); });
 
     taskInput.addEventListener("keydown", (e) => {
       if(e.key === "Enter") addTask();
       if(e.key === "Escape") closeModal();
     });
 
-    addBtn.addEventListener("pointerdown", (e) => {
-      e.preventDefault();
-      addTask();
-    }, { passive:false });
+    addBtn.addEventListener("pointerdown", (e)=>{ e.preventDefault(); addTask(); }, {passive:false});
+    addBtn.addEventListener("click", (e)=>{ e.preventDefault(); addTask(); });
 
-    hideDoneBtn.addEventListener("pointerdown", (e) => {
+    hideDoneBtn.addEventListener("pointerdown", (e)=>{
       e.preventDefault();
       state.hideDone = !state.hideDone;
       saveUI();
       renderTaskList();
-    }, { passive:false });
+    }, {passive:false});
+    hideDoneBtn.addEventListener("click", (e)=>{
+      e.preventDefault();
+      state.hideDone = !state.hideDone;
+      saveUI();
+      renderTaskList();
+    });
 
-    /* ===== bottom bar actions ===== */
+    /* ===== sheets ===== */
     function openListSheet(){
       renderBackupList();
       listSheetBack.classList.add("show");
@@ -1510,49 +1466,43 @@
       memoInput.value = "";
       memoSheetBack.classList.add("show");
       memoSheetBack.setAttribute("aria-hidden", "false");
-      setTimeout(()=> memoInput.focus(), 0);
+      setTimeout(()=> { try{ memoInput.focus(); }catch(_){} }, 0);
     }
     function closeMemoSheet(){
       memoSheetBack.classList.remove("show");
       memoSheetBack.setAttribute("aria-hidden", "true");
     }
 
-    backupBtn.addEventListener("pointerdown", (e)=>{
-      e.preventDefault();
-      openMemoSheet(); /* ✅ 수동 백업만 */
-    }, { passive:false });
+    backupBtn.addEventListener("pointerdown", (e)=>{ e.preventDefault(); openMemoSheet(); }, {passive:false});
+    backupBtn.addEventListener("click", (e)=>{ e.preventDefault(); openMemoSheet(); });
 
-    listBtn.addEventListener("pointerdown", (e)=>{
-      e.preventDefault();
-      openListSheet();
-    }, { passive:false });
+    listBtn.addEventListener("pointerdown", (e)=>{ e.preventDefault(); openListSheet(); }, {passive:false});
+    listBtn.addEventListener("click", (e)=>{ e.preventDefault(); openListSheet(); });
 
     lightBtn.addEventListener("pointerdown", (e)=>{
       e.preventDefault();
       state.isLight = !state.isLight;
       applyTheme(state.isLight);
       saveUI();
-    }, { passive:false });
-
-    /* list sheet close */
-    closeListSheetBtn.addEventListener("pointerdown", (e)=>{
+    }, {passive:false});
+    lightBtn.addEventListener("click", (e)=>{
       e.preventDefault();
-      closeListSheet();
-    }, { passive:false });
+      state.isLight = !state.isLight;
+      applyTheme(state.isLight);
+      saveUI();
+    });
 
-    listSheetBack.addEventListener("pointerdown", (e)=>{
-      if(e.target === listSheetBack) closeListSheet();
-    }, { passive:false });
+    closeListSheetBtn.addEventListener("pointerdown", (e)=>{ e.preventDefault(); closeListSheet(); }, {passive:false});
+    closeListSheetBtn.addEventListener("click", (e)=>{ e.preventDefault(); closeListSheet(); });
 
-    /* memo sheet close */
-    closeMemoSheetBtn.addEventListener("pointerdown", (e)=>{
-      e.preventDefault();
-      closeMemoSheet();
-    }, { passive:false });
+    listSheetBack.addEventListener("pointerdown", (e)=>{ if(e.target === listSheetBack) closeListSheet(); }, {passive:false});
+    listSheetBack.addEventListener("click", (e)=>{ if(e.target === listSheetBack) closeListSheet(); });
 
-    memoSheetBack.addEventListener("pointerdown", (e)=>{
-      if(e.target === memoSheetBack) closeMemoSheet();
-    }, { passive:false });
+    closeMemoSheetBtn.addEventListener("pointerdown", (e)=>{ e.preventDefault(); closeMemoSheet(); }, {passive:false});
+    closeMemoSheetBtn.addEventListener("click", (e)=>{ e.preventDefault(); closeMemoSheet(); });
+
+    memoSheetBack.addEventListener("pointerdown", (e)=>{ if(e.target === memoSheetBack) closeMemoSheet(); }, {passive:false});
+    memoSheetBack.addEventListener("click", (e)=>{ if(e.target === memoSheetBack) closeMemoSheet(); });
 
     memoInput.addEventListener("keydown", (e)=>{
       if(e.key === "Enter") doBackupBtn.click();
@@ -1564,9 +1514,14 @@
       makeBackup(memoInput.value);
       closeMemoSheet();
       alert("백업 저장 완료!");
-    }, { passive:false });
+    }, {passive:false});
+    doBackupBtn.addEventListener("click", (e)=>{
+      e.preventDefault();
+      makeBackup(memoInput.value);
+      closeMemoSheet();
+      alert("백업 저장 완료!");
+    });
 
-    /* ESC: 우선순위로 열린 것 닫기 */
     window.addEventListener("keydown", (e)=>{
       if(e.key !== "Escape") return;
       if(memoSheetBack.classList.contains("show")) return closeMemoSheet();
@@ -1574,15 +1529,15 @@
       if(modalBack.classList.contains("show")) return closeModal();
     });
 
-    /* ===== boot ===== */
+    // ===== boot =====
     loadUI();
-    saveUI(); /* 버튼 라벨 동기화 */
+    saveUI();
     render();
     bootFromQuery();
 
     fitToFrame();
-    window.addEventListener("resize", fitToFrame);
-    setInterval(fitToFrame, 500);
+    window.addEventListener("resize", ()=> requestAnimationFrame(fitToFrame));
+    window.visualViewport?.addEventListener("resize", ()=> requestAnimationFrame(fitToFrame));
   </script>
 </body>
 </html>
