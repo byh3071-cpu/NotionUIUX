@@ -30,7 +30,9 @@
       --cell: 46px;
       --gap: 4px;
 
-      --outerbg: transparent;
+      /* 하단바 높이(겹침 방지용) */
+      --bottomBarH: 46px;
+      --backupPanelH: 150px;
     }
 
     *{ box-sizing:border-box; }
@@ -40,7 +42,7 @@
       padding:0;
       width:100%;
       height:100%;
-      background: var(--panel) !important;
+      background: var(--panel);
       color:var(--text);
       font-family: ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace;
       -webkit-font-smoothing: antialiased;
@@ -51,12 +53,12 @@
     .stage{
       width:100%;
       height:100%;
-      background: var(--panel) !important;
+      background: var(--panel);
       display:flex;
       align-items:flex-start;
       justify-content:flex-start;
       overflow:hidden;
-      padding:0;
+      padding:0; /* ✅ */
       margin:0;
     }
 
@@ -67,38 +69,7 @@
       border:2px solid var(--line2);
       border-radius:0;
       overflow:hidden;
-      position:relative;
-    }
-
-    .grid{
-      position:relative;
-      z-index:1;
-    }
-
-    .modalBack{
-      position:absolute;
-      inset:0;
-      z-index:1000;
-      background: rgba(0,0,0,.55);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding:10px;
-    }
-    .modalBack.show{ display:flex; }
-
-    .modal{
-      position:relative;
-      z-index:1001;
-      width: 100%;
-      max-width: 340px;
-      height: 350px;
-      background: #0e1016;
-      border: 2px solid var(--line2);
-      border-radius:0;
-      display:flex;
-      flex-direction:column;
-      overflow:hidden;
+      position:relative; /* ✅ 하단바/백업패널 absolute용 */
     }
 
     .topbar{
@@ -174,6 +145,7 @@
 
     .grid{
       padding:8px;
+      padding-bottom: calc(8px + var(--bottomBarH)); /* ✅ 하단바 겹침 방지 */
       display:grid;
       grid-template-columns: repeat(7, 1fr);
       gap: var(--gap);
@@ -196,14 +168,8 @@
       overflow:hidden;
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
-      outline:none;
     }
     .day:hover{ border-color:var(--accent); }
-
-    .day:focus-visible{
-      border-color: var(--accent);
-      box-shadow: inset 0 0 0 2px rgba(124,199,255,.18);
-    }
 
     .day.disabled{
       opacity:.35;
@@ -272,6 +238,30 @@
     .today{
       border-color: var(--today) !important;
       box-shadow: inset 0 0 0 2px rgba(255,224,138,.25);
+    }
+
+    .modalBack{
+      position:absolute;
+      inset:0;
+      background: rgba(0,0,0,.55);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:10px;
+      z-index:50;
+    }
+    .modalBack.show{ display:flex; }
+
+    .modal{
+      width: 100%;
+      max-width: 340px;
+      height: 350px;
+      background: #0e1016;
+      border: 2px solid var(--line2);
+      border-radius:0;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
     }
 
     .modalHeader{
@@ -390,13 +380,12 @@
       border-radius:0;
       margin-bottom:6px;
       background:#0e1016;
-      min-height: 44px;
     }
 
     .checkBtn{
       width:30px;
       height:28px;
-      border:2px solid var(--line2);
+      border:2px solid var(--accent);
       background:transparent;
       color:var(--text);
       border-radius:0;
@@ -410,8 +399,7 @@
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
     }
-    .checkBtn:hover{ border-color:var(--accent); }
-    .checkBtn.done{ background: var(--accent); border-color: var(--accent); color:#0b0c10; }
+    .checkBtn.done{ background: var(--accent); color:#0b0c10; }
 
     .taskText{
       font-size:10px;
@@ -419,9 +407,6 @@
       line-height:1.25;
       word-break:break-word;
       flex:1;
-      min-height: 16px;
-      display:flex;
-      align-items:center;
     }
     .taskText.done{
       color: var(--muted);
@@ -469,6 +454,129 @@
       line-height:1.4;
       user-select:none;
     }
+
+    /* =========================
+       ✅ 하단 바(백업/리스트/테마)
+       ========================= */
+    .bottomBar{
+      position:absolute;
+      left:0; right:0; bottom:0;
+      height: var(--bottomBarH);
+      padding:8px;
+      border-top:2px solid var(--line2);
+      background:#0e1016;
+      display:flex;
+      gap:6px;
+      align-items:center;
+      justify-content:space-between;
+      z-index:10;
+    }
+
+    .bottomLeft, .bottomRight{
+      display:flex;
+      gap:6px;
+      align-items:center;
+    }
+
+    .bottomBtn{
+      height:30px;
+      padding:0 10px;
+      border:2px solid var(--line2);
+      background:#0b0c10;
+      color:var(--text);
+      border-radius:0;
+      cursor:pointer;
+      font-size:9px;
+      user-select:none;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .bottomBtn:hover{ border-color: var(--accent); }
+
+    .bottomBtn.on{
+      border-color: var(--accent);
+      color: var(--accent);
+      box-shadow: inset 0 0 0 2px rgba(124,199,255,.12);
+    }
+
+    /* ✅ 백업 목록 드로어(하단에서 올라옴) */
+    .backupPanel{
+      position:absolute;
+      left:0; right:0;
+      bottom: var(--bottomBarH);
+      height: var(--backupPanelH);
+      display:none;
+      border-top:2px solid var(--line2);
+      background:#0b0c10;
+      padding:8px;
+      overflow:auto;
+      -webkit-overflow-scrolling: touch;
+      z-index:11;
+    }
+    .backupPanel.show{ display:block; }
+
+    .backupItem{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      padding:6px;
+      border:2px solid var(--line);
+      background:#0e1016;
+      margin-bottom:6px;
+    }
+
+    .backupMeta{
+      font-size:9px;
+      color:var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      flex:1;
+    }
+
+    .backupActions{
+      display:flex;
+      gap:6px;
+      flex:0 0 auto;
+    }
+
+    .smallBtn{
+      height:26px;
+      padding:0 8px;
+      border:2px solid var(--line2);
+      background:#0b0c10;
+      color:var(--text);
+      border-radius:0;
+      cursor:pointer;
+      font-size:9px;
+      user-select:none;
+    }
+    .smallBtn:hover{ border-color: var(--accent); }
+    .smallBtn.danger:hover{ border-color: var(--danger); }
+
+    /* =========================
+       ✅ 라이트 모드
+       ========================= */
+    html.light{
+      --panel:#f6f7fb;
+      --panel2:#ffffff;
+      --line:#d6dbe7;
+      --line2:#b9c2d7;
+      --text:#111319;
+      --muted:#4c5569;
+
+      --accent:#2a7cff;
+      --today:#ffcc66;
+      --danger:#e23b3b;
+
+      --sun:#d14a4a;
+      --sat:#2a5bd6;
+    }
+
+    @media (max-width: 340px){
+      .rightBtns{ gap:4px; }
+    }
   </style>
 </head>
 
@@ -477,15 +585,15 @@
     <div class="wrap" id="app">
       <div class="topbar">
         <div class="leftBtns">
-          <button class="btn" id="prevBtn" type="button">◀</button>
-          <button class="btn" id="nextBtn" type="button">▶</button>
+          <button class="btn" id="prevBtn">◀</button>
+          <button class="btn" id="nextBtn">▶</button>
         </div>
 
         <div class="monthTitle" id="monthTitle">2026-01</div>
 
         <div class="rightBtns">
-          <button class="btn" id="clockBtn" type="button">CLOCK</button>
-          <button class="btn" id="todayBtn" type="button">TODAY</button>
+          <button class="btn" id="clockBtn">CLOCK</button>
+          <button class="btn" id="todayBtn">TODAY</button>
         </div>
       </div>
 
@@ -495,22 +603,39 @@
 
       <div class="grid" id="grid"></div>
 
+      <!-- ✅ 백업 목록 드로어 -->
+      <div class="backupPanel" id="backupPanel" aria-hidden="true">
+        <div class="help" id="backupEmptyText">백업 없음 (최근 10개까지 저장)</div>
+        <div id="backupList"></div>
+      </div>
+
+      <!-- ✅ 하단 바 -->
+      <div class="bottomBar">
+        <div class="bottomLeft">
+          <button class="bottomBtn" id="backupNowBtn" title="현재 상태 백업 저장(메모 입력)">BACKUP</button>
+          <button class="bottomBtn" id="toggleBackupListBtn" title="백업 목록 열기/닫기">LIST</button>
+        </div>
+        <div class="bottomRight">
+          <button class="bottomBtn" id="themeBtn" title="라이트/다크 토글">DARK</button>
+        </div>
+      </div>
+
       <div class="modalBack" id="modalBack" aria-hidden="true">
         <div class="modal" role="dialog" aria-modal="true">
           <div class="modalHeader">
             <div class="modalTitle" id="modalTitle">TASK</div>
 
-            <button class="miniBtn" id="hideDoneBtn" type="button" title="완료 숨김 토글">HIDE</button>
-            <button class="miniBtn" id="exportBtn" type="button" title="내보내기(JSON)">EXPORT</button>
-            <button class="miniBtn" id="importBtn" type="button" title="가져오기(JSON)">IMPORT</button>
+            <button class="miniBtn" id="hideDoneBtn" title="완료 숨김 토글">HIDE</button>
+            <button class="miniBtn" id="exportBtn" title="내보내기(JSON)">EXPORT</button>
+            <button class="miniBtn" id="importBtn" title="가져오기(JSON)">IMPORT</button>
 
-            <button class="closeBtn" id="closeBtn" type="button">X</button>
+            <button class="closeBtn" id="closeBtn">X</button>
           </div>
 
           <div class="modalBody">
             <div class="addRow">
               <input class="taskInput" id="taskInput" placeholder="할 일 입력" maxlength="60" />
-              <button class="addBtn" id="addBtn" type="button">추가</button>
+              <button class="addBtn" id="addBtn">추가</button>
             </div>
 
             <div class="taskList" id="taskList"></div>
@@ -524,45 +649,6 @@
 
   <script>
     const $ = (sel) => document.querySelector(sel);
-
-    // ✅ Notion/iframe에서 pointerdown이 씹힐 수 있어서 click + capture + stopPropagation
-    function onPress(el, handler){
-      if(!el) return;
-
-      let locked = false;
-      const run = (e) => {
-        if(locked) return;
-        locked = true;
-        try{ handler(e); }
-        finally{ setTimeout(() => (locked = false), 0); }
-      };
-
-      const wrap = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        run(e);
-      };
-
-      el.addEventListener("pointerdown", wrap, { passive:false, capture:true });
-      el.addEventListener("click", wrap, { capture:true });
-
-      el.addEventListener("keydown", (e) => {
-        if(e.key === "Enter" || e.key === " "){
-          e.preventDefault();
-          e.stopPropagation();
-          run(e);
-        }
-      }, { capture:true });
-    }
-
-    function lsGet(key){
-      try { return localStorage.getItem(key); }
-      catch(e){ return null; }
-    }
-    function lsSet(key, val){
-      try { localStorage.setItem(key, val); return true; }
-      catch(e){ return false; }
-    }
 
     const gridEl = $("#grid");
     const monthTitleEl = $("#monthTitle");
@@ -584,8 +670,20 @@
     const addBtn = $("#addBtn");
     const taskList = $("#taskList");
 
+    // ✅ 하단 백업/테마 UI
+    const backupNowBtn = $("#backupNowBtn");
+    const toggleBackupListBtn = $("#toggleBackupListBtn");
+    const themeBtn = $("#themeBtn");
+    const backupPanel = $("#backupPanel");
+    const backupList = $("#backupList");
+    const backupEmptyText = $("#backupEmptyText");
+
     const STORE_KEY = "pixel_calendar_tasks_v6";
     const UI_KEY = "pixel_calendar_ui_v6";
+
+    // ✅ 백업 저장 키 (최근 10개)
+    const BACKUP_KEY = "pixel_calendar_backups_v6";
+    const MAX_BACKUPS = 10;
 
     const LEGACY_KEYS = [
       "pixel_calendar_tasks_v5_backup_hideDone",
@@ -598,7 +696,10 @@
       viewDate: new Date(),
       selectedISO: null,
       editingIndex: null,
-      hideDone: false
+      hideDone: false,
+
+      theme: "dark",       // "dark" | "light"
+      backupListOpen: false
     };
 
     const pad2 = (n) => String(n).padStart(2, "0");
@@ -613,24 +714,37 @@
       try{ return JSON.parse(s); }catch(e){ return null; }
     }
 
+    function applyTheme(){
+      document.documentElement.classList.toggle("light", state.theme === "light");
+      themeBtn.textContent = (state.theme === "light") ? "LIGHT" : "DARK";
+      themeBtn.classList.toggle("on", state.theme === "light");
+    }
+
     function loadUI(){
-      const ui = safeParse(lsGet(UI_KEY)) || {};
+      const ui = safeParse(localStorage.getItem(UI_KEY)) || {};
       state.hideDone = Boolean(ui.hideDone);
+      state.theme = (ui.theme === "light") ? "light" : "dark";
+
       hideDoneBtn.textContent = state.hideDone ? "SHOW" : "HIDE";
+      applyTheme();
     }
     function saveUI(){
-      lsSet(UI_KEY, JSON.stringify({ hideDone: state.hideDone }));
+      localStorage.setItem(UI_KEY, JSON.stringify({
+        hideDone: state.hideDone,
+        theme: state.theme
+      }));
       hideDoneBtn.textContent = state.hideDone ? "SHOW" : "HIDE";
+      applyTheme();
     }
 
     function loadAll(){
-      const cur = safeParse(lsGet(STORE_KEY));
+      const cur = safeParse(localStorage.getItem(STORE_KEY));
       if(cur && typeof cur === "object" && !Array.isArray(cur)) return cur;
 
       for(const k of LEGACY_KEYS){
-        const v = safeParse(lsGet(k));
+        const v = safeParse(localStorage.getItem(k));
         if(v && typeof v === "object" && !Array.isArray(v)){
-          lsSet(STORE_KEY, JSON.stringify(v));
+          localStorage.setItem(STORE_KEY, JSON.stringify(v));
           return v;
         }
       }
@@ -638,7 +752,7 @@
     }
 
     function saveAll(obj){
-      lsSet(STORE_KEY, JSON.stringify(obj));
+      localStorage.setItem(STORE_KEY, JSON.stringify(obj));
     }
 
     function normalizeList(list){
@@ -661,12 +775,130 @@
       const all = loadAll();
       all[iso] = normalizeList(list);
       saveAll(all);
+      // ✅ AUTO 백업 없음 (요청사항)
     }
 
     function fmtCount(n){
       return n > 9 ? "9+" : String(n);
     }
 
+    /* =========================
+       ✅ 백업/복원 (수동, 최근 10개)
+       ========================= */
+    function loadBackups(){
+      const arr = safeParse(localStorage.getItem(BACKUP_KEY));
+      return Array.isArray(arr) ? arr : [];
+    }
+
+    function saveBackups(arr){
+      const trimmed = arr.slice(0, MAX_BACKUPS);
+      localStorage.setItem(BACKUP_KEY, JSON.stringify(trimmed));
+      return trimmed;
+    }
+
+    function nowStamp(){
+      const d = new Date();
+      const pad = (n)=>String(n).padStart(2,"0");
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    }
+
+    function makeBackup(memo){
+      const data = loadAll();
+      const item = {
+        id: `${Date.now()}_${Math.random().toString(16).slice(2)}`,
+        ts: Date.now(),
+        stamp: nowStamp(),
+        memo: String(memo ?? "").trim(),
+        data
+      };
+
+      const list = loadBackups();
+      list.unshift(item);
+      saveBackups(list);
+      renderBackupList();
+    }
+
+    function restoreBackup(id){
+      const list = loadBackups();
+      const found = list.find(x => x.id === id);
+      if(!found) return;
+
+      const label = `${found.stamp}${found.memo ? " · " + found.memo : ""}`;
+      const ok = confirm(`이 백업으로 복원할까요?\n\n${label}\n\n※ 현재 데이터는 덮어써집니다.`);
+      if(!ok) return;
+
+      saveAll(found.data);
+
+      render();
+      if(state.selectedISO) renderTaskList();
+      renderBackupList();
+    }
+
+    function deleteBackup(id){
+      const label = "이 백업을 삭제할까요?";
+      if(!confirm(label)) return;
+
+      const list = loadBackups().filter(x => x.id !== id);
+      saveBackups(list);
+      renderBackupList();
+    }
+
+    function renderBackupList(){
+      const list = loadBackups();
+      backupList.innerHTML = "";
+
+      if(list.length === 0){
+        backupEmptyText.style.display = "block";
+        return;
+      }
+      backupEmptyText.style.display = "none";
+
+      list.forEach(b => {
+        const row = document.createElement("div");
+        row.className = "backupItem";
+
+        const meta = document.createElement("div");
+        meta.className = "backupMeta";
+        meta.textContent = `${b.stamp}${b.memo ? " · " + b.memo : ""}`;
+
+        const actions = document.createElement("div");
+        actions.className = "backupActions";
+
+        const restoreBtn = document.createElement("button");
+        restoreBtn.className = "smallBtn";
+        restoreBtn.textContent = "RESTORE";
+        restoreBtn.addEventListener("click", (e)=>{
+          e.preventDefault();
+          restoreBackup(b.id);
+        });
+
+        const delBtn = document.createElement("button");
+        delBtn.className = "smallBtn danger";
+        delBtn.textContent = "DEL";
+        delBtn.addEventListener("click", (e)=>{
+          e.preventDefault();
+          deleteBackup(b.id);
+        });
+
+        actions.appendChild(restoreBtn);
+        actions.appendChild(delBtn);
+
+        row.appendChild(meta);
+        row.appendChild(actions);
+        backupList.appendChild(row);
+      });
+    }
+
+    function setBackupPanel(open){
+      state.backupListOpen = open;
+      backupPanel.classList.toggle("show", open);
+      backupPanel.setAttribute("aria-hidden", open ? "false" : "true");
+      toggleBackupListBtn.classList.toggle("on", open);
+    }
+
+    /* =========================
+       ✅ 캘린더 렌더
+       ========================= */
     function render(){
       gridEl.innerHTML = "";
 
@@ -682,6 +914,7 @@
       const lastDay = last.getDate();
 
       const prevLast = new Date(y, m, 0).getDate();
+
       const totalCells = 42;
 
       for(let i=0; i<totalCells; i++){
@@ -747,16 +980,19 @@
           cell.appendChild(heart);
         }
 
-        cell.tabIndex = disabled ? -1 : 0;
-        onPress(cell, () => {
+        cell.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
           if(disabled) return;
           openModal(iso);
-        });
+        }, { passive:false });
 
         gridEl.appendChild(cell);
       }
     }
 
+    /* =========================
+       ✅ 모달
+       ========================= */
     function openModal(iso){
       state.selectedISO = iso;
       state.editingIndex = null;
@@ -773,9 +1009,6 @@
     function closeModal(){
       modalBack.classList.remove("show");
       modalBack.setAttribute("aria-hidden", "true");
-
-      if(state.selectedISO) renderTaskList();
-
       state.selectedISO = null;
       state.editingIndex = null;
     }
@@ -813,13 +1046,12 @@
         item.className = "taskItem";
 
         const check = document.createElement("button");
-        check.type = "button";
         check.className = "checkBtn";
         check.textContent = task.done ? "✓" : "";
         if(task.done) check.classList.add("done");
         check.title = "완료 체크";
-
-        onPress(check, () => {
+        check.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
           const list = getTasks(iso);
           if(idx >= 0){
             list[idx].done = !list[idx].done;
@@ -827,7 +1059,9 @@
           }
           renderTaskList();
           render();
-        });
+        }, { passive:false });
+
+        item.appendChild(check);
 
         const text = document.createElement("div");
         text.className = "taskText";
@@ -838,23 +1072,21 @@
         actions.className = "taskActions";
 
         const edit = document.createElement("button");
-        edit.type = "button";
         edit.className = "iconBtn";
         edit.textContent = "✎";
         edit.title = "수정";
-
-        onPress(edit, () => {
+        edit.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
           state.editingIndex = idx;
           renderTaskListEditMode();
-        });
+        }, { passive:false });
 
         const del = document.createElement("button");
-        del.type = "button";
         del.className = "iconBtn delete";
         del.textContent = "⌫";
         del.title = "삭제";
-
-        onPress(del, () => {
+        del.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
           const list = getTasks(iso);
           if(idx >= 0){
             list.splice(idx, 1);
@@ -862,12 +1094,11 @@
           }
           renderTaskList();
           render();
-        });
+        }, { passive:false });
 
         actions.appendChild(edit);
         actions.appendChild(del);
 
-        item.appendChild(check);
         item.appendChild(text);
         item.appendChild(actions);
 
@@ -889,18 +1120,17 @@
         item.className = "taskItem";
 
         const check = document.createElement("button");
-        check.type = "button";
         check.className = "checkBtn";
         check.textContent = task.done ? "✓" : "";
         if(task.done) check.classList.add("done");
-
-        onPress(check, () => {
+        check.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
           const list = getTasks(iso);
           list[i].done = !list[i].done;
           setTasks(iso, list);
           renderTaskListEditMode();
           render();
-        });
+        }, { passive:false });
 
         item.appendChild(check);
 
@@ -914,12 +1144,11 @@
           actions.className = "taskActions";
 
           const save = document.createElement("button");
-          save.type = "button";
           save.className = "iconBtn";
           save.textContent = "✔";
           save.title = "저장";
-
-          onPress(save, () => {
+          save.addEventListener("pointerdown", (e) => {
+            e.preventDefault();
             const v = input.value.trim();
             if(!v) return;
             const list = getTasks(iso);
@@ -928,18 +1157,17 @@
             state.editingIndex = null;
             renderTaskList();
             render();
-          });
+          }, { passive:false });
 
           const cancel = document.createElement("button");
-          cancel.type = "button";
           cancel.className = "iconBtn delete";
           cancel.textContent = "↩";
           cancel.title = "취소";
-
-          onPress(cancel, () => {
+          cancel.addEventListener("pointerdown", (e) => {
+            e.preventDefault();
             state.editingIndex = null;
             renderTaskList();
-          });
+          }, { passive:false });
 
           actions.appendChild(save);
           actions.appendChild(cancel);
@@ -966,27 +1194,25 @@
         actions.className = "taskActions";
 
         const edit = document.createElement("button");
-        edit.type = "button";
         edit.className = "iconBtn";
         edit.textContent = "✎";
-
-        onPress(edit, () => {
+        edit.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
           state.editingIndex = i;
           renderTaskListEditMode();
-        });
+        }, { passive:false });
 
         const del = document.createElement("button");
-        del.type = "button";
         del.className = "iconBtn delete";
         del.textContent = "⌫";
-
-        onPress(del, () => {
+        del.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
           const list = getTasks(iso);
           list.splice(i, 1);
           setTasks(iso, list);
           renderTaskListEditMode();
           render();
-        });
+        }, { passive:false });
 
         actions.appendChild(edit);
         actions.appendChild(del);
@@ -1014,42 +1240,141 @@
       render();
     }
 
-    function copyTextFallback(text){
-      const ta = document.createElement("textarea");
-      ta.value = text;
-      ta.setAttribute("readonly", "");
-      ta.style.position = "fixed";
-      ta.style.left = "-9999px";
-      ta.style.top = "0";
-      document.body.appendChild(ta);
-      ta.focus();
-      ta.select();
-      let ok = false;
-      try{ ok = document.execCommand("copy"); }catch(_){}
-      ta.remove();
-      return ok;
-    }
+    /* =========================
+       ✅ 네비/기타
+       ========================= */
+    prevBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      const d = new Date(state.viewDate);
+      d.setMonth(d.getMonth() - 1);
+      state.viewDate = d;
+      render();
+    }, { passive:false });
 
-    function showManualExport(text){
-      const ta = document.createElement("textarea");
-      ta.value = text;
-      ta.style.width = "100%";
-      ta.style.height = "180px";
-      ta.style.background = "#0b0c10";
-      ta.style.color = "var(--text)";
-      ta.style.border = "2px solid var(--line2)";
-      ta.style.padding = "8px";
-      ta.style.fontSize = "10px";
-      ta.style.fontFamily = 'ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace';
+    nextBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      const d = new Date(state.viewDate);
+      d.setMonth(d.getMonth() + 1);
+      state.viewDate = d;
+      render();
+    }, { passive:false });
 
-      taskList.innerHTML = "";
-      taskList.appendChild(ta);
-      ta.focus();
-      ta.select();
+    todayBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      state.viewDate = new Date();
+      render();
+    }, { passive:false });
 
-      alert("EXPORT가 막혀서 텍스트창을 띄웠어요. 전체 선택 후 복사(Ctrl+C)하세요.\n복사 후엔 모달을 닫았다 다시 열면 목록이 돌아옵니다.");
-    }
+    /* ✅ CLOCK: 같은 iframe에서 시계로 복귀 */
+    clockBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      const url = new URL("/embed/clock.html", window.location.origin);
+      window.location.href = url.toString();
+    }, { passive:false });
 
+    closeBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      closeModal();
+    }, { passive:false });
+
+    modalBack.addEventListener("pointerdown", (e) => {
+      if(e.target === modalBack) closeModal();
+    }, { passive:false });
+
+    taskInput.addEventListener("keydown", (e) => {
+      if(e.key === "Enter") addTask();
+      if(e.key === "Escape") closeModal();
+    });
+
+    addBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      addTask();
+    }, { passive:false });
+
+    hideDoneBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      state.hideDone = !state.hideDone;
+      saveUI();
+      renderTaskList();
+    }, { passive:false });
+
+    exportBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      const data = loadAll();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `pixel_calendar_backup_${new Date().toISOString().slice(0,10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    }, { passive:false });
+
+    importBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "application/json";
+      input.addEventListener("change", async () => {
+        const file = input.files?.[0];
+        if(!file) return;
+        try{
+          const text = await file.text();
+          const obj = safeParse(text);
+          if(!obj || typeof obj !== "object" || Array.isArray(obj)){
+            alert("JSON 형식이 올바르지 않아요.");
+            return;
+          }
+          saveAll(obj);
+          render();
+          if(state.selectedISO) renderTaskList();
+          alert("가져오기 완료!");
+        }catch(err){
+          alert("가져오기 실패");
+        }
+      });
+      input.click();
+    }, { passive:false });
+
+    /* =========================
+       ✅ 하단 백업/테마 이벤트
+       ========================= */
+    backupNowBtn.addEventListener("click", (e)=>{
+      e.preventDefault();
+      const memo = prompt("백업 메모를 입력하세요. (비워도 저장됨)", "");
+      if(memo === null) return; // 취소
+      makeBackup(memo.trim());
+      // 리스트가 열려있으면 바로 최신이 보이도록
+      if(!state.backupListOpen) setBackupPanel(true);
+    });
+
+    toggleBackupListBtn.addEventListener("click", (e)=>{
+      e.preventDefault();
+      setBackupPanel(!state.backupListOpen);
+    });
+
+    themeBtn.addEventListener("click", (e)=>{
+      e.preventDefault();
+      state.theme = (state.theme === "light") ? "dark" : "light";
+      saveUI();
+    });
+
+    // 백업 패널 바깥 클릭 닫기(원하면 유지)
+    backupPanel.addEventListener("pointerdown", (e)=>{
+      // 패널 내부 클릭은 유지
+      e.stopPropagation();
+    });
+
+    // ESC로 백업 패널 닫기 + 모달 닫기
+    window.addEventListener("keydown", (e)=>{
+      if(e.key === "Escape"){
+        if(modalBack.classList.contains("show")) closeModal();
+        if(state.backupListOpen) setBackupPanel(false);
+      }
+    });
+
+    /* ✅ URL 쿼리로 자동 오픈: ?date=YYYY-MM-DD&open=1 */
     function parseISODateParam(){
       const sp = new URLSearchParams(location.search);
       const iso = sp.get("date");
@@ -1075,106 +1400,11 @@
       }
     }
 
-    window.addEventListener("DOMContentLoaded", () => {
-      loadUI();
-      render();
-      bootFromQuery();
-
-      // ✅ 상단 버튼/모달 버튼: onPress로 통일
-      onPress(prevBtn, () => {
-        const d = new Date(state.viewDate);
-        d.setMonth(d.getMonth() - 1);
-        state.viewDate = d;
-        render();
-      });
-
-      onPress(nextBtn, () => {
-        const d = new Date(state.viewDate);
-        d.setMonth(d.getMonth() + 1);
-        state.viewDate = d;
-        render();
-      });
-
-      onPress(todayBtn, () => {
-        state.viewDate = new Date();
-        render();
-      });
-
-      onPress(clockBtn, () => {
-        const url = new URL("/embed/clock.html", window.location.origin);
-        window.location.href = url.toString();
-      });
-
-      onPress(closeBtn, closeModal);
-
-      // ✅ 모달 밖 클릭 닫기(여긴 stopPropagation 걸면 내부 클릭 막을 수 있어서 onPress 금지)
-      modalBack.addEventListener("pointerdown", (e) => {
-        if(e.target === modalBack) closeModal();
-      }, { passive:true });
-
-      taskInput.addEventListener("keydown", (e) => {
-        if(e.key === "Enter") addTask();
-        if(e.key === "Escape") closeModal();
-      });
-
-      onPress(addBtn, addTask);
-
-      onPress(hideDoneBtn, () => {
-        state.hideDone = !state.hideDone;
-        saveUI();
-        renderTaskList();
-      });
-
-      onPress(exportBtn, async () => {
-        try{
-          const data = loadAll();
-          const json = JSON.stringify(data, null, 2);
-
-          try{
-            if(navigator.clipboard?.writeText){
-              await navigator.clipboard.writeText(json);
-              alert("EXPORT: JSON이 클립보드에 복사됐어요.");
-              return;
-            }
-          }catch(_){}
-
-          const ok = copyTextFallback(json);
-          if(ok){
-            alert("EXPORT: JSON이 클립보드에 복사됐어요.(fallback)");
-            return;
-          }
-
-          showManualExport(json);
-        }catch(err){
-          alert("EXPORT 실패(오류): " + (err?.message || err));
-        }
-      });
-
-      onPress(importBtn, () => {
-        const input = document.createElement("input");
-        input.type = "file";
-        input.accept = "application/json";
-        input.addEventListener("change", async () => {
-          const file = input.files?.[0];
-          if(!file) return;
-          try{
-            const text = await file.text();
-            const obj = safeParse(text);
-            if(!obj || typeof obj !== "object" || Array.isArray(obj)){
-              alert("JSON 형식이 올바르지 않아요.");
-              return;
-            }
-            saveAll(obj);
-            render();
-            if(state.selectedISO) renderTaskList();
-            alert("가져오기 완료!");
-          }catch(_){
-            alert("가져오기 실패");
-          }
-        });
-        input.click();
-      });
-    });
+    loadUI();
+    render();
+    renderBackupList();
+    setBackupPanel(false);
+    bootFromQuery();
   </script>
 </body>
 </html>
