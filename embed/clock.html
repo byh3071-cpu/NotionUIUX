@@ -11,15 +11,14 @@
 
   <style>
     :root{
-      /* THEME */
       --panel:#111319; --panel2:#0f1117;
       --card:#0b0c10; --card2:#0e1016;
       --line:#2a2f3a; --line2:#3a4150;
       --text:#e9eef7; --muted:#a7b0c2;
       --accent:#7cc7ff; --today:#ffe08a;
 
-      /* ✅ LAYOUT: 두번째 스샷(가로형) 비율로 원복 */
-      --baseW: 480;
+      /* ✅ 두번째 스샷(왼쪽 시계) 가로형 비율 */
+      --baseW: 720;
       --baseH: 320;
       --scale: 1;
     }
@@ -41,29 +40,24 @@
       overflow:hidden;
     }
 
-    /* === scaling + no outer scroll === */
+    /* ✅ 바깥 여백 없이, 테두리 100% 보이게 스케일 */
     .stage{
       width:100%; height:100%;
-      display:flex;
-      align-items:center;
-      justify-content:center;
+      display:flex; align-items:center; justify-content:center;
       background:var(--panel);
-      padding:0;
-      overflow:hidden;
+      padding:0; overflow:hidden;
     }
     .scaler{
       width: calc(var(--baseW) * 1px * var(--scale));
       height: calc(var(--baseH) * 1px * var(--scale));
-      display:flex;
-      align-items:flex-start;
-      justify-content:flex-start;
+      display:flex; align-items:flex-start; justify-content:flex-start;
     }
     .wrap{
       width: calc(var(--baseW) * 1px);
+      height: calc(var(--baseH) * 1px);
       transform: scale(var(--scale));
       transform-origin: top left;
       border:2px solid var(--line2);
-      border-radius:0;
       background:var(--panel);
       overflow:hidden;
       display:flex;
@@ -73,18 +67,16 @@
     /* TOP */
     .topbar{
       display:flex; align-items:center; justify-content:space-between;
-      padding:8px 10px;
+      padding:10px 12px;
       border-bottom:2px solid var(--line2);
       background:linear-gradient(180deg, var(--panel2), var(--panel));
       gap:10px;
       flex:0 0 auto;
-      height:64px;
     }
     .leftBtns{ display:flex; gap:10px; align-items:center; }
     .btn{
-      height:40px; 
-      min-width:72px;
-      padding:0 11px;
+      height:42px; min-width:88px;
+      padding:0 12px;
       background:var(--card2); color:var(--text);
       border:2px solid var(--line2);
       border-radius:0;
@@ -109,22 +101,22 @@
       user-select:none;
       opacity:.95;
     }
-    .rightPad{ width:0px; }
+    .rightPad{ width:88px; } /* OPEN 버튼 자리였던 공간만 유지 */
 
     /* BODY */
     .body{
-      flex:0 0 auto;
+      flex:1 1 auto;
       min-height:0;
-      padding:12px 12px;
+      padding:12px 12px;         /* ✅ 세로 여백 줄임 */
       display:grid;
-      grid-template-columns: 1.55fr 0.95fr;
+      grid-template-columns: 2.2fr 1fr;
       gap:12px;
       background:var(--panel);
     }
     .panel{
       border:2px solid var(--line2);
       background:linear-gradient(180deg, var(--card2), var(--card));
-      padding:14px 14px;
+      padding:14px 14px;         /* ✅ 세로 여백 줄임 */
       display:flex;
       flex-direction:column;
       justify-content:center;
@@ -147,7 +139,7 @@
       gap:10px;
     }
     .time{
-      font-size:52px;
+      font-size:52px;            /* ✅ 시간은 크게 */
       letter-spacing:1px;
       line-height:1;
     }
@@ -155,12 +147,12 @@
       width:14px; height:14px;
       border:2px solid var(--line2);
       background: var(--accent);
-      margin-bottom:8px;
+      margin-bottom:10px;
       opacity:1;
     }
 
     .todoLine{
-      font-size:12px;
+      font-size:12px;            /* ✅ 나머지 글씨 너무 작던 것 보정 */
       color:var(--muted);
       margin-top:6px;
     }
@@ -170,7 +162,7 @@
     .block{
       border:2px solid var(--line2);
       background:var(--card2);
-      padding:10px 10px;
+      padding:12px 12px;
       display:flex;
       flex-direction:column;
       gap:8px;
@@ -181,7 +173,7 @@
       letter-spacing:.5px;
     }
     .bar{
-      height:12px;
+      height:14px;
       border:2px solid var(--line2);
       background:var(--card);
       position:relative;
@@ -207,14 +199,12 @@
         <div class="topbar">
           <div class="leftBtns">
             <button class="btn" id="btn24">24H</button>
-            <!-- ✅ OPEN 완전 삭제 -->
           </div>
           <div class="title">PIXEL CLOCK</div>
           <div class="rightPad"></div>
         </div>
 
         <div class="body">
-          <!-- LEFT -->
           <div class="panel">
             <div class="metaLine" id="metaLine">0000-00-00 · TODAY 0/0</div>
 
@@ -226,8 +216,7 @@
             <div class="todoLine" id="todoLine">오늘 할 일 : <b>0</b> / <b>0</b></div>
           </div>
 
-          <!-- RIGHT -->
-          <div class="panel" style="gap:14px;">
+          <div class="panel" style="gap:10px;">
             <div class="block">
               <div class="blockTitle">DAY</div>
               <div class="bar"><div class="fill" id="dayFill"></div></div>
@@ -248,7 +237,6 @@
   <script>
     const $ = (s) => document.querySelector(s);
 
-    // calendar와 동일 키를 읽어서 "오늘 TASK" 연동
     const CAL_STORE_KEY = "pixel_calendar_tasks_v6";
     const CAL_UI_KEY    = "pixel_calendar_ui_v6";
     const CLOCK_UI_KEY  = "pixel_clock_ui_v2";
@@ -305,58 +293,47 @@
     function fmtTime(now, is24){
       let h = now.getHours();
       const m = now.getMinutes();
-      if(is24){
-        return `${pad2(h)}:${pad2(m)}`;
-      }else{
-        const hh = ((h + 11) % 12) + 1;
-        return `${pad2(hh)}:${pad2(m)}`;
-      }
+      if(is24) return `${pad2(h)}:${pad2(m)}`;
+      const hh = ((h + 11) % 12) + 1;
+      return `${pad2(hh)}:${pad2(m)}`;
     }
 
-    function renderStatic(){
+    function renderMeta(){
       applyThemeFromCalendar();
-
       const now = new Date();
       const iso = toISO(now);
       const dow = dayK[now.getDay()];
-      const { total, done } = getTodayTasks();
 
+      const { total, done } = getTodayTasks();
       metaLine.textContent = `${iso} (${dow}) · TODAY ${done}/${total}`;
       todoLine.innerHTML   = `오늘 할 일 : <b>${done}</b> / <b>${total}</b>`;
 
-      // DAY progress
       const sec = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
       const dayPct = Math.max(0, Math.min(100, (sec / 86400) * 100));
       dayFill.style.width = `${dayPct.toFixed(2)}%`;
 
-      // TASK progress
       const taskPct = total > 0 ? (done / total) * 100 : 0;
       taskFill.style.width = `${taskPct.toFixed(2)}%`;
       taskInfo.innerHTML = `<b>${done}</b>/<b>${total}</b> - <b>${Math.round(taskPct)}%</b>`;
     }
 
     function fitToFrame(){
-        updateBaseSize(); // ✅ 먼저 실제 콘텐츠 크기 반영
       const rootStyle = getComputedStyle(document.documentElement);
-      const baseW = Number(rootStyle.getPropertyValue("--baseW")) || 480;
+      const baseW = Number(rootStyle.getPropertyValue("--baseW")) || 720;
       const baseH = Number(rootStyle.getPropertyValue("--baseH")) || 320;
 
       const vw = (window.visualViewport && window.visualViewport.width) ? window.visualViewport.width : window.innerWidth;
       const vh = (window.visualViewport && window.visualViewport.height) ? window.visualViewport.height : window.innerHeight;
 
-      const availW = Math.max(1, vw);
-      const availH = Math.max(1, vh);
-
-      let scale = Math.min(availW / baseW, availH / baseH);
+      let scale = Math.min(vw / baseW, vh / baseH);
       if(!isFinite(scale) || scale <= 0) scale = 1;
 
-      scale = Math.min(3, Math.max(0.70, scale));
+      /* ✅ “테두리 100% 보이기” 우선: 너무 작게 떨어지지 않게만 최소값 */
+      scale = Math.min(3, Math.max(0.45, scale));
       scale = Math.floor(scale * 100) / 100;
-
       document.documentElement.style.setProperty("--scale", String(scale));
     }
 
-    // 24H toggle
     let clockUI = loadClockUI();
     function sync24Btn(){
       btn24.classList.toggle("on", clockUI.is24);
@@ -369,7 +346,6 @@
       sync24Btn();
     }, { passive:false });
 
-    // blink
     let blinkOn = true;
     function tick(){
       applyThemeFromCalendar();
@@ -377,16 +353,18 @@
       timeText.textContent = fmtTime(now, clockUI.is24);
       blinkOn = !blinkOn;
       blinkBox.style.opacity = blinkOn ? "1" : "0.15";
-      renderStatic();
+      renderMeta();
     }
 
-    // boot
     sync24Btn();
     fitToFrame();
-    renderStatic();
+    renderMeta();
+
     window.addEventListener("resize", fitToFrame);
-    setInterval(fitToFrame, 500);
+    if(window.visualViewport) window.visualViewport.addEventListener("resize", fitToFrame);
+
     setInterval(tick, 500);
+    setInterval(fitToFrame, 600);
   </script>
 </body>
 </html>
