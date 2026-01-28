@@ -11,10 +11,15 @@
 
   <style>
     :root{
+      /* ====== DARK (기본) ====== */
       --panel:#111319;
       --panel2:#0f1117;
+      --card:#0b0c10;
+      --card2:#0e1016;
+
       --line:#2a2f3a;
       --line2:#3a4150;
+
       --text:#e9eef7;
       --muted:#a7b0c2;
 
@@ -30,9 +35,29 @@
       --cell: 46px;
       --gap: 4px;
 
-      /* 하단바 높이(겹침 방지용) */
-      --bottomBarH: 46px;
-      --backupPanelH: 150px;
+      --footerH: 62px;
+      --pad: 8px;
+    }
+
+    /* ====== LIGHT (회색 패널 + 밝은 카드) ====== */
+    html.light{
+      --panel:#e5e7eb;     /* 회색 패널 */
+      --panel2:#d7dbe3;    /* 살짝 진한 패널 */
+      --card:#f8fafc;      /* 밝은 카드 */
+      --card2:#eef2f7;     /* 카드 헤더/바 */
+
+      --line:#cbd5e1;
+      --line2:#94a3b8;
+
+      --text:#0b1020;
+      --muted:#475569;
+
+      --accent:#2563eb;
+      --today:#b45309;
+      --danger:#b91c1c;
+
+      --sun:#b91c1c;
+      --sat:#1d4ed8;
     }
 
     *{ box-sizing:border-box; }
@@ -47,7 +72,7 @@
       font-family: ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace;
       -webkit-font-smoothing: antialiased;
       text-rendering: geometricPrecision;
-      overflow:hidden;
+      overflow:hidden; /* 바깥 스크롤 제거 */
     }
 
     .stage{
@@ -58,7 +83,7 @@
       align-items:flex-start;
       justify-content:flex-start;
       overflow:hidden;
-      padding:0; /* ✅ */
+      padding: var(--pad);
       margin:0;
     }
 
@@ -69,7 +94,9 @@
       border:2px solid var(--line2);
       border-radius:0;
       overflow:hidden;
-      position:relative; /* ✅ 하단바/백업패널 absolute용 */
+      position:relative;
+      display:flex;
+      flex-direction:column;
     }
 
     .topbar{
@@ -80,6 +107,7 @@
       border-bottom:2px solid var(--line2);
       background:linear-gradient(180deg, var(--panel2), var(--panel));
       gap:6px;
+      flex:0 0 auto;
     }
 
     .leftBtns, .rightBtns{
@@ -91,7 +119,7 @@
     .btn{
       height:32px;
       padding:0 10px;
-      background:#0e1016;
+      background:var(--card2);
       color:var(--text);
       border:2px solid var(--line2);
       border-radius:0;
@@ -126,7 +154,8 @@
       gap: var(--gap);
       padding:8px 8px 6px;
       border-bottom:2px solid var(--line2);
-      background:#0e1016;
+      background:var(--card2);
+      flex:0 0 auto;
     }
 
     .dow div{
@@ -136,27 +165,41 @@
       padding:6px 0;
       border:2px solid var(--line);
       border-radius:0;
-      background:#0b0c10;
+      background:var(--card);
       user-select:none;
     }
 
     .dow .sunHead{ color:var(--sun); border-color:rgba(255,143,143,.45); }
+    html.light .dow .sunHead{ border-color:rgba(185,28,28,.35); }
     .dow .satHead{ color:var(--sat); border-color:rgba(143,182,255,.45); }
+    html.light .dow .satHead{ border-color:rgba(29,78,216,.35); }
+
+    /* ====== grid + footer 공간 확보 ====== */
+    .gridWrap{
+      position:relative;
+      flex:1 1 auto;
+      min-height:0;
+      background:var(--panel);
+      overflow:hidden;
+    }
 
     .grid{
+      position:absolute;
+      top:0; left:0; right:0;
+      bottom: var(--footerH); /* ✅ 하단바 만큼 띄움 */
       padding:8px;
-      padding-bottom: calc(8px + var(--bottomBarH)); /* ✅ 하단바 겹침 방지 */
       display:grid;
       grid-template-columns: repeat(7, 1fr);
       gap: var(--gap);
       background:var(--panel);
+      overflow:hidden;
     }
 
     .day{
       height: var(--cell);
       border:2px solid var(--line);
       border-radius:0;
-      background:#0b0c10;
+      background:var(--card);
       position:relative;
       cursor:pointer;
       display:flex;
@@ -174,11 +217,14 @@
     .day.disabled{
       opacity:.35;
       cursor:default;
+      background: color-mix(in srgb, var(--card) 70%, var(--panel) 30%);
     }
     .day.disabled:hover{ border-color:var(--line); }
 
     .day.sun:not(.disabled){ border-color: rgba(255,143,143,.30); }
+    html.light .day.sun:not(.disabled){ border-color: rgba(185,28,28,.25); }
     .day.sat:not(.disabled){ border-color: rgba(143,182,255,.30); }
+    html.light .day.sat:not(.disabled){ border-color: rgba(29,78,216,.25); }
 
     .num{ font-size:10px; color:var(--text); }
 
@@ -188,14 +234,14 @@
       width:18px; height:18px;
       clip-path: polygon(0 0, 0 100%, 100% 100%);
       background: var(--accent);
-      color:#0b0c10;
+      color: color-mix(in srgb, var(--card) 20%, #000 80%);
       display:flex;
       align-items:flex-end;
       justify-content:flex-start;
       font-size:9px;
       line-height:1;
       padding:0 0 2px 3px;
-      box-shadow: inset 0 0 0 2px rgba(11,12,16,.25);
+      box-shadow: inset 0 0 0 2px rgba(11,12,16,.18);
       user-select:none;
       pointer-events:none;
       z-index:1;
@@ -206,7 +252,7 @@
       right:0; bottom:0;
       width:18px; height:18px;
       clip-path: polygon(100% 0, 0 100%, 100% 100%);
-      background: rgba(124,199,255,.22);
+      background: color-mix(in srgb, var(--accent) 22%, transparent 78%);
       color: var(--accent);
       display:flex;
       align-items:flex-end;
@@ -214,7 +260,7 @@
       font-size:9px;
       line-height:1;
       padding:0 3px 2px 0;
-      box-shadow: inset 0 0 0 2px rgba(124,199,255,.25);
+      box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent 75%);
       user-select:none;
       pointer-events:none;
       z-index:1;
@@ -233,13 +279,14 @@
       pointer-events:none;
       z-index:2;
     }
-    .heartMarker.doneAll{ filter: drop-shadow(0 0 2px rgba(124,199,255,.25)); }
+    .heartMarker.doneAll{ filter: drop-shadow(0 0 2px color-mix(in srgb, var(--accent) 25%, transparent 75%)); }
 
     .today{
       border-color: var(--today) !important;
-      box-shadow: inset 0 0 0 2px rgba(255,224,138,.25);
+      box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--today) 25%, transparent 75%);
     }
 
+    /* ====== TASK MODAL ====== */
     .modalBack{
       position:absolute;
       inset:0;
@@ -256,7 +303,7 @@
       width: 100%;
       max-width: 340px;
       height: 350px;
-      background: #0e1016;
+      background: var(--card2);
       border: 2px solid var(--line2);
       border-radius:0;
       display:flex;
@@ -270,7 +317,7 @@
       align-items:center;
       justify-content:space-between;
       border-bottom:2px solid var(--line2);
-      background:#0b0c10;
+      background:var(--card);
       gap:6px;
     }
 
@@ -288,7 +335,7 @@
       height:28px;
       padding:0 8px;
       border:2px solid var(--line2);
-      background:#0e1016;
+      background:var(--card2);
       color:var(--text);
       border-radius:0;
       cursor:pointer;
@@ -306,7 +353,7 @@
       width:32px;
       height:32px;
       border:2px solid var(--line2);
-      background:#0e1016;
+      background:var(--card2);
       color:var(--text);
       border-radius:0;
       cursor:pointer;
@@ -327,6 +374,7 @@
       gap:8px;
       height:100%;
       min-height:0;
+      background:var(--card2);
     }
 
     .addRow{ display:flex; gap:6px; }
@@ -335,20 +383,20 @@
       flex:1;
       height:34px;
       border:2px solid var(--line2);
-      background:#0b0c10;
+      background:var(--card);
       color:var(--text);
       border-radius:0;
       outline:none;
       padding:0 8px;
       font-size:10px;
     }
-    .taskInput::placeholder{ color:#7b8497; }
+    .taskInput::placeholder{ color: color-mix(in srgb, var(--muted) 75%, transparent 25%); }
 
     .addBtn{
       width:70px;
       height:34px;
       border:2px solid var(--line2);
-      background:#0b0c10;
+      background:var(--card);
       color:var(--text);
       border-radius:0;
       cursor:pointer;
@@ -361,7 +409,7 @@
 
     .taskList{
       border:2px solid var(--line2);
-      background:#0b0c10;
+      background:var(--card);
       border-radius:0;
       padding:6px;
       overflow:auto;
@@ -379,7 +427,7 @@
       border:2px solid var(--line);
       border-radius:0;
       margin-bottom:6px;
-      background:#0e1016;
+      background:var(--card2);
     }
 
     .checkBtn{
@@ -399,7 +447,7 @@
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
     }
-    .checkBtn.done{ background: var(--accent); color:#0b0c10; }
+    .checkBtn.done{ background: var(--accent); color: color-mix(in srgb, var(--card) 15%, #000 85%); }
 
     .taskText{
       font-size:10px;
@@ -418,7 +466,7 @@
       flex:1;
       height:30px;
       border:2px solid var(--line2);
-      background:#0b0c10;
+      background:var(--card);
       color:var(--text);
       border-radius:0;
       outline:none;
@@ -432,7 +480,7 @@
       width:30px;
       height:28px;
       border:2px solid var(--line2);
-      background:#0b0c10;
+      background:var(--card);
       color:var(--text);
       border-radius:0;
       cursor:pointer;
@@ -455,128 +503,229 @@
       user-select:none;
     }
 
-    /* =========================
-       ✅ 하단 바(백업/리스트/테마)
-       ========================= */
-    .bottomBar{
+    /* ====== FOOTER BAR ====== */
+    .footer{
       position:absolute;
       left:0; right:0; bottom:0;
-      height: var(--bottomBarH);
-      padding:8px;
+      height: var(--footerH);
       border-top:2px solid var(--line2);
-      background:#0e1016;
+      background: linear-gradient(180deg, var(--panel), var(--panel2));
       display:flex;
-      gap:6px;
       align-items:center;
       justify-content:space-between;
-      z-index:10;
+      padding: 10px 10px;
+      gap:10px;
+      z-index:20;
     }
 
-    .bottomLeft, .bottomRight{
+    .footerLeft{
       display:flex;
-      gap:6px;
+      gap:10px;
       align-items:center;
     }
 
-    .bottomBtn{
-      height:30px;
-      padding:0 10px;
-      border:2px solid var(--line2);
-      background:#0b0c10;
+    .footerBtn{
+      height:38px;
+      min-width:104px;
+      padding:0 12px;
+      background:var(--card2);
       color:var(--text);
+      border:2px solid var(--line2);
       border-radius:0;
       cursor:pointer;
-      font-size:9px;
+      font-size:10px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
       user-select:none;
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
     }
-    .bottomBtn:hover{ border-color: var(--accent); }
-
-    .bottomBtn.on{
-      border-color: var(--accent);
-      color: var(--accent);
-      box-shadow: inset 0 0 0 2px rgba(124,199,255,.12);
+    .footerBtn:hover{ border-color:var(--accent); }
+    .footerBtn.on{
+      border-color:var(--accent);
+      box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 12%, transparent 88%);
+      color:var(--accent);
     }
 
-    /* ✅ 백업 목록 드로어(하단에서 올라옴) */
-    .backupPanel{
+    /* ====== BACKUP DRAWER ====== */
+    .drawer{
       position:absolute;
       left:0; right:0;
-      bottom: var(--bottomBarH);
-      height: var(--backupPanelH);
-      display:none;
+      bottom: var(--footerH);
+      height: 210px;
+      background: var(--panel);
       border-top:2px solid var(--line2);
-      background:#0b0c10;
-      padding:8px;
-      overflow:auto;
-      -webkit-overflow-scrolling: touch;
-      z-index:11;
+      display:none;
+      flex-direction:column;
+      z-index:25;
     }
-    .backupPanel.show{ display:block; }
+    .drawer.show{ display:flex; }
 
-    .backupItem{
+    .drawerHead{
+      height:40px;
       display:flex;
       align-items:center;
       justify-content:space-between;
+      padding: 6px 10px;
+      background: var(--panel2);
+      border-bottom:2px solid var(--line2);
       gap:8px;
-      padding:6px;
-      border:2px solid var(--line);
-      background:#0e1016;
-      margin-bottom:6px;
     }
-
-    .backupMeta{
-      font-size:9px;
-      color:var(--muted);
+    .drawerTitle{
+      font-size:10px;
+      color:var(--text);
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
+      user-select:none;
       flex:1;
     }
-
-    .backupActions{
+    .drawerBody{
+      padding:10px;
       display:flex;
-      gap:6px;
-      flex:0 0 auto;
+      flex-direction:column;
+      gap:10px;
+      min-height:0;
+      flex:1;
+      background: var(--panel);
+    }
+
+    .row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
     }
 
     .smallBtn{
-      height:26px;
-      padding:0 8px;
-      border:2px solid var(--line2);
-      background:#0b0c10;
+      height:32px;
+      padding:0 10px;
+      background:var(--card2);
       color:var(--text);
+      border:2px solid var(--line2);
       border-radius:0;
       cursor:pointer;
+      font-size:10px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      user-select:none;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .smallBtn:hover{ border-color:var(--accent); }
+
+    .backupList{
+      border:2px solid var(--line2);
+      background:var(--card);
+      padding:8px;
+      overflow:auto;
+      flex:1;
+      min-height:0;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .backupItem{
+      border:2px solid var(--line);
+      background:var(--card2);
+      padding:8px;
+      margin-bottom:8px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .backupMeta{
       font-size:9px;
+      color:var(--muted);
+      line-height:1.35;
+      word-break:break-word;
+    }
+    .backupActions{
+      display:flex;
+      gap:8px;
+      justify-content:flex-end;
+    }
+    .tag{
+      display:inline-block;
+      border:2px solid var(--line2);
+      background:var(--card);
+      padding:2px 6px;
+      font-size:9px;
+      color:var(--text);
+    }
+
+    /* ====== IN-PAGE MODAL (backup memo / restore confirm) ====== */
+    .uiModalBack{
+      position:absolute;
+      inset:0;
+      background: rgba(0,0,0,.55);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:10px;
+      z-index:80;
+    }
+    .uiModalBack.show{ display:flex; }
+
+    .uiModal{
+      width:100%;
+      max-width: 340px;
+      background: var(--card2);
+      border:2px solid var(--line2);
+      overflow:hidden;
+    }
+    .uiModalHead{
+      height:40px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding: 6px 10px;
+      background: var(--card);
+      border-bottom:2px solid var(--line2);
+      gap:8px;
+    }
+    .uiModalTitle{
+      font-size:10px;
+      color:var(--text);
+      flex:1;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
       user-select:none;
     }
-    .smallBtn:hover{ border-color: var(--accent); }
-    .smallBtn.danger:hover{ border-color: var(--danger); }
+    .uiModalBody{
+      padding:10px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      background: var(--card2);
+    }
+    .uiInput{
+      height:36px;
+      border:2px solid var(--line2);
+      background: var(--card);
+      color: var(--text);
+      outline:none;
+      padding:0 10px;
+      font-size:10px;
+    }
+    .uiInput::placeholder{ color: color-mix(in srgb, var(--muted) 75%, transparent 25%); }
 
-    /* =========================
-       ✅ 라이트 모드
-       ========================= */
-    html.light{
-      --panel:#f6f7fb;
-      --panel2:#ffffff;
-      --line:#d6dbe7;
-      --line2:#b9c2d7;
-      --text:#111319;
-      --muted:#4c5569;
-
-      --accent:#2a7cff;
-      --today:#ffcc66;
-      --danger:#e23b3b;
-
-      --sun:#d14a4a;
-      --sat:#2a5bd6;
+    .uiText{
+      font-size:10px;
+      color:var(--text);
+      line-height:1.45;
+      word-break:break-word;
     }
 
-    @media (max-width: 340px){
-      .rightBtns{ gap:4px; }
+    .uiModalActions{
+      display:flex;
+      gap:10px;
+      justify-content:flex-end;
     }
+
+    .dangerBtn:hover{ border-color:var(--danger); }
   </style>
 </head>
 
@@ -589,7 +738,7 @@
           <button class="btn" id="nextBtn">▶</button>
         </div>
 
-        <div class="monthTitle" id="monthTitle">2026-01</div>
+        <div class="monthTitle" id="monthTitle">0000-00</div>
 
         <div class="rightBtns">
           <button class="btn" id="clockBtn">CLOCK</button>
@@ -601,47 +750,72 @@
         <div class="sunHead">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div class="satHead">토</div>
       </div>
 
-      <div class="grid" id="grid"></div>
+      <div class="gridWrap">
+        <div class="grid" id="grid"></div>
 
-      <!-- ✅ 백업 목록 드로어 -->
-      <div class="backupPanel" id="backupPanel" aria-hidden="true">
-        <div class="help" id="backupEmptyText">백업 없음 (최근 10개까지 저장)</div>
-        <div id="backupList"></div>
-      </div>
+        <!-- ✅ TASK 모달 -->
+        <div class="modalBack" id="modalBack" aria-hidden="true">
+          <div class="modal" role="dialog" aria-modal="true">
+            <div class="modalHeader">
+              <div class="modalTitle" id="modalTitle">TASK</div>
 
-      <!-- ✅ 하단 바 -->
-      <div class="bottomBar">
-        <div class="bottomLeft">
-          <button class="bottomBtn" id="backupNowBtn" title="현재 상태 백업 저장(메모 입력)">BACKUP</button>
-          <button class="bottomBtn" id="toggleBackupListBtn" title="백업 목록 열기/닫기">LIST</button>
-        </div>
-        <div class="bottomRight">
-          <button class="bottomBtn" id="themeBtn" title="라이트/다크 토글">DARK</button>
-        </div>
-      </div>
+              <button class="miniBtn" id="hideDoneBtn" title="완료 숨김 토글">HIDE</button>
+              <button class="miniBtn" id="exportBtn" title="내보내기(JSON)">EXPORT</button>
+              <button class="miniBtn" id="importBtn" title="가져오기(JSON)">IMPORT</button>
 
-      <div class="modalBack" id="modalBack" aria-hidden="true">
-        <div class="modal" role="dialog" aria-modal="true">
-          <div class="modalHeader">
-            <div class="modalTitle" id="modalTitle">TASK</div>
-
-            <button class="miniBtn" id="hideDoneBtn" title="완료 숨김 토글">HIDE</button>
-            <button class="miniBtn" id="exportBtn" title="내보내기(JSON)">EXPORT</button>
-            <button class="miniBtn" id="importBtn" title="가져오기(JSON)">IMPORT</button>
-
-            <button class="closeBtn" id="closeBtn">X</button>
-          </div>
-
-          <div class="modalBody">
-            <div class="addRow">
-              <input class="taskInput" id="taskInput" placeholder="할 일 입력" maxlength="60" />
-              <button class="addBtn" id="addBtn">추가</button>
+              <button class="closeBtn" id="closeBtn">X</button>
             </div>
 
-            <div class="taskList" id="taskList"></div>
+            <div class="modalBody">
+              <div class="addRow">
+                <input class="taskInput" id="taskInput" placeholder="할 일 입력" maxlength="60" />
+                <button class="addBtn" id="addBtn">추가</button>
+              </div>
 
-            <div class="help">좌하단=총 · 우하단=완료 · ♡/♥=완료상태</div>
+              <div class="taskList" id="taskList"></div>
+
+              <div class="help">좌하단=총 · 우하단=완료 · ♡/♥=완료상태</div>
+            </div>
           </div>
+        </div>
+
+        <!-- ✅ BACKUP DRAWER -->
+        <div class="drawer" id="backupDrawer" aria-hidden="true">
+          <div class="drawerHead">
+            <div class="drawerTitle" id="drawerTitle">BACKUP</div>
+            <button class="smallBtn" id="closeDrawerBtn">CLOSE</button>
+          </div>
+
+          <div class="drawerBody">
+            <div class="row">
+              <div class="help">최근 10개만 유지 · 수동 백업</div>
+              <button class="smallBtn" id="backupNowBtn">BACKUP NOW</button>
+            </div>
+
+            <div class="backupList" id="backupList"></div>
+          </div>
+        </div>
+
+        <!-- ✅ UI MODALS: 백업 메모 / 복원 확인 -->
+        <div class="uiModalBack" id="uiModalBack" aria-hidden="true">
+          <div class="uiModal" role="dialog" aria-modal="true">
+            <div class="uiModalHead">
+              <div class="uiModalTitle" id="uiModalTitle">UI</div>
+              <button class="smallBtn dangerBtn" id="uiModalCloseBtn">X</button>
+            </div>
+            <div class="uiModalBody" id="uiModalBody">
+              <!-- JS에서 내용 주입 -->
+            </div>
+          </div>
+        </div>
+
+        <!-- ✅ FOOTER -->
+        <div class="footer">
+          <div class="footerLeft">
+            <button class="footerBtn" id="backupBtn">BACKUP</button>
+            <button class="footerBtn" id="listBtn">LIST</button>
+          </div>
+          <button class="footerBtn" id="lightBtn">LIGHT</button>
         </div>
       </div>
     </div>
@@ -670,20 +844,27 @@
     const addBtn = $("#addBtn");
     const taskList = $("#taskList");
 
-    // ✅ 하단 백업/테마 UI
-    const backupNowBtn = $("#backupNowBtn");
-    const toggleBackupListBtn = $("#toggleBackupListBtn");
-    const themeBtn = $("#themeBtn");
-    const backupPanel = $("#backupPanel");
-    const backupList = $("#backupList");
-    const backupEmptyText = $("#backupEmptyText");
+    /* footer / drawer */
+    const backupBtn = $("#backupBtn");
+    const listBtn = $("#listBtn");
+    const lightBtn = $("#lightBtn");
 
+    const backupDrawer = $("#backupDrawer");
+    const closeDrawerBtn = $("#closeDrawerBtn");
+    const backupNowBtn = $("#backupNowBtn");
+    const backupListEl = $("#backupList");
+    const drawerTitle = $("#drawerTitle");
+
+    /* ui modal (no prompt/confirm) */
+    const uiModalBack = $("#uiModalBack");
+    const uiModalTitle = $("#uiModalTitle");
+    const uiModalBody = $("#uiModalBody");
+    const uiModalCloseBtn = $("#uiModalCloseBtn");
+
+    /* storage keys */
     const STORE_KEY = "pixel_calendar_tasks_v6";
     const UI_KEY = "pixel_calendar_ui_v6";
-
-    // ✅ 백업 저장 키 (최근 10개)
     const BACKUP_KEY = "pixel_calendar_backups_v6";
-    const MAX_BACKUPS = 10;
 
     const LEGACY_KEYS = [
       "pixel_calendar_tasks_v5_backup_hideDone",
@@ -697,9 +878,7 @@
       selectedISO: null,
       editingIndex: null,
       hideDone: false,
-
-      theme: "dark",       // "dark" | "light"
-      backupListOpen: false
+      drawerMode: "backup",  // "backup" | "list"
     };
 
     const pad2 = (n) => String(n).padStart(2, "0");
@@ -714,29 +893,22 @@
       try{ return JSON.parse(s); }catch(e){ return null; }
     }
 
-    function applyTheme(){
-      document.documentElement.classList.toggle("light", state.theme === "light");
-      themeBtn.textContent = (state.theme === "light") ? "LIGHT" : "DARK";
-      themeBtn.classList.toggle("on", state.theme === "light");
-    }
-
     function loadUI(){
       const ui = safeParse(localStorage.getItem(UI_KEY)) || {};
       state.hideDone = Boolean(ui.hideDone);
-      state.theme = (ui.theme === "light") ? "light" : "dark";
+      hideDoneBtn.textContent = state.hideDone ? "SHOW" : "HIDE";
 
-      hideDoneBtn.textContent = state.hideDone ? "SHOW" : "HIDE";
-      applyTheme();
+      const isLight = Boolean(ui.lightMode);
+      document.documentElement.classList.toggle("light", isLight);
+      lightBtn.classList.toggle("on", isLight);
     }
-    function saveUI(){
-      localStorage.setItem(UI_KEY, JSON.stringify({
-        hideDone: state.hideDone,
-        theme: state.theme
-      }));
-      hideDoneBtn.textContent = state.hideDone ? "SHOW" : "HIDE";
-      applyTheme();
+    function saveUI(patch){
+      const prev = safeParse(localStorage.getItem(UI_KEY)) || {};
+      const next = { ...prev, ...patch };
+      localStorage.setItem(UI_KEY, JSON.stringify(next));
     }
 
+    /* ====== tasks load/save ====== */
     function loadAll(){
       const cur = safeParse(localStorage.getItem(STORE_KEY));
       if(cur && typeof cur === "object" && !Array.isArray(cur)) return cur;
@@ -775,130 +947,13 @@
       const all = loadAll();
       all[iso] = normalizeList(list);
       saveAll(all);
-      // ✅ AUTO 백업 없음 (요청사항)
     }
 
     function fmtCount(n){
       return n > 9 ? "9+" : String(n);
     }
 
-    /* =========================
-       ✅ 백업/복원 (수동, 최근 10개)
-       ========================= */
-    function loadBackups(){
-      const arr = safeParse(localStorage.getItem(BACKUP_KEY));
-      return Array.isArray(arr) ? arr : [];
-    }
-
-    function saveBackups(arr){
-      const trimmed = arr.slice(0, MAX_BACKUPS);
-      localStorage.setItem(BACKUP_KEY, JSON.stringify(trimmed));
-      return trimmed;
-    }
-
-    function nowStamp(){
-      const d = new Date();
-      const pad = (n)=>String(n).padStart(2,"0");
-      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-    }
-
-    function makeBackup(memo){
-      const data = loadAll();
-      const item = {
-        id: `${Date.now()}_${Math.random().toString(16).slice(2)}`,
-        ts: Date.now(),
-        stamp: nowStamp(),
-        memo: String(memo ?? "").trim(),
-        data
-      };
-
-      const list = loadBackups();
-      list.unshift(item);
-      saveBackups(list);
-      renderBackupList();
-    }
-
-    function restoreBackup(id){
-      const list = loadBackups();
-      const found = list.find(x => x.id === id);
-      if(!found) return;
-
-      const label = `${found.stamp}${found.memo ? " · " + found.memo : ""}`;
-      const ok = confirm(`이 백업으로 복원할까요?\n\n${label}\n\n※ 현재 데이터는 덮어써집니다.`);
-      if(!ok) return;
-
-      saveAll(found.data);
-
-      render();
-      if(state.selectedISO) renderTaskList();
-      renderBackupList();
-    }
-
-    function deleteBackup(id){
-      const label = "이 백업을 삭제할까요?";
-      if(!confirm(label)) return;
-
-      const list = loadBackups().filter(x => x.id !== id);
-      saveBackups(list);
-      renderBackupList();
-    }
-
-    function renderBackupList(){
-      const list = loadBackups();
-      backupList.innerHTML = "";
-
-      if(list.length === 0){
-        backupEmptyText.style.display = "block";
-        return;
-      }
-      backupEmptyText.style.display = "none";
-
-      list.forEach(b => {
-        const row = document.createElement("div");
-        row.className = "backupItem";
-
-        const meta = document.createElement("div");
-        meta.className = "backupMeta";
-        meta.textContent = `${b.stamp}${b.memo ? " · " + b.memo : ""}`;
-
-        const actions = document.createElement("div");
-        actions.className = "backupActions";
-
-        const restoreBtn = document.createElement("button");
-        restoreBtn.className = "smallBtn";
-        restoreBtn.textContent = "RESTORE";
-        restoreBtn.addEventListener("click", (e)=>{
-          e.preventDefault();
-          restoreBackup(b.id);
-        });
-
-        const delBtn = document.createElement("button");
-        delBtn.className = "smallBtn danger";
-        delBtn.textContent = "DEL";
-        delBtn.addEventListener("click", (e)=>{
-          e.preventDefault();
-          deleteBackup(b.id);
-        });
-
-        actions.appendChild(restoreBtn);
-        actions.appendChild(delBtn);
-
-        row.appendChild(meta);
-        row.appendChild(actions);
-        backupList.appendChild(row);
-      });
-    }
-
-    function setBackupPanel(open){
-      state.backupListOpen = open;
-      backupPanel.classList.toggle("show", open);
-      backupPanel.setAttribute("aria-hidden", open ? "false" : "true");
-      toggleBackupListBtn.classList.toggle("on", open);
-    }
-
-    /* =========================
-       ✅ 캘린더 렌더
-       ========================= */
+    /* ====== render calendar ====== */
     function render(){
       gridEl.innerHTML = "";
 
@@ -914,7 +969,6 @@
       const lastDay = last.getDate();
 
       const prevLast = new Date(y, m, 0).getDate();
-
       const totalCells = 42;
 
       for(let i=0; i<totalCells; i++){
@@ -990,9 +1044,7 @@
       }
     }
 
-    /* =========================
-       ✅ 모달
-       ========================= */
+    /* ====== task modal ====== */
     function openModal(iso){
       state.selectedISO = iso;
       state.editingIndex = null;
@@ -1240,9 +1292,329 @@
       render();
     }
 
-    /* =========================
-       ✅ 네비/기타
-       ========================= */
+    /* ====== export / import ====== */
+    exportBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      const data = loadAll();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `pixel_calendar_backup_${new Date().toISOString().slice(0,10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    }, { passive:false });
+
+    importBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "application/json";
+      input.addEventListener("change", async () => {
+        const file = input.files?.[0];
+        if(!file) return;
+        try{
+          const text = await file.text();
+          const obj = safeParse(text);
+          if(!obj || typeof obj !== "object" || Array.isArray(obj)){
+            showInfo("IMPORT", "JSON 형식이 올바르지 않아요.");
+            return;
+          }
+          saveAll(obj);
+          render();
+          if(state.selectedISO) renderTaskList();
+          showInfo("IMPORT", "가져오기 완료!");
+        }catch(err){
+          showInfo("IMPORT", "가져오기 실패");
+        }
+      });
+      input.click();
+    }, { passive:false });
+
+    /* ====== url query open: ?date=YYYY-MM-DD&open=1 ====== */
+    function parseISODateParam(){
+      const sp = new URLSearchParams(location.search);
+      const iso = sp.get("date");
+      const open = sp.get("open");
+      if(!iso) return null;
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null;
+      return { iso, open: open === "1" };
+    }
+    function setViewToISO(iso){
+      const [Y,M] = iso.split("-").map(n => parseInt(n,10));
+      if(!Y || !M) return;
+      state.viewDate = new Date(Y, M-1, 1);
+    }
+    function bootFromQuery(){
+      const q = parseISODateParam();
+      if(!q) return;
+      setViewToISO(q.iso);
+      render();
+      if(q.open){
+        setTimeout(() => openModal(q.iso), 0);
+      }
+    }
+
+    /* ====== UI modal helpers (no alert/confirm/prompt) ====== */
+    function closeUiModal(){
+      uiModalBack.classList.remove("show");
+      uiModalBack.setAttribute("aria-hidden", "true");
+      uiModalBody.innerHTML = "";
+    }
+
+    uiModalCloseBtn.addEventListener("pointerdown", (e)=>{
+      e.preventDefault();
+      closeUiModal();
+    }, { passive:false });
+
+    uiModalBack.addEventListener("pointerdown", (e)=>{
+      if(e.target === uiModalBack) closeUiModal();
+    }, { passive:false });
+
+    function showInfo(title, message){
+      uiModalTitle.textContent = title;
+      uiModalBody.innerHTML = `
+        <div class="uiText">${escapeHtml(message)}</div>
+        <div class="uiModalActions">
+          <button class="smallBtn" id="uiOkBtn">OK</button>
+        </div>
+      `;
+      uiModalBack.classList.add("show");
+      uiModalBack.setAttribute("aria-hidden", "false");
+      $("#uiOkBtn").addEventListener("pointerdown", (e)=>{
+        e.preventDefault();
+        closeUiModal();
+      }, { passive:false });
+    }
+
+    function askBackupMemo(onSubmit){
+      uiModalTitle.textContent = "BACKUP MEMO";
+      uiModalBody.innerHTML = `
+        <div class="help">메모를 입력하고 저장하세요. (비워도 저장됨)</div>
+        <input class="uiInput" id="memoInput" placeholder="예: 1월 계획 정리 전" maxlength="60" />
+        <div class="uiModalActions">
+          <button class="smallBtn dangerBtn" id="memoCancelBtn">CANCEL</button>
+          <button class="smallBtn" id="memoSaveBtn">SAVE</button>
+        </div>
+      `;
+      uiModalBack.classList.add("show");
+      uiModalBack.setAttribute("aria-hidden", "false");
+
+      const memoInput = $("#memoInput");
+      setTimeout(()=> memoInput.focus(), 0);
+
+      $("#memoCancelBtn").addEventListener("pointerdown", (e)=>{
+        e.preventDefault();
+        closeUiModal();
+      }, { passive:false });
+
+      $("#memoSaveBtn").addEventListener("pointerdown", (e)=>{
+        e.preventDefault();
+        const memo = memoInput.value.trim();
+        closeUiModal();
+        onSubmit(memo);
+      }, { passive:false });
+
+      memoInput.addEventListener("keydown", (e)=>{
+        if(e.key === "Enter") $("#memoSaveBtn").click();
+        if(e.key === "Escape") $("#memoCancelBtn").click();
+      });
+    }
+
+    function askConfirmRestore(metaText, onYes){
+      uiModalTitle.textContent = "RESTORE?";
+      uiModalBody.innerHTML = `
+        <div class="uiText">이 백업으로 복원할까요?</div>
+        <div class="backupMeta">${escapeHtml(metaText)}</div>
+        <div class="uiModalActions">
+          <button class="smallBtn dangerBtn" id="restoreNoBtn">NO</button>
+          <button class="smallBtn" id="restoreYesBtn">YES</button>
+        </div>
+      `;
+      uiModalBack.classList.add("show");
+      uiModalBack.setAttribute("aria-hidden", "false");
+
+      $("#restoreNoBtn").addEventListener("pointerdown", (e)=>{
+        e.preventDefault();
+        closeUiModal();
+      }, { passive:false });
+
+      $("#restoreYesBtn").addEventListener("pointerdown", (e)=>{
+        e.preventDefault();
+        closeUiModal();
+        onYes();
+      }, { passive:false });
+    }
+
+    function escapeHtml(s){
+      return String(s ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    /* ====== Backup logic (최근 10개) ====== */
+    function loadBackups(){
+      const arr = safeParse(localStorage.getItem(BACKUP_KEY));
+      if(Array.isArray(arr)) return arr;
+      return [];
+    }
+
+    function saveBackups(list){
+      localStorage.setItem(BACKUP_KEY, JSON.stringify(list));
+    }
+
+    function makeBackup(memo){
+      const data = loadAll();
+      const backups = loadBackups();
+
+      const item = {
+        id: crypto?.randomUUID ? crypto.randomUUID() : String(Date.now()) + "_" + Math.random().toString(16).slice(2),
+        ts: Date.now(),
+        memo: String(memo ?? ""),
+        data
+      };
+
+      backups.unshift(item);
+
+      /* ✅ 최근 10개만 유지 */
+      const trimmed = backups.slice(0, 10);
+      saveBackups(trimmed);
+      renderBackupList();
+      return item;
+    }
+
+    function restoreBackup(id){
+      const backups = loadBackups();
+      const found = backups.find(b => b.id === id);
+      if(!found) return;
+
+      /* ✅ 복원 */
+      if(found.data && typeof found.data === "object" && !Array.isArray(found.data)){
+        saveAll(found.data);
+      }
+
+      /* UI 업데이트 */
+      render();
+      if(state.selectedISO) renderTaskList();
+      renderBackupList();
+    }
+
+    function fmtTime(ts){
+      const d = new Date(ts);
+      const Y = d.getFullYear();
+      const M = pad2(d.getMonth()+1);
+      const D = pad2(d.getDate());
+      const hh = pad2(d.getHours());
+      const mm = pad2(d.getMinutes());
+      return `${Y}-${M}-${D} ${hh}:${mm}`;
+    }
+
+    function renderBackupList(){
+      const backups = loadBackups();
+      backupListEl.innerHTML = "";
+
+      if(backups.length === 0){
+        const empty = document.createElement("div");
+        empty.className = "help";
+        empty.textContent = "백업이 아직 없습니다. (BACKUP NOW로 생성)";
+        backupListEl.appendChild(empty);
+        return;
+      }
+
+      backups.forEach((b, idx) => {
+        const box = document.createElement("div");
+        box.className = "backupItem";
+
+        const meta = document.createElement("div");
+        meta.className = "backupMeta";
+
+        const memo = (b.memo || "").trim();
+        const memoLine = memo ? `MEMO: ${memo}` : `MEMO: (없음)`;
+        meta.innerHTML = `
+          <div><span class="tag">#${idx+1}</span> ${escapeHtml(fmtTime(b.ts))}</div>
+          <div>${escapeHtml(memoLine)}</div>
+        `;
+        box.appendChild(meta);
+
+        const actions = document.createElement("div");
+        actions.className = "backupActions";
+
+        const restoreBtn = document.createElement("button");
+        restoreBtn.className = "smallBtn";
+        restoreBtn.textContent = "RESTORE";
+        restoreBtn.addEventListener("pointerdown", (e)=>{
+          e.preventDefault();
+          const metaText = `${fmtTime(b.ts)} · ${memoLine}`;
+          askConfirmRestore(metaText, ()=> restoreBackup(b.id));
+        }, { passive:false });
+
+        const delBtn = document.createElement("button");
+        delBtn.className = "smallBtn dangerBtn";
+        delBtn.textContent = "DELETE";
+        delBtn.addEventListener("pointerdown", (e)=>{
+          e.preventDefault();
+          // 삭제도 confirm 없이 하면 실수 많아서 같은 confirm UI 재사용
+          const metaText = `${fmtTime(b.ts)} · ${memoLine}\n(이 백업을 삭제합니다)`;
+          uiModalTitle.textContent = "DELETE?";
+          uiModalBody.innerHTML = `
+            <div class="uiText">이 백업을 삭제할까요?</div>
+            <div class="backupMeta">${escapeHtml(metaText)}</div>
+            <div class="uiModalActions">
+              <button class="smallBtn" id="delNoBtn">NO</button>
+              <button class="smallBtn dangerBtn" id="delYesBtn">YES</button>
+            </div>
+          `;
+          uiModalBack.classList.add("show");
+          uiModalBack.setAttribute("aria-hidden","false");
+
+          $("#delNoBtn").addEventListener("pointerdown", (ev)=>{
+            ev.preventDefault();
+            closeUiModal();
+          }, { passive:false });
+
+          $("#delYesBtn").addEventListener("pointerdown", (ev)=>{
+            ev.preventDefault();
+            const list = loadBackups().filter(x => x.id !== b.id);
+            saveBackups(list);
+            closeUiModal();
+            renderBackupList();
+          }, { passive:false });
+        }, { passive:false });
+
+        actions.appendChild(restoreBtn);
+        actions.appendChild(delBtn);
+
+        box.appendChild(actions);
+        backupListEl.appendChild(box);
+      });
+    }
+
+    /* ====== Drawer controls ====== */
+    function openDrawer(mode){
+      state.drawerMode = mode;
+      backupDrawer.classList.add("show");
+      backupDrawer.setAttribute("aria-hidden","false");
+
+      // 버튼 상태
+      backupBtn.classList.toggle("on", mode === "backup");
+      listBtn.classList.toggle("on", mode === "list");
+
+      drawerTitle.textContent = (mode === "backup") ? "BACKUP" : "BACKUP LIST";
+      renderBackupList();
+    }
+
+    function closeDrawer(){
+      backupDrawer.classList.remove("show");
+      backupDrawer.setAttribute("aria-hidden","true");
+      backupBtn.classList.remove("on");
+      listBtn.classList.remove("on");
+    }
+
+    /* ====== Events ====== */
     prevBtn.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       const d = new Date(state.viewDate);
@@ -1265,7 +1637,7 @@
       render();
     }, { passive:false });
 
-    /* ✅ CLOCK: 같은 iframe에서 시계로 복귀 */
+    /* CLOCK: 같은 origin이면 이동 */
     clockBtn.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       const url = new URL("/embed/clock.html", window.location.origin);
@@ -1294,117 +1666,62 @@
     hideDoneBtn.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       state.hideDone = !state.hideDone;
-      saveUI();
+      saveUI({ hideDone: state.hideDone });
+      hideDoneBtn.textContent = state.hideDone ? "SHOW" : "HIDE";
       renderTaskList();
     }, { passive:false });
 
-    exportBtn.addEventListener("pointerdown", (e) => {
+    /* footer buttons */
+    backupBtn.addEventListener("pointerdown", (e)=>{
       e.preventDefault();
-      const data = loadAll();
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = `pixel_calendar_backup_${new Date().toISOString().slice(0,10)}.json`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      openDrawer("backup");
     }, { passive:false });
 
-    importBtn.addEventListener("pointerdown", (e) => {
+    listBtn.addEventListener("pointerdown", (e)=>{
       e.preventDefault();
-      const input = document.createElement("input");
-      input.type = "file";
-      input.accept = "application/json";
-      input.addEventListener("change", async () => {
-        const file = input.files?.[0];
-        if(!file) return;
-        try{
-          const text = await file.text();
-          const obj = safeParse(text);
-          if(!obj || typeof obj !== "object" || Array.isArray(obj)){
-            alert("JSON 형식이 올바르지 않아요.");
-            return;
-          }
-          saveAll(obj);
-          render();
-          if(state.selectedISO) renderTaskList();
-          alert("가져오기 완료!");
-        }catch(err){
-          alert("가져오기 실패");
-        }
+      openDrawer("list");
+    }, { passive:false });
+
+    closeDrawerBtn.addEventListener("pointerdown", (e)=>{
+      e.preventDefault();
+      closeDrawer();
+    }, { passive:false });
+
+    backupNowBtn.addEventListener("pointerdown", (e)=>{
+      e.preventDefault();
+      // ✅ prompt 대신 UI 모달 입력
+      askBackupMemo((memo)=>{
+        makeBackup(memo);
+        openDrawer(state.drawerMode); // 리스트 갱신 유지
+        showInfo("BACKUP", "저장 완료!");
       });
-      input.click();
     }, { passive:false });
 
-    /* =========================
-       ✅ 하단 백업/테마 이벤트
-       ========================= */
-    backupNowBtn.addEventListener("click", (e)=>{
+    lightBtn.addEventListener("pointerdown", (e)=>{
       e.preventDefault();
-      const memo = prompt("백업 메모를 입력하세요. (비워도 저장됨)", "");
-      if(memo === null) return; // 취소
-      makeBackup(memo.trim());
-      // 리스트가 열려있으면 바로 최신이 보이도록
-      if(!state.backupListOpen) setBackupPanel(true);
-    });
-
-    toggleBackupListBtn.addEventListener("click", (e)=>{
-      e.preventDefault();
-      setBackupPanel(!state.backupListOpen);
-    });
-
-    themeBtn.addEventListener("click", (e)=>{
-      e.preventDefault();
-      state.theme = (state.theme === "light") ? "dark" : "light";
-      saveUI();
-    });
-
-    // 백업 패널 바깥 클릭 닫기(원하면 유지)
-    backupPanel.addEventListener("pointerdown", (e)=>{
-      // 패널 내부 클릭은 유지
-      e.stopPropagation();
-    });
-
-    // ESC로 백업 패널 닫기 + 모달 닫기
-    window.addEventListener("keydown", (e)=>{
-      if(e.key === "Escape"){
-        if(modalBack.classList.contains("show")) closeModal();
-        if(state.backupListOpen) setBackupPanel(false);
-      }
-    });
-
-    /* ✅ URL 쿼리로 자동 오픈: ?date=YYYY-MM-DD&open=1 */
-    function parseISODateParam(){
-      const sp = new URLSearchParams(location.search);
-      const iso = sp.get("date");
-      const open = sp.get("open");
-      if(!iso) return null;
-      if(!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null;
-      return { iso, open: open === "1" };
-    }
-
-    function setViewToISO(iso){
-      const [Y,M] = iso.split("-").map(n => parseInt(n,10));
-      if(!Y || !M) return;
-      state.viewDate = new Date(Y, M-1, 1);
-    }
-
-    function bootFromQuery(){
-      const q = parseISODateParam();
-      if(!q) return;
-      setViewToISO(q.iso);
+      const isLight = !document.documentElement.classList.contains("light");
+      document.documentElement.classList.toggle("light", isLight);
+      lightBtn.classList.toggle("on", isLight);
+      saveUI({ lightMode: isLight });
+      // 라이트/다크 모두에서 리스트 재렌더하면 색/대비 즉시 반영
       render();
-      if(q.open){
-        setTimeout(() => openModal(q.iso), 0);
-      }
-    }
+      renderBackupList();
+      if(state.selectedISO) renderTaskList();
+    }, { passive:false });
 
+    /* ESC: 열려있으면 닫기 우선순위 */
+    window.addEventListener("keydown", (e)=>{
+      if(e.key !== "Escape") return;
+      if(uiModalBack.classList.contains("show")) { closeUiModal(); return; }
+      if(modalBack.classList.contains("show")) { closeModal(); return; }
+      if(backupDrawer.classList.contains("show")) { closeDrawer(); return; }
+    });
+
+    /* ====== Boot ====== */
     loadUI();
     render();
-    renderBackupList();
-    setBackupPanel(false);
     bootFromQuery();
+    renderBackupList();
   </script>
 </body>
 </html>
