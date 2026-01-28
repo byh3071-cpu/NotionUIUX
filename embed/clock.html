@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Notion Pixel Clock (Open Calendar)</title>
+  <title>Notion Pixel Calendar (Tasks Only)</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,37 +11,71 @@
 
   <style>
     :root{
+      /* ===== DARK ===== */
       --panel:#111319;
       --panel2:#0f1117;
+      --card:#0b0c10;
+      --card2:#0e1016;
+
       --line:#2a2f3a;
       --line2:#3a4150;
+
       --text:#e9eef7;
       --muted:#a7b0c2;
-      --accent:#7cc7ff;
 
+      --accent:#7cc7ff;
+      --today:#ffe08a;
+      --danger:#ff6b6b;
+
+      --sun:#ff8f8f;
+      --sat:#8fb6ff;
+
+      /* ===== LAYOUT ===== */
       --baseW: 360;
-      --baseH: 156;
+      --baseH: 520; /* 하단바 포함 */
       --scale: 1;
+
+      --cell: 46px;
+      --gap: 4px;
+    }
+
+    /* ===== LIGHT (회색 패널 + 밝은 카드) ===== */
+    html[data-theme="light"]{
+      --panel:#e3e6ec;
+      --panel2:#d6dae2;
+      --card:#f7f8fb;
+      --card2:#eef1f6;
+
+      --line:#c8cdd8;
+      --line2:#9aa3b5;
+
+      --text:#141821;
+      --muted:#5b6476;
+
+      --accent:#2f66ff;  /* 라이트에서 하트/뱃지 더 또렷하게 */
+      --today:#b36b2a;
+      --danger:#d64545;
+
+      --sun:#c75252;
+      --sat:#2f57c9;
     }
 
     *{ box-sizing:border-box; }
+
     html,body{
-      margin:0; padding:0;
-      width:100%; height:100%;
-      background: var(--panel);
+      margin:0;
+      padding:0;
+      width:100%;
+      height:100%;
+      background: var(--panel);    /* ✅ 바깥 여백도 동일 패널 */
       color:var(--text);
       font-family: ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace;
       -webkit-font-smoothing: antialiased;
       text-rendering: geometricPrecision;
-      overflow:hidden;
+      overflow:hidden;             /* ✅ 바깥 스크롤 제거 */
     }
 
-    body{
-      display:flex;
-      align-items:flex-start;
-      justify-content:flex-start;
-    }
-
+    /* ===== clock.html처럼 스케일+센터링 안정화 ===== */
     .stage{
       width:100%;
       height:100%;
@@ -50,381 +84,960 @@
       align-items:center;
       justify-content:center;
       overflow:hidden;
-      padding:0px;
+      padding:0; /* ✅ 여백 제거 */
     }
-    
+
     .scaler{
-      /* ✅ 스케일된 “실제 박스 크기”를 만들어서 중앙정렬/클릭영역 안 어긋나게 */
-      width: calc(var(--baseW) * 1px * var(--scale));
+      width:  calc(var(--baseW) * 1px * var(--scale));
       height: calc(var(--baseH) * 1px * var(--scale));
+      display:flex;
+      align-items:flex-start;
+      justify-content:flex-start;
     }
-    
+
     .wrap{
-      width: calc(var(--baseW) * 1px);
+      width:  calc(var(--baseW) * 1px);
       height: calc(var(--baseH) * 1px);
-    
-      /* ✅ zoom 제거, transform만 */
       transform: scale(var(--scale));
       transform-origin: top left;
-    
+
       background:var(--panel);
+      border:2px solid var(--line2);
+      border-radius:0;
+      overflow:hidden;
+      position:relative;
+
+      display:flex;
+      flex-direction:column;
+    }
+
+    /* ===== TOP BAR ===== */
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:8px 8px;
+      border-bottom:2px solid var(--line2);
+      background:linear-gradient(180deg, var(--panel2), var(--panel));
+      gap:6px;
+      flex:0 0 auto;
+    }
+
+    .leftBtns, .rightBtns{
+      display:flex;
+      gap:6px;
+      align-items:center;
+    }
+
+    .btn{
+      height:32px;
+      padding:0 10px;
+      background:var(--card2);
+      color:var(--text);
+      border:2px solid var(--line2);
+      border-radius:0;
+      cursor:pointer;
+      font-size:10px;
+      line-height:1;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      user-select:none;
+      transition: transform .05s ease;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn:active{ transform: translateY(1px); }
+    .btn:hover{ border-color:var(--accent); }
+
+    .monthTitle{
+      flex:1;
+      text-align:center;
+      font-size:11px;
+      color:var(--text);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      user-select:none;
+    }
+
+    /* ===== DOW ===== */
+    .dow{
+      display:grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: var(--gap);
+      padding:8px 8px 6px;
+      border-bottom:2px solid var(--line2);
+      background:var(--card2);
+      flex:0 0 auto;
+    }
+
+    .dow div{
+      text-align:center;
+      font-size:9px;
+      color:var(--muted);
+      padding:6px 0;
+      border:2px solid var(--line);
+      border-radius:0;
+      background:var(--card);
+      user-select:none;
+    }
+
+    .dow .sunHead{ color:var(--sun); border-color:color-mix(in srgb, var(--sun) 35%, var(--line)); }
+    .dow .satHead{ color:var(--sat); border-color:color-mix(in srgb, var(--sat) 35%, var(--line)); }
+
+    /* ===== GRID ===== */
+    .grid{
+      padding:8px;
+      display:grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: var(--gap);
+      background:var(--panel);
+      flex:1 1 auto;
+      min-height:0;
+      overflow:hidden;
+    }
+
+    .day{
+      height: var(--cell);
+      border:2px solid var(--line);
+      border-radius:0;
+      background:var(--card);
+      position:relative;
+      cursor:pointer;
+      display:flex;
+      align-items:flex-start;
+      justify-content:flex-start;
+      padding:6px;
+      user-select:none;
+      transition: border-color .12s ease, background .12s ease;
+      overflow:hidden;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .day:hover{ border-color:var(--accent); }
+
+    .day.disabled{
+      cursor:default;
+      opacity: .58; /* ✅ 라이트에서도 숫자 안 묻히게 */
+      background: color-mix(in srgb, var(--card) 70%, var(--panel));
+    }
+    .day.disabled:hover{ border-color:var(--line); }
+
+    .day.sun:not(.disabled){ border-color: color-mix(in srgb, var(--sun) 25%, var(--line)); }
+    .day.sat:not(.disabled){ border-color: color-mix(in srgb, var(--sat) 25%, var(--line)); }
+
+    .num{
+      font-size:10px;
+      color:var(--text);
+    }
+    .day.disabled .num{
+      color: var(--muted);
+      opacity: .9;
+    }
+
+    .today{
+      border-color: var(--today) !important;
+      box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--today) 35%, transparent);
+    }
+
+    /* ===== BADGES (라이트에서 묻힘 개선) ===== */
+    .todoBadge{
+      position:absolute;
+      left:0; bottom:0;
+      width:18px; height:18px;
+      clip-path: polygon(0 0, 0 100%, 100% 100%);
+      background: var(--accent);
+      color: #fff;
+      display:flex;
+      align-items:flex-end;
+      justify-content:flex-start;
+      font-size:9px;
+      line-height:1;
+      padding:0 0 2px 3px;
+      user-select:none;
+      pointer-events:none;
+      z-index:2;
+      text-shadow: 0 1px 0 rgba(0,0,0,.35);
+      box-shadow:
+        inset 0 0 0 2px rgba(255,255,255,.18),
+        0 1px 0 rgba(0,0,0,.10);
+    }
+
+    .doneBadge{
+      position:absolute;
+      right:0; bottom:0;
+      width:18px; height:18px;
+      clip-path: polygon(100% 0, 0 100%, 100% 100%);
+      background: color-mix(in srgb, var(--accent) 22%, transparent);
+      color: var(--accent);
+      display:flex;
+      align-items:flex-end;
+      justify-content:flex-end;
+      font-size:9px;
+      line-height:1;
+      padding:0 3px 2px 0;
+      user-select:none;
+      pointer-events:none;
+      z-index:2;
+      text-shadow: 0 1px 0 rgba(255,255,255,.25);
+      box-shadow:
+        inset 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent);
+    }
+
+    .heartMarker{
+      position:absolute;
+      left:50%;
+      bottom:6px;
+      transform: translateX(-50%);
+      font-size:12px;
+      line-height:1.2;
+      color:var(--accent);
+      user-select:none;
+      pointer-events:none;
+      z-index:3;
+
+      /* ✅ 라이트에서 하트가 카드에 묻히는 문제 해결 */
+      text-shadow:
+        0 1px 0 rgba(0,0,0,.28),
+        0 0 2px rgba(0,0,0,.10);
+    }
+    html[data-theme="dark"] .heartMarker{
+      text-shadow:
+        0 1px 0 rgba(0,0,0,.45),
+        0 0 2px rgba(0,0,0,.20);
+    }
+    .heartMarker.doneAll{
+      filter: drop-shadow(0 0 2px color-mix(in srgb, var(--accent) 35%, transparent));
+    }
+
+    /* ===== TASK MODAL ===== */
+    .modalBack{
+      position:absolute;
+      inset:0;
+      background: rgba(0,0,0,.55);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:10px;
+      z-index:50;
+    }
+    .modalBack.show{ display:flex; }
+
+    .modal{
+      width: 100%;
+      max-width: 340px;
+      height: 350px;
+      background: var(--card2);
+      border: 2px solid var(--line2);
+      border-radius:0;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+    }
+
+    .modalHeader{
+      padding:8px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      border-bottom:2px solid var(--line2);
+      background: var(--card);
+      gap:6px;
+    }
+
+    .modalTitle{
+      font-size:10px;
+      color:var(--text);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      flex:1;
+      user-select:none;
+    }
+
+    .miniBtn{
+      height:28px;
+      padding:0 8px;
+      border:2px solid var(--line2);
+      background:var(--card2);
+      color:var(--text);
+      border-radius:0;
+      cursor:pointer;
+      font-size:9px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      user-select:none;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .miniBtn:hover{ border-color:var(--accent); }
+
+    .closeBtn{
+      width:32px;
+      height:32px;
+      border:2px solid var(--line2);
+      background:var(--card2);
+      color:var(--text);
+      border-radius:0;
+      cursor:pointer;
+      font-size:12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      user-select:none;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .closeBtn:hover{ border-color:var(--danger); }
+
+    .modalBody{
+      padding:8px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      height:100%;
+      min-height:0;
+    }
+
+    .addRow{ display:flex; gap:6px; }
+
+    .taskInput{
+      flex:1;
+      height:34px;
+      border:2px solid var(--line2);
+      background:var(--card);
+      color:var(--text);
+      border-radius:0;
+      outline:none;
+      padding:0 8px;
+      font-size:10px;
+    }
+    .taskInput::placeholder{ color:color-mix(in srgb, var(--muted) 80%, transparent); }
+
+    .addBtn{
+      width:70px;
+      height:34px;
+      border:2px solid var(--line2);
+      background:var(--card);
+      color:var(--text);
+      border-radius:0;
+      cursor:pointer;
+      font-size:10px;
+      user-select:none;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .addBtn:hover{ border-color:var(--accent); }
+
+    .taskList{
+      border:2px solid var(--line2);
+      background:var(--card);
+      border-radius:0;
+      padding:6px;
+      overflow:auto;
+      flex:1;
+      min-height:0;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .taskItem{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      padding:6px;
+      border:2px solid var(--line);
+      border-radius:0;
+      margin-bottom:6px;
+      background:var(--card2);
+    }
+
+    .checkBtn{
+      width:30px;
+      height:28px;
+      border:2px solid var(--accent);
+      background:transparent;
+      color:var(--text);
+      border-radius:0;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:11px;
+      flex:0 0 auto;
+      user-select:none;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .checkBtn.done{ background: var(--accent); color:#fff; }
+
+    .taskText{
+      font-size:10px;
+      color:var(--text);
+      line-height:1.25;
+      word-break:break-word;
+      flex:1;
+    }
+    .taskText.done{
+      color: var(--muted);
+      text-decoration: line-through;
+      opacity:.9;
+    }
+
+    .editInput{
+      flex:1;
+      height:30px;
+      border:2px solid var(--line2);
+      background:var(--card);
+      color:var(--text);
+      border-radius:0;
+      outline:none;
+      padding:0 8px;
+      font-size:10px;
+    }
+
+    .taskActions{ display:flex; gap:6px; flex:0 0 auto; }
+
+    .iconBtn{
+      width:30px;
+      height:28px;
+      border:2px solid var(--line2);
+      background:var(--card);
+      color:var(--text);
+      border-radius:0;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:11px;
+      user-select:none;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .iconBtn:hover{ border-color:var(--accent); }
+    .iconBtn.delete:hover{ border-color:var(--danger); }
+
+    .help{
+      font-size:9px;
+      color:var(--muted);
+      opacity:.95;
+      line-height:1.4;
+      user-select:none;
+    }
+
+    /* ===== BOTTOM BAR ===== */
+    .bottomBar{
+      flex:0 0 auto;
+      height:74px;
+      border-top:2px solid var(--line2);
+      background:linear-gradient(180deg, var(--panel), var(--panel2));
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:10px;
+      gap:10px;
+    }
+
+    .bottomLeft{
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+
+    .bigBtn{
+      width:120px;
+      height:46px;
+      border:2px solid var(--line2);
+      background:var(--card2);
+      color:var(--text);
+      border-radius:0;
+      cursor:pointer;
+      font-size:12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      user-select:none;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .bigBtn:hover{ border-color:var(--accent); }
+
+    .bigBtn.on{
+      border-color:var(--accent);
+      box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 18%, transparent);
+      color:var(--accent);
+    }
+
+    /* ===== BACKUP LIST / MEMO MODAL (하단 시트) ===== */
+    .sheetBack{
+      position:absolute;
+      inset:0;
+      background: rgba(0,0,0,.45);
+      display:none;
+      align-items:flex-end;
+      justify-content:center;
+      z-index:80;
+    }
+    .sheetBack.show{ display:flex; }
+
+    .sheet{
+      width:100%;
+      max-width:360px;
+      height:240px;
+      background: var(--card2);
       border:2px solid var(--line2);
       border-radius:0;
       overflow:hidden;
       display:flex;
       flex-direction:column;
-      pointer-events:auto;
+      margin:8px;
     }
 
-
-    .top{
-      height:36px;
+    .sheetHeader{
+      height:38px;
       display:flex;
       align-items:center;
-      justify-content:flex-start;
-      padding:6px 8px;
-      padding-right:26px;
-      border-bottom:2px solid var(--line2);
-      background:linear-gradient(180deg, var(--panel2), var(--panel));
+      justify-content:space-between;
       gap:8px;
+      padding:6px 8px;
+      border-bottom:2px solid var(--line2);
+      background: var(--card);
     }
 
-    .title{
-      font-size:9px;
-      color:var(--muted);
-      letter-spacing:0.5px;
+    .sheetTitle{
+      font-size:10px;
+      color:var(--text);
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
-      user-select:none;
-      pointer-events:none;
       flex:1;
+      user-select:none;
     }
 
-    .chip{
-      height:24px;
-      padding:0 8px;
-      border:2px solid var(--line2);
-      background:#0e1016;
-      color:var(--text);
-      font-size:9px;
+    .sheetBody{
+      padding:8px;
       display:flex;
-      align-items:center;
-      justify-content:center;
-      cursor:pointer;
-      user-select:none;
-      line-height:1;
-      touch-action: manipulation;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .chip:hover{ border-color:var(--accent); }
-    .chip.on{
-      border-color:var(--accent);
-      box-shadow: inset 0 0 0 2px rgba(124,199,255,.12);
-      color:var(--accent);
-    }
-
-    .main{
+      flex-direction:column;
+      gap:8px;
       flex:1;
-      display:flex;
-      align-items:stretch;
-      justify-content:space-between;
-      padding:10px 10px;
-      gap:10px;
       min-height:0;
     }
 
-    .leftBox{
+    .sheetList{
+      border:2px solid var(--line2);
+      background: var(--card);
+      padding:6px;
+      overflow:auto;
       flex:1;
-      border:2px solid var(--line);
-      background:#0b0c10;
-      padding:12px 12px;
-      min-width:0;
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-      overflow:hidden;
+      min-height:0;
     }
 
-    .dateRow{
-      font-size:9px;
-      color:var(--muted);
-      line-height:1.45;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      margin-bottom:8px;
-    }
-
-    .timeRow{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      white-space:nowrap;
-      overflow:hidden;
-    }
-
-    .time{
-      font-size:18px;
-      color:var(--text);
-      letter-spacing:1px;
-      display:inline-block;
-      line-height:1.45;
-      padding:2px 0 6px;
-    }
-
-    .cursor{
-      font-size:14px;
-      color:var(--accent);
-      display:inline-block;
-      line-height:1.45;
-      padding:2px 0 6px;
-      opacity:1;
-      user-select:none;
-      pointer-events:none;
-    }
-
-    .note{
-      margin-top:10px;
-      font-size:8px;
-      color:rgba(233,238,247,.75);
-      line-height:1.45;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .rightBox{
-      width:112px;
-      border:2px solid var(--line);
-      background:#0b0c10;
-      padding:8px;
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-      gap:8px;
-      overflow:hidden;
-    }
-
-    .meterLabel{
-      font-size:8px;
-      color:var(--muted);
-      opacity:.95;
-      line-height:1;
-      user-select:none;
-    }
-
-    .meter{
-      height:10px;
-      border:2px solid var(--line2);
-      background:#0e1016;
-      position:relative;
-      overflow:hidden;
-    }
-    .bar{
-      position:absolute;
-      left:0; top:0; bottom:0;
-      width:0%;
-      background:var(--accent);
-    }
-
-    .meterText{
-      font-size:8px;
-      color:rgba(233,238,247,.75);
-      line-height:1.2;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      min-height:10px;
-    }
-
-    @media (max-width: 340px){
-      .rightBox{ display:none; }
-    }
-
-    /* =========================
-       ✅ 캘린더 모달 (노션 안에서 유지)
-       ========================= */
-    .calModal{
-      position:absolute;
-      inset:0;
-      display:none;
-      align-items:stretch;
-      justify-content:stretch;
-      background:rgba(0,0,0,.55);
-      padding:8px;
-      z-index:99;
-    }
-    .calModal.on{ display:flex; }
-
-    .calPanel{
-      width:100%;
-      height:100%;
-      border:2px solid var(--line2);
-      background:var(--panel);
-      display:flex;
-      flex-direction:column;
-      overflow:hidden;
-    }
-
-    .calTop{
-      height:34px;
+    .backupRow{
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:8px;
-      padding:6px 8px;
-      border-bottom:2px solid var(--line2);
-      background:linear-gradient(180deg, var(--panel2), var(--panel));
+      border:2px solid var(--line);
+      background: var(--card2);
+      padding:6px;
+      margin-bottom:6px;
     }
-    .calTitle{
+
+    .backupMeta{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      min-width:0;
+      flex:1;
+    }
+    .backupMeta .t1{
       font-size:9px;
+      color:var(--text);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .backupMeta .t2{
+      font-size:8px;
       color:var(--muted);
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
-      user-select:none;
-      flex:1;
     }
 
-       .calFrame{
-      width:100%;
-      height:100%;
-      border:0;
-      background: var(--panel);
-      display:block;
+    .restoreBtn{
+      height:28px;
+      padding:0 8px;
+      border:2px solid var(--line2);
+      background: var(--card);
+      color:var(--text);
+      cursor:pointer;
+      font-size:9px;
+      border-radius:0;
+      flex:0 0 auto;
     }
+    .restoreBtn:hover{ border-color:var(--accent); }
+
+    .memoRow{
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+
+    .memoInput{
+      flex:1;
+      height:34px;
+      border:2px solid var(--line2);
+      background: var(--card);
+      color: var(--text);
+      outline:none;
+      padding:0 8px;
+      font-size:10px;
+      border-radius:0;
+    }
+    .memoInput::placeholder{ color:color-mix(in srgb, var(--muted) 80%, transparent); }
+
+    .doBackupBtn{
+      width:86px;
+      height:34px;
+      border:2px solid var(--line2);
+      background: var(--card);
+      color: var(--text);
+      cursor:pointer;
+      font-size:10px;
+      border-radius:0;
+    }
+    .doBackupBtn:hover{ border-color:var(--accent); }
   </style>
 </head>
 
 <body>
-<div class="stage">
-  <div class="scaler" id="scaler">
-    <div class="wrap" id="wrap">
-      <div class="top">
-        <button class="chip on" id="modeBtn" title="12/24 토글">24H</button>
-        <button class="chip" id="openTodayBtn" title="캘린더(모달)에서 오늘 열기">OPEN</button>
-        <div class="title">PIXEL CLOCK</div>
-      </div>
+  <div class="stage">
+    <div class="scaler" id="scaler">
+      <div class="wrap" id="app">
 
-      <div class="main">
-        <div class="leftBox">
-          <div class="dateRow" id="dateText">0000-00-00 (월) · TODAY 0/0</div>
-          <div class="timeRow">
-            <div class="time" id="timeText">00:00</div>
-            <div class="cursor" id="cursor">■</div>
+        <div class="topbar">
+          <div class="leftBtns">
+            <button class="btn" id="prevBtn">◀</button>
+            <button class="btn" id="nextBtn">▶</button>
           </div>
-          <div class="note" id="noteText">오늘 할 일: 0 / 0</div>
-        </div>
 
-        <div class="rightBox">
-          <div class="meterLabel">DAY</div>
-          <div class="meter"><div class="bar" id="dayBar"></div></div>
+          <div class="monthTitle" id="monthTitle">0000-00</div>
 
-          <div class="meterLabel">TODAY TASK</div>
-          <div class="meter"><div class="bar" id="taskBar"></div></div>
-          <div class="meterText" id="taskPctText">0/0 · 0%</div>
-        </div>
-      </div>
-
-      <!-- ✅ 캘린더 모달(노션 안) -->
-      <div class="calModal" id="calModal" aria-hidden="true">
-        <div class="calPanel">
-          <div class="calTop">
-            <div class="calTitle" id="calTitle">CALENDAR</div>
-            <button class="chip" id="closeCalBtn" title="닫기">CLOSE</button>
+          <div class="rightBtns">
+            <button class="btn" id="clockBtn">CLOCK</button>
+            <button class="btn" id="todayBtn">TODAY</button>
           </div>
-          <iframe class="calFrame" id="calFrame" title="calendar"></iframe>
         </div>
+
+        <div class="dow">
+          <div class="sunHead">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div class="satHead">토</div>
+        </div>
+
+        <div class="grid" id="grid"></div>
+
+        <!-- TASK MODAL -->
+        <div class="modalBack" id="modalBack" aria-hidden="true">
+          <div class="modal" role="dialog" aria-modal="true">
+            <div class="modalHeader">
+              <div class="modalTitle" id="modalTitle">TASK</div>
+              <button class="miniBtn" id="hideDoneBtn" title="완료 숨김 토글">HIDE</button>
+              <button class="closeBtn" id="closeBtn">X</button>
+            </div>
+
+            <div class="modalBody">
+              <div class="addRow">
+                <input class="taskInput" id="taskInput" placeholder="할 일 입력" maxlength="60" />
+                <button class="addBtn" id="addBtn">추가</button>
+              </div>
+
+              <div class="taskList" id="taskList"></div>
+
+              <div class="help">좌하단=총 · 우하단=완료 · ♡/♥=완료상태</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BOTTOM BAR -->
+        <div class="bottomBar">
+          <div class="bottomLeft">
+            <button class="bigBtn" id="backupBtn">BACKUP</button>
+            <button class="bigBtn" id="listBtn">LIST</button>
+          </div>
+          <button class="bigBtn" id="lightBtn">LIGHT</button>
+        </div>
+
+        <!-- BACKUP LIST SHEET -->
+        <div class="sheetBack" id="listSheetBack" aria-hidden="true">
+          <div class="sheet">
+            <div class="sheetHeader">
+              <div class="sheetTitle">BACKUP LIST (최근 10개)</div>
+              <button class="miniBtn" id="closeListSheetBtn">CLOSE</button>
+            </div>
+            <div class="sheetBody">
+              <div class="sheetList" id="backupList"></div>
+              <div class="help">RESTORE 클릭 시 현재 TASK 데이터가 백업 시점으로 복원됨</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MEMO + BACKUP SHEET -->
+        <div class="sheetBack" id="memoSheetBack" aria-hidden="true">
+          <div class="sheet" style="height:170px;">
+            <div class="sheetHeader">
+              <div class="sheetTitle">NEW BACKUP</div>
+              <button class="miniBtn" id="closeMemoSheetBtn">CLOSE</button>
+            </div>
+            <div class="sheetBody">
+              <div class="memoRow">
+                <input class="memoInput" id="memoInput" placeholder="메모 입력 (선택)" maxlength="40" />
+                <button class="doBackupBtn" id="doBackupBtn">SAVE</button>
+              </div>
+              <div class="help">수동 백업만 저장됨 · 자동 백업 없음</div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
 
   <script>
-    const $ = (s) => document.querySelector(s);
+    const $ = (sel) => document.querySelector(sel);
 
-    const dateText  = $("#dateText");
-    const timeText  = $("#timeText");
-    const cursorEl  = $("#cursor");
-    const noteText  = $("#noteText");
-    const dayBar    = $("#dayBar");
-    const taskBar   = $("#taskBar");
-    const taskPctText = $("#taskPctText");
-    const modeBtn   = $("#modeBtn");
-    const openTodayBtn = $("#openTodayBtn");
+    const gridEl = $("#grid");
+    const monthTitleEl = $("#monthTitle");
 
-    const calModal = $("#calModal");
-    const calFrame = $("#calFrame");
-    const calTitle = $("#calTitle");
-    const closeCalBtn = $("#closeCalBtn");
+    const prevBtn = $("#prevBtn");
+    const nextBtn = $("#nextBtn");
+    const todayBtn = $("#todayBtn");
+    const clockBtn = $("#clockBtn");
 
-    const state = { is24h: true };
-    const DOW_KR = ["일","월","화","수","목","금","토"];
+    const modalBack = $("#modalBack");
+    const closeBtn = $("#closeBtn");
+    const modalTitle = $("#modalTitle");
+    const hideDoneBtn = $("#hideDoneBtn");
+    const taskInput = $("#taskInput");
+    const addBtn = $("#addBtn");
+    const taskList = $("#taskList");
 
-    const STORE_KEYS = [
-      "pixel_calendar_tasks_v6",
+    const backupBtn = $("#backupBtn");
+    const listBtn = $("#listBtn");
+    const lightBtn = $("#lightBtn");
+
+    const listSheetBack = $("#listSheetBack");
+    const closeListSheetBtn = $("#closeListSheetBtn");
+    const backupListEl = $("#backupList");
+
+    const memoSheetBack = $("#memoSheetBack");
+    const closeMemoSheetBtn = $("#closeMemoSheetBtn");
+    const memoInput = $("#memoInput");
+    const doBackupBtn = $("#doBackupBtn");
+
+    const STORE_KEY = "pixel_calendar_tasks_v6";
+    const UI_KEY = "pixel_calendar_ui_v6";
+    const BACKUP_KEY = "pixel_calendar_backups_v1";
+
+    const LEGACY_KEYS = [
       "pixel_calendar_tasks_v5_backup_hideDone",
       "pixel_calendar_tasks_v4_bottomTriangles",
       "pixel_calendar_tasks_v3_bottomBadges",
-      "pixel_calendar_tasks_v2_heart_preview",
+      "pixel_calendar_tasks_v2_heart_preview"
     ];
 
-    const pad2 = (n) => String(n).padStart(2,"0");
-    const toISO = (d) => `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
-    const safeParse = (json) => { try { return JSON.parse(json); } catch(e){ return null; } };
+    const state = {
+      viewDate: new Date(),
+      selectedISO: null,
+      editingIndex: null,
+      hideDone: false,
+      isLight: false
+    };
+
+    const pad2 = (n) => String(n).padStart(2, "0");
+    const toISO = (y,m,d) => `${y}-${pad2(m)}-${pad2(d)}`;
+
+    const isSameDay = (a, b) =>
+      a.getFullYear() === b.getFullYear() &&
+      a.getMonth() === b.getMonth() &&
+      a.getDate() === b.getDate();
+
+    function safeParse(s){
+      try{ return JSON.parse(s); }catch(e){ return null; }
+    }
+
+    function loadUI(){
+      const ui = safeParse(localStorage.getItem(UI_KEY)) || {};
+      state.hideDone = Boolean(ui.hideDone);
+      state.isLight = Boolean(ui.isLight);
+
+      hideDoneBtn.textContent = state.hideDone ? "SHOW" : "HIDE";
+      applyTheme(state.isLight);
+    }
+    function saveUI(){
+      localStorage.setItem(UI_KEY, JSON.stringify({
+        hideDone: state.hideDone,
+        isLight: state.isLight
+      }));
+      hideDoneBtn.textContent = state.hideDone ? "SHOW" : "HIDE";
+      lightBtn.classList.toggle("on", state.isLight);
+      lightBtn.textContent = state.isLight ? "DARK" : "LIGHT";
+    }
+
+    function applyTheme(isLight){
+      document.documentElement.setAttribute("data-theme", isLight ? "light" : "dark");
+      lightBtn.classList.toggle("on", isLight);
+      lightBtn.textContent = isLight ? "DARK" : "LIGHT";
+    }
+
+    function loadAll(){
+      const cur = safeParse(localStorage.getItem(STORE_KEY));
+      if(cur && typeof cur === "object" && !Array.isArray(cur)) return cur;
+
+      for(const k of LEGACY_KEYS){
+        const v = safeParse(localStorage.getItem(k));
+        if(v && typeof v === "object" && !Array.isArray(v)){
+          localStorage.setItem(STORE_KEY, JSON.stringify(v));
+          return v;
+        }
+      }
+      return {};
+    }
+
+    function saveAll(obj){
+      localStorage.setItem(STORE_KEY, JSON.stringify(obj));
+    }
 
     function normalizeList(list){
       if(!Array.isArray(list)) return [];
       return list.map(x => {
         if(typeof x === "string") return { text:x, done:false };
-        if(x && typeof x === "object") return { text: String(x.text ?? ""), done: Boolean(x.done) };
+        if(x && typeof x === "object"){
+          return { text: String(x.text ?? ""), done: Boolean(x.done) };
+        }
         return { text:"", done:false };
       }).filter(t => t.text.trim().length > 0);
     }
 
-    function loadAllFromAnyKey(){
-      for(const k of STORE_KEYS){
-        const raw = localStorage.getItem(k);
-        if(!raw) continue;
-        const parsed = safeParse(raw);
-        if(parsed && typeof parsed === "object" && !Array.isArray(parsed)) return parsed;
+    function getTasks(iso){
+      const all = loadAll();
+      return normalizeList(all[iso]);
+    }
+
+    function setTasks(iso, list){
+      const all = loadAll();
+      all[iso] = normalizeList(list);
+      saveAll(all);
+    }
+
+    function fmtCount(n){
+      return n > 9 ? "9+" : String(n);
+    }
+
+    /* ===== backup utils ===== */
+    function loadBackups(){
+      const arr = safeParse(localStorage.getItem(BACKUP_KEY));
+      return Array.isArray(arr) ? arr : [];
+    }
+    function saveBackups(arr){
+      localStorage.setItem(BACKUP_KEY, JSON.stringify(arr));
+    }
+    function makeBackup(memo){
+      const data = loadAll();
+      const now = new Date();
+      const ts = now.toISOString();
+
+      const item = {
+        id: `${now.getTime()}`,
+        ts,
+        memo: (memo || "").trim(),
+        data
+      };
+
+      const list = loadBackups();
+      list.unshift(item);
+
+      const trimmed = list.slice(0, 10); /* ✅ 최근 10개만 */
+      saveBackups(trimmed);
+    }
+
+    function fmtTS(ts){
+      const d = new Date(ts);
+      if(!isFinite(d.getTime())) return ts;
+      const y = d.getFullYear();
+      const m = pad2(d.getMonth()+1);
+      const da = pad2(d.getDate());
+      const hh = pad2(d.getHours());
+      const mm = pad2(d.getMinutes());
+      return `${y}-${m}-${da} ${hh}:${mm}`;
+    }
+
+    function renderBackupList(){
+      const list = loadBackups();
+      backupListEl.innerHTML = "";
+
+      if(list.length === 0){
+        const empty = document.createElement("div");
+        empty.className = "help";
+        empty.textContent = "백업 없음 (BACKUP으로 수동 저장)";
+        backupListEl.appendChild(empty);
+        return;
       }
-      return {};
+
+      list.forEach((b) => {
+        const row = document.createElement("div");
+        row.className = "backupRow";
+
+        const meta = document.createElement("div");
+        meta.className = "backupMeta";
+
+        const t1 = document.createElement("div");
+        t1.className = "t1";
+        t1.textContent = fmtTS(b.ts);
+
+        const t2 = document.createElement("div");
+        t2.className = "t2";
+        t2.textContent = b.memo ? `memo: ${b.memo}` : "memo: (없음)";
+
+        meta.appendChild(t1);
+        meta.appendChild(t2);
+
+        const restore = document.createElement("button");
+        restore.className = "restoreBtn";
+        restore.textContent = "RESTORE";
+        restore.addEventListener("click", (e) => {
+          e.preventDefault();
+          const ok = confirm(`복원할까요?\n\n- 백업: ${fmtTS(b.ts)}\n- 메모: ${b.memo || "(없음)"}\n\n현재 TASK 데이터는 백업 시점으로 바뀝니다.`);
+          if(!ok) return;
+
+          if(!b.data || typeof b.data !== "object" || Array.isArray(b.data)){
+            alert("백업 데이터가 손상됐어요.");
+            return;
+          }
+
+          saveAll(b.data);
+          render();
+          if(state.selectedISO) renderTaskList();
+          alert("복원 완료!");
+        });
+
+        row.appendChild(meta);
+        row.appendChild(restore);
+        backupListEl.appendChild(row);
+      });
     }
 
-    function getTodayProgress(iso){
-      const data = loadAllFromAnyKey();
-      const list = normalizeList(data[iso]);
-      const total = list.length;
-      const done = list.filter(t => t.done).length;
-      return { done, total };
-    }
-
-    function formatTime(d){
-      let h = d.getHours();
-      const m = d.getMinutes();
-      if(!state.is24h){
-        const ampm = h < 12 ? "AM" : "PM";
-        h = h % 12; if(h === 0) h = 12;
-        return `${pad2(h)}:${pad2(m)} ${ampm}`;
-      }
-      return `${pad2(h)}:${pad2(m)}`;
-    }
-
-    function calcDayProgress(d){
-      const total = 24*60*60;
-      const now = d.getHours()*3600 + d.getMinutes()*60 + d.getSeconds();
-      return Math.max(0, Math.min(1, now/total));
-    }
-
+    /* ===== layout fit (calendar도 clock처럼) ===== */
     function fitToFrame(){
       const rootStyle = getComputedStyle(document.documentElement);
       const baseW = Number(rootStyle.getPropertyValue("--baseW")) || 360;
-      const baseH = Number(rootStyle.getPropertyValue("--baseH")) || 156;
+      const baseH = Number(rootStyle.getPropertyValue("--baseH")) || 520;
 
       const vw = (window.visualViewport && window.visualViewport.width) ? window.visualViewport.width : window.innerWidth;
       const vh = (window.visualViewport && window.visualViewport.height) ? window.visualViewport.height : window.innerHeight;
 
+      /* ✅ -24 같은 여백 보정 “없음” (꽉 채움) */
       const availW = Math.max(1, vw);
       const availH = Math.max(1, vh);
 
@@ -437,84 +1050,515 @@
       document.documentElement.style.setProperty("--scale", String(scale));
     }
 
-    function tick(){
-      const d = new Date();
-      const iso = toISO(d);
+    function render(){
+      gridEl.innerHTML = "";
 
-      const y = d.getFullYear();
-      const mo = d.getMonth() + 1;
-      const da = d.getDate();
-      const dow = DOW_KR[d.getDay()];
+      const y = state.viewDate.getFullYear();
+      const m = state.viewDate.getMonth();
 
-      const { done, total } = getTodayProgress(iso);
+      monthTitleEl.textContent = `${y}-${pad2(m+1)}`;
 
-      dateText.textContent = `${y}-${pad2(mo)}-${pad2(da)} (${dow}) · TODAY ${done}/${total}`;
-      timeText.textContent = formatTime(d);
-      cursorEl.style.opacity = (d.getSeconds() % 2 === 0) ? "1" : "0.15";
+      const first = new Date(y, m, 1);
+      const firstDow = first.getDay();
 
-      dayBar.style.width = `${Math.round(calcDayProgress(d) * 100)}%`;
+      const last = new Date(y, m+1, 0);
+      const lastDay = last.getDate();
 
-      const pct = total === 0 ? 0 : Math.round((done / total) * 100);
-      taskBar.style.width = `${pct}%`;
-      taskPctText.textContent = `${done}/${total} · ${pct}%`;
+      const prevLast = new Date(y, m, 0).getDate();
 
-      noteText.textContent = `오늘 할 일: ${done} / ${total}`;
+      const totalCells = 42;
+
+      for(let i=0; i<totalCells; i++){
+        const cell = document.createElement("div");
+        cell.className = "day";
+
+        const dayNum = i - firstDow + 1;
+
+        let cellDate;
+        let disabled = false;
+        let displayNum;
+
+        if(dayNum < 1){
+          displayNum = prevLast + dayNum;
+          cellDate = new Date(y, m-1, displayNum);
+          disabled = true;
+        }else if(dayNum > lastDay){
+          displayNum = dayNum - lastDay;
+          cellDate = new Date(y, m+1, displayNum);
+          disabled = true;
+        }else{
+          displayNum = dayNum;
+          cellDate = new Date(y, m, displayNum);
+        }
+
+        const iso = toISO(cellDate.getFullYear(), cellDate.getMonth()+1, cellDate.getDate());
+        const dow = cellDate.getDay();
+
+        if(disabled) cell.classList.add("disabled");
+        if(dow === 0) cell.classList.add("sun");
+        if(dow === 6) cell.classList.add("sat");
+
+        const now = new Date();
+        if(isSameDay(cellDate, now) && !disabled) cell.classList.add("today");
+
+        const num = document.createElement("div");
+        num.className = "num";
+        num.textContent = displayNum;
+        cell.appendChild(num);
+
+        const tasks = getTasks(iso);
+        if(tasks.length > 0){
+          const total = tasks.length;
+          const done = tasks.filter(t => t.done).length;
+          const hasUndone = tasks.some(t => !t.done);
+
+          const todoBadge = document.createElement("div");
+          todoBadge.className = "todoBadge";
+          todoBadge.textContent = fmtCount(total);
+          cell.appendChild(todoBadge);
+
+          if(done > 0){
+            const doneBadge = document.createElement("div");
+            doneBadge.className = "doneBadge";
+            doneBadge.textContent = fmtCount(done);
+            cell.appendChild(doneBadge);
+          }
+
+          const heart = document.createElement("div");
+          heart.className = "heartMarker";
+          heart.textContent = hasUndone ? "♡" : "♥";
+          if(!hasUndone) heart.classList.add("doneAll");
+          cell.appendChild(heart);
+        }
+
+        cell.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
+          if(disabled) return;
+          openModal(iso);
+        }, { passive:false });
+
+        gridEl.appendChild(cell);
+      }
     }
 
-    function toggleMode(){
-      state.is24h = !state.is24h;
-      modeBtn.textContent = state.is24h ? "24H" : "12H";
-      modeBtn.classList.toggle("on", state.is24h);
-      tick();
+    function openModal(iso){
+      state.selectedISO = iso;
+      state.editingIndex = null;
+
+      modalTitle.textContent = `TASK · ${iso}`;
+      taskInput.value = "";
+      renderTaskList();
+
+      modalBack.classList.add("show");
+      modalBack.setAttribute("aria-hidden", "false");
+      setTimeout(() => taskInput.focus(), 0);
     }
 
-    function openCalendarFor(iso){
-      const url = new URL("/embed/calendar.html", window.location.origin);
-      url.searchParams.set("date", iso);
-      url.searchParams.set("open", "1");
-
-      calTitle.textContent = `CALENDAR · ${iso}`;
-      calFrame.src = url.toString();
-
-      calModal.classList.add("on");
-      calModal.setAttribute("aria-hidden", "false");
+    function closeModal(){
+      modalBack.classList.remove("show");
+      modalBack.setAttribute("aria-hidden", "true");
+      state.selectedISO = null;
+      state.editingIndex = null;
     }
 
-    function closeCalendar(){
-      calModal.classList.remove("on");
-      calModal.setAttribute("aria-hidden", "true");
-      // 필요하면 캐시 유지하려면 아래 줄 주석 처리
-      calFrame.src = "about:blank";
+    function renderTaskList(){
+      const iso = state.selectedISO;
+      if(!iso) return;
+
+      const all = getTasks(iso);
+      const tasks = state.hideDone ? all.filter(t => !t.done) : all;
+
+      taskList.innerHTML = "";
+
+      if(all.length === 0){
+        const empty = document.createElement("div");
+        empty.className = "help";
+        empty.textContent = "등록된 TASK 없음";
+        taskList.appendChild(empty);
+        return;
+      }
+
+      if(state.hideDone && tasks.length === 0){
+        const empty = document.createElement("div");
+        empty.className = "help";
+        empty.textContent = "미완료 TASK 없음 (완료 숨김 ON)";
+        taskList.appendChild(empty);
+        return;
+      }
+
+      tasks.forEach((task) => {
+        const listAll = getTasks(iso);
+        const idx = listAll.findIndex(t => t.text === task.text && t.done === task.done);
+
+        const item = document.createElement("div");
+        item.className = "taskItem";
+
+        const check = document.createElement("button");
+        check.className = "checkBtn";
+        check.textContent = task.done ? "✓" : "";
+        if(task.done) check.classList.add("done");
+        check.title = "완료 체크";
+        check.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
+          const list = getTasks(iso);
+          if(idx >= 0){
+            list[idx].done = !list[idx].done;
+            setTasks(iso, list);
+          }
+          renderTaskList();
+          render();
+        }, { passive:false });
+
+        item.appendChild(check);
+
+        const text = document.createElement("div");
+        text.className = "taskText";
+        text.textContent = task.text;
+        if(task.done) text.classList.add("done");
+
+        const actions = document.createElement("div");
+        actions.className = "taskActions";
+
+        const edit = document.createElement("button");
+        edit.className = "iconBtn";
+        edit.textContent = "✎";
+        edit.title = "수정";
+        edit.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
+          state.editingIndex = idx;
+          renderTaskListEditMode();
+        }, { passive:false });
+
+        const del = document.createElement("button");
+        del.className = "iconBtn delete";
+        del.textContent = "⌫";
+        del.title = "삭제";
+        del.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
+          const list = getTasks(iso);
+          if(idx >= 0){
+            list.splice(idx, 1);
+            setTasks(iso, list);
+          }
+          renderTaskList();
+          render();
+        }, { passive:false });
+
+        actions.appendChild(edit);
+        actions.appendChild(del);
+
+        item.appendChild(text);
+        item.appendChild(actions);
+
+        taskList.appendChild(item);
+      });
     }
 
-    function openToday(){
-      const iso = toISO(new Date());
-      // ✅ 노션에서 새 웹창으로 튀는 "페이지 이동" 대신,
-      // ✅ clock.html 안에서 캘린더를 모달로 띄움
-      openCalendarFor(iso);
+    function renderTaskListEditMode(){
+      const iso = state.selectedISO;
+      if(!iso) return;
+
+      const tasks = getTasks(iso);
+      const idx = state.editingIndex;
+
+      taskList.innerHTML = "";
+
+      tasks.forEach((task, i) => {
+        const item = document.createElement("div");
+        item.className = "taskItem";
+
+        const check = document.createElement("button");
+        check.className = "checkBtn";
+        check.textContent = task.done ? "✓" : "";
+        if(task.done) check.classList.add("done");
+        check.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
+          const list = getTasks(iso);
+          list[i].done = !list[i].done;
+          setTasks(iso, list);
+          renderTaskListEditMode();
+          render();
+        }, { passive:false });
+
+        item.appendChild(check);
+
+        if(i === idx){
+          const input = document.createElement("input");
+          input.className = "editInput";
+          input.value = task.text;
+          input.maxLength = 60;
+
+          const actions = document.createElement("div");
+          actions.className = "taskActions";
+
+          const save = document.createElement("button");
+          save.className = "iconBtn";
+          save.textContent = "✔";
+          save.title = "저장";
+          save.addEventListener("pointerdown", (e) => {
+            e.preventDefault();
+            const v = input.value.trim();
+            if(!v) return;
+            const list = getTasks(iso);
+            list[i].text = v;
+            setTasks(iso, list);
+            state.editingIndex = null;
+            renderTaskList();
+            render();
+          }, { passive:false });
+
+          const cancel = document.createElement("button");
+          cancel.className = "iconBtn delete";
+          cancel.textContent = "↩";
+          cancel.title = "취소";
+          cancel.addEventListener("pointerdown", (e) => {
+            e.preventDefault();
+            state.editingIndex = null;
+            renderTaskList();
+          }, { passive:false });
+
+          actions.appendChild(save);
+          actions.appendChild(cancel);
+
+          item.appendChild(input);
+          item.appendChild(actions);
+
+          setTimeout(() => input.focus(), 0);
+          input.addEventListener("keydown", (e) => {
+            if(e.key === "Enter") save.click();
+            if(e.key === "Escape") cancel.click();
+          });
+
+          taskList.appendChild(item);
+          return;
+        }
+
+        const text = document.createElement("div");
+        text.className = "taskText";
+        text.textContent = task.text;
+        if(task.done) text.classList.add("done");
+
+        const actions = document.createElement("div");
+        actions.className = "taskActions";
+
+        const edit = document.createElement("button");
+        edit.className = "iconBtn";
+        edit.textContent = "✎";
+        edit.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
+          state.editingIndex = i;
+          renderTaskListEditMode();
+        }, { passive:false });
+
+        const del = document.createElement("button");
+        del.className = "iconBtn delete";
+        del.textContent = "⌫";
+        del.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
+          const list = getTasks(iso);
+          list.splice(i, 1);
+          setTasks(iso, list);
+          renderTaskListEditMode();
+          render();
+        }, { passive:false });
+
+        actions.appendChild(edit);
+        actions.appendChild(del);
+
+        item.appendChild(text);
+        item.appendChild(actions);
+
+        taskList.appendChild(item);
+      });
     }
 
-    modeBtn.addEventListener("click", (e)=>{ e.preventDefault(); toggleMode(); });
-    openTodayBtn.addEventListener("click", (e)=>{ e.preventDefault(); openToday(); });
+    function addTask(){
+      const iso = state.selectedISO;
+      if(!iso) return;
 
-    closeCalBtn.addEventListener("click", (e)=>{ e.preventDefault(); closeCalendar(); });
+      const val = taskInput.value.trim();
+      if(!val) return;
 
-    // 모달 배경 클릭 닫기
-    calModal.addEventListener("click", (e)=>{
-      if(e.target === calModal) closeCalendar();
+      const list = getTasks(iso);
+      list.unshift({ text: val, done: false });
+      setTasks(iso, list);
+
+      taskInput.value = "";
+      renderTaskList();
+      render();
+    }
+
+    /* ===== query boot: ?date=YYYY-MM-DD&open=1 ===== */
+    function parseISODateParam(){
+      const sp = new URLSearchParams(location.search);
+      const iso = sp.get("date");
+      const open = sp.get("open");
+      if(!iso) return null;
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null;
+      return { iso, open: open === "1" };
+    }
+
+    function setViewToISO(iso){
+      const [Y,M] = iso.split("-").map(n => parseInt(n,10));
+      if(!Y || !M) return;
+      state.viewDate = new Date(Y, M-1, 1);
+    }
+
+    function bootFromQuery(){
+      const q = parseISODateParam();
+      if(!q) return;
+      setViewToISO(q.iso);
+      render();
+      if(q.open){
+        setTimeout(() => openModal(q.iso), 0);
+      }
+    }
+
+    /* ===== top navigation ===== */
+    prevBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      const d = new Date(state.viewDate);
+      d.setMonth(d.getMonth() - 1);
+      state.viewDate = d;
+      render();
+    }, { passive:false });
+
+    nextBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      const d = new Date(state.viewDate);
+      d.setMonth(d.getMonth() + 1);
+      state.viewDate = d;
+      render();
+    }, { passive:false });
+
+    todayBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      state.viewDate = new Date();
+      render();
+    }, { passive:false });
+
+    /* ✅ CLOCK: 같은 iframe에서 시계로 복귀 */
+    clockBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      const url = new URL("/embed/clock.html", window.location.origin);
+      window.location.href = url.toString();
+    }, { passive:false });
+
+    /* ===== task modal ===== */
+    closeBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      closeModal();
+    }, { passive:false });
+
+    modalBack.addEventListener("pointerdown", (e) => {
+      if(e.target === modalBack) closeModal();
+    }, { passive:false });
+
+    taskInput.addEventListener("keydown", (e) => {
+      if(e.key === "Enter") addTask();
+      if(e.key === "Escape") closeModal();
     });
 
-    // ESC 닫기
+    addBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      addTask();
+    }, { passive:false });
+
+    hideDoneBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      state.hideDone = !state.hideDone;
+      saveUI();
+      renderTaskList();
+    }, { passive:false });
+
+    /* ===== bottom bar actions ===== */
+    function openListSheet(){
+      renderBackupList();
+      listSheetBack.classList.add("show");
+      listSheetBack.setAttribute("aria-hidden", "false");
+    }
+    function closeListSheet(){
+      listSheetBack.classList.remove("show");
+      listSheetBack.setAttribute("aria-hidden", "true");
+    }
+
+    function openMemoSheet(){
+      memoInput.value = "";
+      memoSheetBack.classList.add("show");
+      memoSheetBack.setAttribute("aria-hidden", "false");
+      setTimeout(()=> memoInput.focus(), 0);
+    }
+    function closeMemoSheet(){
+      memoSheetBack.classList.remove("show");
+      memoSheetBack.setAttribute("aria-hidden", "true");
+    }
+
+    backupBtn.addEventListener("pointerdown", (e)=>{
+      e.preventDefault();
+      openMemoSheet(); /* ✅ 수동 백업만 */
+    }, { passive:false });
+
+    listBtn.addEventListener("pointerdown", (e)=>{
+      e.preventDefault();
+      openListSheet();
+    }, { passive:false });
+
+    lightBtn.addEventListener("pointerdown", (e)=>{
+      e.preventDefault();
+      state.isLight = !state.isLight;
+      applyTheme(state.isLight);
+      saveUI();
+    }, { passive:false });
+
+    /* list sheet close */
+    closeListSheetBtn.addEventListener("pointerdown", (e)=>{
+      e.preventDefault();
+      closeListSheet();
+    }, { passive:false });
+
+    listSheetBack.addEventListener("pointerdown", (e)=>{
+      if(e.target === listSheetBack) closeListSheet();
+    }, { passive:false });
+
+    /* memo sheet close */
+    closeMemoSheetBtn.addEventListener("pointerdown", (e)=>{
+      e.preventDefault();
+      closeMemoSheet();
+    }, { passive:false });
+
+    memoSheetBack.addEventListener("pointerdown", (e)=>{
+      if(e.target === memoSheetBack) closeMemoSheet();
+    }, { passive:false });
+
+    memoInput.addEventListener("keydown", (e)=>{
+      if(e.key === "Enter") doBackupBtn.click();
+      if(e.key === "Escape") closeMemoSheet();
+    });
+
+    doBackupBtn.addEventListener("pointerdown", (e)=>{
+      e.preventDefault();
+      makeBackup(memoInput.value);
+      closeMemoSheet();
+      alert("백업 저장 완료!");
+    }, { passive:false });
+
+    /* ESC: 우선순위로 열린 것 닫기 */
     window.addEventListener("keydown", (e)=>{
-      if(e.key === "Escape" && calModal.classList.contains("on")) closeCalendar();
+      if(e.key !== "Escape") return;
+      if(memoSheetBack.classList.contains("show")) return closeMemoSheet();
+      if(listSheetBack.classList.contains("show")) return closeListSheet();
+      if(modalBack.classList.contains("show")) return closeModal();
     });
+
+    /* ===== boot ===== */
+    loadUI();
+    saveUI(); /* 버튼 라벨 동기화 */
+    render();
+    bootFromQuery();
 
     fitToFrame();
     window.addEventListener("resize", fitToFrame);
     setInterval(fitToFrame, 500);
-
-    tick();
-    setInterval(tick, 1000);
   </script>
 </body>
 </html>
