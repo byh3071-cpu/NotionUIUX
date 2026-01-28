@@ -18,12 +18,11 @@
       --text:#e9eef7; --muted:#a7b0c2;
       --accent:#7cc7ff; --today:#ffe08a;
 
-      /* LAYOUT (스샷 비율 느낌) */
-  --baseW: 360;
-  --baseH: 520;
-  --scaleX: 1;
-  --scaleY: 1;
-}
+      /* ✅ LAYOUT: 두번째 스샷(가로형) 비율로 원복 */
+      --baseW: 720;
+      --baseH: 320;
+      --scale: 1;
+    }
     html[data-theme="light"]{
       --panel:#e3e6ec; --panel2:#d6dae2;
       --card:#f7f8fb; --card2:#eef1f6;
@@ -31,6 +30,7 @@
       --text:#141821; --muted:#5b6476;
       --accent:#2f66ff; --today:#b36b2a;
     }
+
     *{ box-sizing:border-box; }
     html,body{
       margin:0; padding:0; width:100%; height:100%;
@@ -41,33 +41,35 @@
       overflow:hidden;
     }
 
-    /* === no margin frame + scaling === */
+    /* === scaling + no outer scroll === */
     .stage{
       width:100%; height:100%;
-      display:flex; align-items:center; justify-content:center;
+      display:flex;
+      align-items:center;
+      justify-content:center;
       background:var(--panel);
-      padding:0; overflow:hidden;
+      padding:0;
+      overflow:hidden;
     }
-.scaler{
-  width:100%;
-  height:100%;
-  display:flex;
-  align-items:flex-start;
-  justify-content:flex-start;
-}
-
-.wrap{
-  width: calc(var(--baseW) * 1px);
-  height: calc(var(--baseH) * 1px);
-  transform: scale(var(--scaleX), var(--scaleY));
-  transform-origin: top left;
-  border:2px solid var(--line2);
-  border-radius:0;
-  background:var(--panel);
-  overflow:hidden;
-  display:flex;
-  flex-direction:column;
-}
+    .scaler{
+      width: calc(var(--baseW) * 1px * var(--scale));
+      height: calc(var(--baseH) * 1px * var(--scale));
+      display:flex;
+      align-items:flex-start;
+      justify-content:flex-start;
+    }
+    .wrap{
+      width: calc(var(--baseW) * 1px);
+      height: calc(var(--baseH) * 1px);
+      transform: scale(var(--scale));
+      transform-origin: top left;
+      border:2px solid var(--line2);
+      border-radius:0;
+      background:var(--panel);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+    }
 
     /* TOP */
     .topbar{
@@ -77,6 +79,7 @@
       background:linear-gradient(180deg, var(--panel2), var(--panel));
       gap:10px;
       flex:0 0 auto;
+      height:64px;
     }
     .leftBtns{ display:flex; gap:10px; align-items:center; }
     .btn{
@@ -106,13 +109,13 @@
       user-select:none;
       opacity:.95;
     }
-    .rightPad{ width:88px; } /* 스샷처럼 오른쪽 여백 느낌 */
+    .rightPad{ width:88px; }
 
     /* BODY */
     .body{
       flex:1 1 auto;
       min-height:0;
-      padding:16px 14px;
+      padding:14px 14px;
       display:grid;
       grid-template-columns: 1.7fr 1fr;
       gap:14px;
@@ -121,7 +124,7 @@
     .panel{
       border:2px solid var(--line2);
       background:linear-gradient(180deg, var(--card2), var(--card));
-      padding:18px 16px;
+      padding:16px 16px;
       display:flex;
       flex-direction:column;
       justify-content:center;
@@ -163,11 +166,11 @@
     }
     .todoLine b{ color:var(--text); }
 
-    /* RIGHT panel: progress blocks */
+    /* RIGHT panel blocks */
     .block{
       border:2px solid var(--line2);
       background:var(--card2);
-      padding:14px 12px;
+      padding:12px 12px;
       display:flex;
       flex-direction:column;
       gap:10px;
@@ -204,7 +207,7 @@
         <div class="topbar">
           <div class="leftBtns">
             <button class="btn" id="btn24">24H</button>
-            <!-- ✅ OPEN 버튼 완전 삭제 (캘린더 전환/모달 오픈 없음) -->
+            <!-- ✅ OPEN 완전 삭제 -->
           </div>
           <div class="title">PIXEL CLOCK</div>
           <div class="rightPad"></div>
@@ -248,7 +251,6 @@
     // calendar와 동일 키를 읽어서 "오늘 TASK" 연동
     const CAL_STORE_KEY = "pixel_calendar_tasks_v6";
     const CAL_UI_KEY    = "pixel_calendar_ui_v6";
-
     const CLOCK_UI_KEY  = "pixel_clock_ui_v2";
 
     const metaLine = $("#metaLine");
@@ -266,10 +268,7 @@
     const dayK = ["일","월","화","수","목","금","토"];
 
     function safeParse(s){ try{ return JSON.parse(s); }catch(e){ return null; } }
-
-    function toISO(d){
-      return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
-    }
+    function toISO(d){ return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`; }
 
     function normalizeList(list){
       if(!Array.isArray(list)) return [];
@@ -299,7 +298,6 @@
       const ui = safeParse(localStorage.getItem(CLOCK_UI_KEY)) || {};
       return { is24: ui.is24 === true };
     }
-
     function saveClockUI(is24){
       localStorage.setItem(CLOCK_UI_KEY, JSON.stringify({ is24: !!is24 }));
     }
@@ -315,53 +313,54 @@
       }
     }
 
-    function render(){
+    function renderStatic(){
       applyThemeFromCalendar();
 
       const now = new Date();
       const iso = toISO(now);
       const dow = dayK[now.getDay()];
-
       const { total, done } = getTodayTasks();
 
       metaLine.textContent = `${iso} (${dow}) · TODAY ${done}/${total}`;
       todoLine.innerHTML   = `오늘 할 일 : <b>${done}</b> / <b>${total}</b>`;
 
-      // DAY progress (0~100)
+      // DAY progress
       const sec = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
       const dayPct = Math.max(0, Math.min(100, (sec / 86400) * 100));
       dayFill.style.width = `${dayPct.toFixed(2)}%`;
 
-      // TASK progress (0~100)
+      // TASK progress
       const taskPct = total > 0 ? (done / total) * 100 : 0;
       taskFill.style.width = `${taskPct.toFixed(2)}%`;
       taskInfo.innerHTML = `<b>${done}</b>/<b>${total}</b> - <b>${Math.round(taskPct)}%</b>`;
     }
 
-function fitToFrame(){
-  const rootStyle = getComputedStyle(document.documentElement);
-  const baseW = Number(rootStyle.getPropertyValue("--baseW")) || 360;
-  const baseH = Number(rootStyle.getPropertyValue("--baseH")) || 520;
+    function fitToFrame(){
+      const rootStyle = getComputedStyle(document.documentElement);
+      const baseW = Number(rootStyle.getPropertyValue("--baseW")) || 720;
+      const baseH = Number(rootStyle.getPropertyValue("--baseH")) || 320;
 
-  const vv = window.visualViewport;
-  const vw = vv?.width  ?? window.innerWidth;
-  const vh = vv?.height ?? window.innerHeight;
+      const vw = (window.visualViewport && window.visualViewport.width) ? window.visualViewport.width : window.innerWidth;
+      const vh = (window.visualViewport && window.visualViewport.height) ? window.visualViewport.height : window.innerHeight;
 
-  const scaleX = Math.max(0.1, vw / baseW);
-  const scaleY = Math.max(0.1, vh / baseH);
+      const availW = Math.max(1, vw);
+      const availH = Math.max(1, vh);
 
-  // ✅ 여백 0: iframe 가로/세로를 각각 정확히 채움
-  document.documentElement.style.setProperty("--scaleX", String(Math.round(scaleX * 1000) / 1000));
-  document.documentElement.style.setProperty("--scaleY", String(Math.round(scaleY * 1000) / 1000));
-}
+      let scale = Math.min(availW / baseW, availH / baseH);
+      if(!isFinite(scale) || scale <= 0) scale = 1;
 
-    // 24H toggle (OPEN 없음)
+      scale = Math.min(3, Math.max(0.55, scale));
+      scale = Math.floor(scale * 100) / 100;
+
+      document.documentElement.style.setProperty("--scale", String(scale));
+    }
+
+    // 24H toggle
     let clockUI = loadClockUI();
     function sync24Btn(){
       btn24.classList.toggle("on", clockUI.is24);
       btn24.textContent = "24H";
     }
-
     btn24.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       clockUI.is24 = !clockUI.is24;
@@ -371,20 +370,19 @@ function fitToFrame(){
 
     // blink
     let blinkOn = true;
-
     function tick(){
       applyThemeFromCalendar();
       const now = new Date();
       timeText.textContent = fmtTime(now, clockUI.is24);
       blinkOn = !blinkOn;
       blinkBox.style.opacity = blinkOn ? "1" : "0.15";
-      render();
+      renderStatic();
     }
 
     // boot
     sync24Btn();
     fitToFrame();
-    render();
+    renderStatic();
     window.addEventListener("resize", fitToFrame);
     setInterval(fitToFrame, 500);
     setInterval(tick, 500);
