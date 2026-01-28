@@ -11,79 +11,71 @@
 
   <style>
     :root{
-      /* ===== DARK ===== */
       --panel:#111319;
       --panel2:#0f1117;
       --card:#0b0c10;
       --card2:#0e1016;
-
       --line:#2a2f3a;
       --line2:#3a4150;
-
       --text:#e9eef7;
       --muted:#a7b0c2;
-
       --accent:#7cc7ff;
+      --today:#ffe08a;
 
-      /* ===== LAYOUT ===== */
       --baseW: 360;
       --baseH: 520;
       --scale: 1;
     }
-
     html[data-theme="light"]{
       --panel:#e3e6ec;
       --panel2:#d6dae2;
       --card:#f7f8fb;
       --card2:#eef1f6;
-
       --line:#c8cdd8;
       --line2:#9aa3b5;
-
       --text:#141821;
       --muted:#5b6476;
-
       --accent:#2f66ff;
+      --today:#b36b2a;
     }
 
     *{ box-sizing:border-box; }
-
     html,body{
-      margin:0;
-      padding:0;
-      width:100%;
-      height:100%;
+      margin:0; padding:0;
+      width:100%; height:100%;
       background: var(--panel);
-      color: var(--text);
+      color:var(--text);
       font-family: ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace;
+      overflow:hidden;
       -webkit-font-smoothing: antialiased;
       text-rendering: geometricPrecision;
-
-      /* ✅ 축소 금지 정책 때문에 iframe이 작으면 스크롤 */
-      overflow:auto;
     }
 
     .stage{
-      min-width:100%;
-      min-height:100%;
+      width:100%; height:100%;
       background: var(--panel);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+    }
+    .scaler{
+      width: calc(var(--baseW) * 1px * var(--scale));
+      height: calc(var(--baseH) * 1px * var(--scale));
       display:flex;
       align-items:flex-start;
       justify-content:flex-start;
-      padding:0;
     }
-
     .wrap{
-      width:  calc(var(--baseW) * 1px);
+      width: calc(var(--baseW) * 1px);
       height: calc(var(--baseH) * 1px);
       transform: scale(var(--scale));
       transform-origin: top left;
-
       background:var(--panel);
       border:2px solid var(--line2);
       border-radius:0;
       overflow:hidden;
-
+      position:relative;
       display:flex;
       flex-direction:column;
     }
@@ -92,13 +84,17 @@
       display:flex;
       align-items:center;
       justify-content:space-between;
-      padding:8px 8px;
+      padding:8px;
       border-bottom:2px solid var(--line2);
       background:linear-gradient(180deg, var(--panel2), var(--panel));
       gap:6px;
       flex:0 0 auto;
     }
-
+    .leftBtns, .rightBtns{
+      display:flex;
+      gap:6px;
+      align-items:center;
+    }
     .btn{
       height:32px;
       padding:0 10px;
@@ -113,64 +109,75 @@
       align-items:center;
       justify-content:center;
       user-select:none;
+      transition: transform .05s ease;
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
     }
-    .btn:hover{ border-color:var(--accent); }
     .btn:active{ transform: translateY(1px); }
+    .btn:hover{ border-color:var(--accent); }
 
     .title{
       flex:1;
       text-align:center;
       font-size:11px;
-      color:var(--text);
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
       user-select:none;
     }
 
-    .center{
+    .content{
       flex:1 1 auto;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:16px;
-      padding:14px;
       min-height:0;
-      background: var(--panel);
-    }
-
-    .clock{
-      width:calc(100% - 24px);
-      border:2px solid var(--line2);
-      background:linear-gradient(180deg, var(--card2), var(--card));
-      padding:14px;
+      padding:10px;
       display:flex;
       flex-direction:column;
       gap:10px;
-      align-items:center;
+      align-items:stretch;
       justify-content:center;
+      background:var(--panel);
+    }
+
+    .card{
+      border:2px solid var(--line2);
+      background: var(--card2);
+      border-radius:0;
+      padding:14px 12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
     }
 
     .time{
-      font-size:28px;
+      font-size:26px;
+      line-height:1.2;
       letter-spacing:1px;
+      text-align:center;
+      color:var(--text);
     }
-
     .date{
       font-size:11px;
+      text-align:center;
       color:var(--muted);
     }
 
-    .hint{
-      font-size:9px;
-      color:var(--muted);
-      line-height:1.45;
-      text-align:center;
-      opacity:.95;
+    .miniRow{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      justify-content:space-between;
     }
+    .chip{
+      flex:1;
+      border:2px solid var(--line);
+      background: var(--card);
+      padding:10px 8px;
+      text-align:center;
+      font-size:10px;
+      color:var(--text);
+      border-radius:0;
+    }
+    .chip strong{ color:var(--accent); font-weight:700; }
 
     .bottomBar{
       flex:0 0 auto;
@@ -179,11 +186,10 @@
       background:linear-gradient(180deg, var(--panel), var(--panel2));
       display:flex;
       align-items:center;
-      justify-content:space-between;
+      justify-content:flex-end;
       padding:10px;
       gap:10px;
     }
-
     .bigBtn{
       width:120px;
       height:46px;
@@ -201,7 +207,6 @@
       -webkit-tap-highlight-color: transparent;
     }
     .bigBtn:hover{ border-color:var(--accent); }
-
     .bigBtn.on{
       border-color:var(--accent);
       box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 18%, transparent);
@@ -212,128 +217,165 @@
 
 <body>
   <div class="stage">
-    <div class="wrap" id="app">
+    <div class="scaler">
+      <div class="wrap">
 
-      <div class="topbar">
-        <button class="btn" id="calBtn">CAL</button>
-        <div class="title">CLOCK</div>
-        <button class="btn" id="todayOpenBtn">OPEN</button>
-      </div>
-
-      <div class="center">
-        <div class="clock">
-          <div class="time" id="time">00:00</div>
-          <div class="date" id="date">0000-00-00</div>
+        <div class="topbar">
+          <div class="leftBtns">
+            <button class="btn" id="calBtn">CAL</button>
+          </div>
+          <div class="title" id="title">CLOCK</div>
+          <div class="rightBtns">
+            <button class="btn" id="todayJumpBtn">TODAY</button>
+          </div>
         </div>
-        <div class="hint">
-          OPEN = 오늘 TASK 모달 바로 열기<br>
-          CAL = 캘린더만 이동
+
+        <div class="content">
+          <div class="card">
+            <div class="time" id="timeText">00:00:00</div>
+            <div class="date" id="dateText">0000-00-00 (DAY)</div>
+
+            <div class="miniRow">
+              <div class="chip">WEEK <strong id="weekText">00</strong></div>
+              <div class="chip">TZ <strong>KST</strong></div>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <div class="bottomBar">
-        <button class="bigBtn" id="lightBtn">LIGHT</button>
-        <button class="bigBtn" id="openBtn">OPEN</button>
-        <button class="bigBtn" id="goCalBtn">CALENDAR</button>
-      </div>
+        <div class="bottomBar">
+          <button class="bigBtn" id="lightBtn">LIGHT</button>
+        </div>
 
+      </div>
     </div>
   </div>
 
-  <script>
-    const UI_KEY = "pixel_calendar_ui_v6";
-    const $ = (id) => document.getElementById(id);
+<script>
+  const $ = (s) => document.querySelector(s);
 
-    const timeEl = $("time");
-    const dateEl = $("date");
+  const calBtn = $("#calBtn");
+  const todayJumpBtn = $("#todayJumpBtn");
+  const lightBtn = $("#lightBtn");
 
-    const lightBtn = $("lightBtn");
-    const calBtn = $("calBtn");
-    const todayOpenBtn = $("todayOpenBtn");
-    const openBtn = $("openBtn");
-    const goCalBtn = $("goCalBtn");
+  const timeText = $("#timeText");
+  const dateText = $("#dateText");
+  const weekText = $("#weekText");
 
-    const pad2 = (n) => String(n).padStart(2, "0");
+  const UI_KEY = "pixel_calendar_ui_v6"; // ✅ calendar와 공유 (테마 연동)
 
-    function safeParse(s){
-      try{ return JSON.parse(s); }catch(e){ return null; }
-    }
+  const state = {
+    isLight: false
+  };
 
-    function applyTheme(isLight){
-      document.documentElement.setAttribute("data-theme", isLight ? "light" : "dark");
-      lightBtn.classList.toggle("on", isLight);
-      lightBtn.textContent = isLight ? "DARK" : "LIGHT";
-    }
+  const pad2 = (n) => String(n).padStart(2, "0");
 
-    function loadUI(){
-      const ui = safeParse(localStorage.getItem(UI_KEY)) || {};
-      const isLight = Boolean(ui.isLight);
-      applyTheme(isLight);
-      return isLight;
-    }
+  function safeParse(s){
+    try{ return JSON.parse(s); }catch(e){ return null; }
+  }
 
-    function saveUI(isLight){
-      const ui = safeParse(localStorage.getItem(UI_KEY)) || {};
-      ui.isLight = Boolean(isLight);
-      localStorage.setItem(UI_KEY, JSON.stringify(ui));
-      applyTheme(isLight);
-    }
+  function syncLightBtn(){
+    lightBtn.classList.toggle("on", state.isLight);
+    lightBtn.textContent = state.isLight ? "DARK" : "LIGHT";
+  }
 
-    function tick(){
-      const d = new Date();
-      timeEl.textContent = `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
-      dateEl.textContent = `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
-    }
+  function applyTheme(isLight){
+    document.documentElement.setAttribute("data-theme", isLight ? "light" : "dark");
+    syncLightBtn();
+  }
 
-    function toISO(d){
-      return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
-    }
+  function loadUI(){
+    const ui = safeParse(localStorage.getItem(UI_KEY)) || {};
+    state.isLight = Boolean(ui.isLight);
+    applyTheme(state.isLight);
+  }
 
-    // ✅ “축소 금지” : scale < 1 만들지 않음 (작으면 스크롤로 해결)
-    function fitToFrame(){
-      const baseW = 360, baseH = 520;
-      const vw = (window.visualViewport?.width) ?? window.innerWidth;
-      const vh = (window.visualViewport?.height) ?? window.innerHeight;
+  function saveUI(){
+    const ui = safeParse(localStorage.getItem(UI_KEY)) || {};
+    localStorage.setItem(UI_KEY, JSON.stringify({ ...ui, isLight: state.isLight }));
+    syncLightBtn();
+  }
 
-      let scale = Math.min(vw / baseW, vh / baseH);
-      if(!isFinite(scale) || scale <= 0) scale = 1;
+  function fitToFrame(){
+    const rootStyle = getComputedStyle(document.documentElement);
+    const baseW = Number(rootStyle.getPropertyValue("--baseW")) || 360;
+    const baseH = Number(rootStyle.getPropertyValue("--baseH")) || 520;
 
-      scale = Math.max(1, Math.min(3, Math.floor(scale * 100) / 100));
-      document.documentElement.style.setProperty("--scale", String(scale));
-    }
+    const vw = (window.visualViewport && window.visualViewport.width) ? window.visualViewport.width : window.innerWidth;
+    const vh = (window.visualViewport && window.visualViewport.height) ? window.visualViewport.height : window.innerHeight;
 
-    function goToCalendar(openToday){
-      const url = new URL("./calendar.html", window.location.href);
-      if(openToday){
-        const iso = toISO(new Date());
-        url.searchParams.set("date", iso);
-        url.searchParams.set("open", "1");
-      }else{
-        url.search = "";
-      }
-      window.location.href = url.toString();
-    }
+    const availW = Math.max(1, vw);
+    const availH = Math.max(1, vh);
 
-    // ===== events (pointerdown + click 폴백) =====
-    let isLight = loadUI();
+    let scale = Math.min(availW / baseW, availH / baseH);
+    if(!isFinite(scale) || scale <= 0) scale = 1;
 
-    function bindBoth(el, fn){
-      el.addEventListener("pointerdown", (e)=>{ e.preventDefault(); fn(); }, {passive:false});
-      el.addEventListener("click", (e)=>{ e.preventDefault(); fn(); });
-    }
+    scale = Math.min(3, Math.max(0.55, scale));
+    scale = Math.floor(scale * 100) / 100;
 
-    bindBoth(lightBtn, ()=>{ isLight = !isLight; saveUI(isLight); });
-    bindBoth(calBtn, ()=> goToCalendar(false));
-    bindBoth(goCalBtn, ()=> goToCalendar(false));
-    bindBoth(todayOpenBtn, ()=> goToCalendar(true));
-    bindBoth(openBtn, ()=> goToCalendar(true));
+    document.documentElement.style.setProperty("--scale", String(scale));
+  }
 
-    tick();
-    setInterval(tick, 1000);
+  function getWeekNumber(d){
+    // ISO week number
+    const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    const dayNum = date.getUTCDay() || 7;
+    date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
+    return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+  }
 
-    fitToFrame();
-    window.addEventListener("resize", ()=> requestAnimationFrame(fitToFrame));
-    window.visualViewport?.addEventListener("resize", ()=> requestAnimationFrame(fitToFrame));
-  </script>
+  function tick(){
+    const now = new Date();
+    const hh = pad2(now.getHours());
+    const mm = pad2(now.getMinutes());
+    const ss = pad2(now.getSeconds());
+    timeText.textContent = `${hh}:${mm}:${ss}`;
+
+    const y = now.getFullYear();
+    const m = pad2(now.getMonth()+1);
+    const da = pad2(now.getDate());
+
+    const days = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
+    const dow = days[now.getDay()];
+
+    dateText.textContent = `${y}-${m}-${da} (${dow})`;
+    weekText.textContent = pad2(getWeekNumber(now));
+  }
+
+  // ✅ CAL 이동 (OPEN 없음)
+  calBtn.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    const url = new URL("/embed/calendar.html", window.location.origin);
+    window.location.href = url.toString();
+  }, { passive:false });
+
+  // TODAY 버튼: 캘린더의 이번 달로 이동 (open 없이 date만 전달)
+  todayJumpBtn.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    const now = new Date();
+    const iso = `${now.getFullYear()}-${pad2(now.getMonth()+1)}-${pad2(now.getDate())}`;
+    const url = new URL("/embed/calendar.html", window.location.origin);
+    url.searchParams.set("date", iso);
+    window.location.href = url.toString();
+  }, { passive:false });
+
+  lightBtn.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    state.isLight = !state.isLight;
+    applyTheme(state.isLight);
+    saveUI();
+  }, { passive:false });
+
+  // boot
+  loadUI();
+  fitToFrame();
+  window.addEventListener("resize", fitToFrame);
+  if(window.visualViewport){
+    window.visualViewport.addEventListener("resize", fitToFrame);
+    window.visualViewport.addEventListener("scroll", fitToFrame);
+  }
+  tick();
+  setInterval(tick, 250);
+</script>
 </body>
 </html>
