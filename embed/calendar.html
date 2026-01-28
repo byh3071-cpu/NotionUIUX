@@ -11,6 +11,7 @@
 
   <style>
     :root{
+      /* ===== DARK ===== */
       --panel:#111319;
       --panel2:#0f1117;
       --card:#0b0c10;
@@ -25,13 +26,15 @@
       --sun:#ff8f8f;
       --sat:#8fb6ff;
 
+      /* ===== LAYOUT ===== */
       --baseW: 360;
-      --baseH: 520;
+      --baseH: 520; /* 하단바 포함 */
       --scale: 1;
       --cell: 46px;
       --gap: 4px;
     }
 
+    /* ===== LIGHT ===== */
     html[data-theme="light"]{
       --panel:#e3e6ec;
       --panel2:#d6dae2;
@@ -42,6 +45,7 @@
       --text:#141821;
       --muted:#5b6476;
       --accent:#2f66ff;
+
       --today:#b36b2a;
       --danger:#d64545;
       --sun:#c75252;
@@ -53,15 +57,17 @@
       margin:0; padding:0;
       width:100%; height:100%;
       background: var(--panel);
-      color:var(--text);
+      color: var(--text);
       font-family: ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace;
       -webkit-font-smoothing: antialiased;
       text-rendering: geometricPrecision;
-      overflow:hidden;
+      overflow:hidden; /* 바깥 스크롤 제거 */
     }
 
+    /* ===== frame fit ===== */
     .stage{
-      width:100%; height:100%;
+      width:100%;
+      height:100%;
       background: var(--panel);
       display:flex;
       align-items:center;
@@ -101,7 +107,11 @@
       gap:6px;
       flex:0 0 auto;
     }
-    .leftBtns, .rightBtns{ display:flex; gap:6px; align-items:center; }
+    .leftBtns, .rightBtns{
+      display:flex;
+      gap:6px;
+      align-items:center;
+    }
     .btn{
       height:32px;
       padding:0 10px;
@@ -122,6 +132,7 @@
     }
     .btn:active{ transform: translateY(1px); }
     .btn:hover{ border-color:var(--accent); }
+
     .monthTitle{
       flex:1;
       text-align:center;
@@ -133,7 +144,7 @@
       user-select:none;
     }
 
-    /* ===== DOW ===== */
+    /* ===== DOW (스샷 느낌의 버튼형) ===== */
     .dow{
       display:grid;
       grid-template-columns: repeat(7, 1fr);
@@ -153,8 +164,14 @@
       background:var(--card);
       user-select:none;
     }
-    .dow .sunHead{ color:var(--sun); border-color:color-mix(in srgb, var(--sun) 35%, var(--line)); }
-    .dow .satHead{ color:var(--sat); border-color:color-mix(in srgb, var(--sat) 35%, var(--line)); }
+    .dow .sunHead{
+      color:var(--sun);
+      border-color:color-mix(in srgb, var(--sun) 35%, var(--line));
+    }
+    .dow .satHead{
+      color:var(--sat);
+      border-color:color-mix(in srgb, var(--sat) 35%, var(--line));
+    }
 
     /* ===== GRID ===== */
     .grid{
@@ -191,11 +208,12 @@
       background: color-mix(in srgb, var(--card) 70%, var(--panel));
     }
     .day.disabled:hover{ border-color:var(--line); }
+
     .day.sun:not(.disabled){ border-color: color-mix(in srgb, var(--sun) 25%, var(--line)); }
     .day.sat:not(.disabled){ border-color: color-mix(in srgb, var(--sat) 25%, var(--line)); }
 
     .num{ font-size:10px; color:var(--text); }
-    .day.disabled .num{ color: var(--muted); opacity:.9; }
+    .day.disabled .num{ color:var(--muted); opacity:.9; }
 
     .today{
       border-color: var(--today) !important;
@@ -204,40 +222,57 @@
 
     /* ===== BADGES ===== */
     .todoBadge{
-      position:absolute; left:0; bottom:0;
-      width:18px; height:18px;
+      position:absolute;
+      left:0;
+      bottom:0;
+      width:18px;
+      height:18px;
       clip-path: polygon(0 0, 0 100%, 100% 100%);
       background: var(--accent);
       color:#fff;
-      display:flex; align-items:flex-end; justify-content:flex-start;
-      font-size:9px; line-height:1;
+      display:flex;
+      align-items:flex-end;
+      justify-content:flex-start;
+      font-size:9px;
+      line-height:1;
       padding:0 0 2px 3px;
-      user-select:none; pointer-events:none;
+      user-select:none;
+      pointer-events:none;
       z-index:2;
       text-shadow: 0 1px 0 rgba(0,0,0,.35);
       box-shadow: inset 0 0 0 2px rgba(255,255,255,.18), 0 1px 0 rgba(0,0,0,.10);
     }
     .doneBadge{
-      position:absolute; right:0; bottom:0;
-      width:18px; height:18px;
+      position:absolute;
+      right:0;
+      bottom:0;
+      width:18px;
+      height:18px;
       clip-path: polygon(100% 0, 0 100%, 100% 100%);
       background: color-mix(in srgb, var(--accent) 22%, transparent);
       color: var(--accent);
-      display:flex; align-items:flex-end; justify-content:flex-end;
-      font-size:9px; line-height:1;
+      display:flex;
+      align-items:flex-end;
+      justify-content:flex-end;
+      font-size:9px;
+      line-height:1;
       padding:0 3px 2px 0;
-      user-select:none; pointer-events:none;
+      user-select:none;
+      pointer-events:none;
       z-index:2;
       text-shadow: 0 1px 0 rgba(255,255,255,.25);
       box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent);
     }
     .heartMarker{
-      position:absolute; left:50%; bottom:6px;
+      position:absolute;
+      left:50%;
+      bottom:6px;
       transform: translateX(-50%);
       font-size:12px;
       line-height:1.2;
       color:var(--accent);
-      user-select:none; pointer-events:none;
+      user-select:none;
+      pointer-events:none;
       z-index:3;
       text-shadow: 0 1px 0 rgba(0,0,0,.28), 0 0 2px rgba(0,0,0,.10);
     }
@@ -250,10 +285,12 @@
 
     /* ===== TASK MODAL ===== */
     .modalBack{
-      position:absolute; inset:0;
+      position:absolute;
+      inset:0;
       background: rgba(0,0,0,.55);
       display:none;
-      align-items:center; justify-content:center;
+      align-items:center;
+      justify-content:center;
       padding:10px;
       z-index:50;
     }
@@ -262,7 +299,7 @@
       width:100%;
       max-width:340px;
       height:350px;
-      background:var(--card2);
+      background: var(--card2);
       border:2px solid var(--line2);
       border-radius:0;
       display:flex;
@@ -275,7 +312,7 @@
       align-items:center;
       justify-content:space-between;
       border-bottom:2px solid var(--line2);
-      background:var(--card);
+      background: var(--card);
       gap:6px;
     }
     .modalTitle{
@@ -305,19 +342,23 @@
     }
     .miniBtn:hover{ border-color:var(--accent); }
     .closeBtn{
-      width:32px; height:32px;
+      width:32px;
+      height:32px;
       border:2px solid var(--line2);
       background:var(--card2);
       color:var(--text);
       border-radius:0;
       cursor:pointer;
       font-size:12px;
-      display:flex; align-items:center; justify-content:center;
+      display:flex;
+      align-items:center;
+      justify-content:center;
       user-select:none;
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
     }
     .closeBtn:hover{ border-color:var(--danger); }
+
     .modalBody{
       padding:8px;
       display:flex;
@@ -340,7 +381,8 @@
     }
     .taskInput::placeholder{ color:color-mix(in srgb, var(--muted) 80%, transparent); }
     .addBtn{
-      width:70px; height:34px;
+      width:70px;
+      height:34px;
       border:2px solid var(--line2);
       background:var(--card);
       color:var(--text);
@@ -375,7 +417,8 @@
       background:var(--card2);
     }
     .checkBtn{
-      width:30px; height:28px;
+      width:30px;
+      height:28px;
       border:2px solid var(--accent);
       background:transparent;
       color:var(--text);
@@ -390,7 +433,8 @@
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
     }
-    .checkBtn.done{ background:var(--accent); color:#fff; }
+    .checkBtn.done{ background: var(--accent); color:#fff; }
+
     .taskText{
       font-size:10px;
       color:var(--text);
@@ -399,7 +443,7 @@
       flex:1;
     }
     .taskText.done{
-      color:var(--muted);
+      color: var(--muted);
       text-decoration: line-through;
       opacity:.9;
     }
@@ -414,9 +458,14 @@
       padding:0 8px;
       font-size:10px;
     }
-    .taskActions{ display:flex; gap:6px; flex:0 0 auto; }
+    .taskActions{
+      display:flex;
+      gap:6px;
+      flex:0 0 auto;
+    }
     .iconBtn{
-      width:30px; height:28px;
+      width:30px;
+      height:28px;
       border:2px solid var(--line2);
       background:var(--card);
       color:var(--text);
@@ -481,9 +530,10 @@
       color:var(--accent);
     }
 
-    /* ===== SHEETS ===== */
+    /* ===== BACKUP LIST / MEMO SHEET ===== */
     .sheetBack{
-      position:absolute; inset:0;
+      position:absolute;
+      inset:0;
       background: rgba(0,0,0,.45);
       display:none;
       align-items:flex-end;
@@ -491,6 +541,7 @@
       z-index:80;
     }
     .sheetBack.show{ display:flex; }
+
     .sheet{
       width:100%;
       max-width:360px;
@@ -538,6 +589,7 @@
       flex:1;
       min-height:0;
     }
+
     .backupRow{
       display:flex;
       align-items:center;
@@ -613,7 +665,7 @@
   <div class="stage">
     <div class="scaler" id="scaler">
       <div class="wrap" id="app">
-
+        <!-- TOP -->
         <div class="topbar">
           <div class="leftBtns">
             <button class="btn" id="prevBtn">◀</button>
@@ -622,15 +674,18 @@
 
           <div class="monthTitle" id="monthTitle">0000-00</div>
 
+          <!-- ✅ CLOCK/모드/OPEN 없음: TODAY만 -->
           <div class="rightBtns">
             <button class="btn" id="todayBtn">TODAY</button>
           </div>
         </div>
 
+        <!-- DOW -->
         <div class="dow">
           <div class="sunHead">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div class="satHead">토</div>
         </div>
 
+        <!-- GRID -->
         <div class="grid" id="grid"></div>
 
         <!-- TASK MODAL -->
@@ -641,11 +696,13 @@
               <button class="miniBtn" id="hideDoneBtn" title="완료 숨김 토글">HIDE</button>
               <button class="closeBtn" id="closeBtn">X</button>
             </div>
+
             <div class="modalBody">
               <div class="addRow">
                 <input class="taskInput" id="taskInput" placeholder="할 일 입력" maxlength="60" />
                 <button class="addBtn" id="addBtn">추가</button>
               </div>
+
               <div class="taskList" id="taskList"></div>
               <div class="help">좌하단=총 · 우하단=완료 · ♡/♥=완료상태</div>
             </div>
@@ -692,15 +749,16 @@
           </div>
         </div>
 
-      </div>
-    </div>
-  </div>
+      </div><!-- wrap -->
+    </div><!-- scaler -->
+  </div><!-- stage -->
 
   <script>
     const $ = (sel) => document.querySelector(sel);
 
     const gridEl = $("#grid");
     const monthTitleEl = $("#monthTitle");
+
     const prevBtn = $("#prevBtn");
     const nextBtn = $("#nextBtn");
     const todayBtn = $("#todayBtn");
@@ -726,8 +784,8 @@
     const memoInput = $("#memoInput");
     const doBackupBtn = $("#doBackupBtn");
 
-    const STORE_KEY = "pixel_calendar_tasks_v6";
-    const UI_KEY = "pixel_calendar_ui_v6";
+    const STORE_KEY  = "pixel_calendar_tasks_v6";
+    const UI_KEY     = "pixel_calendar_ui_v6";
     const BACKUP_KEY = "pixel_calendar_backups_v1";
 
     const LEGACY_KEYS = [
@@ -765,13 +823,12 @@
 
     function loadUI(){
       const ui = safeParse(localStorage.getItem(UI_KEY)) || {};
-      state.hideDone = confirmBool(ui.hideDone);
-      state.isLight = confirmBool(ui.isLight);
+      state.hideDone = Boolean(ui.hideDone);
+      state.isLight  = Boolean(ui.isLight);
+
       hideDoneBtn.textContent = state.hideDone ? "SHOW" : "HIDE";
       applyTheme(state.isLight);
     }
-
-    function confirmBool(v){ return v === true; }
 
     function saveUI(){
       localStorage.setItem(UI_KEY, JSON.stringify({
@@ -779,8 +836,7 @@
         isLight: state.isLight
       }));
       hideDoneBtn.textContent = state.hideDone ? "SHOW" : "HIDE";
-      lightBtn.classList.toggle("on", state.isLight);
-      lightBtn.textContent = state.isLight ? "DARK" : "LIGHT";
+      applyTheme(state.isLight);
     }
 
     function loadAll(){
@@ -803,13 +859,15 @@
 
     function normalizeList(list){
       if(!Array.isArray(list)) return [];
-      return list.map(x => {
-        if(typeof x === "string") return { text:x, done:false };
-        if(x && typeof x === "object"){
-          return { text: String(x.text ?? ""), done: Boolean(x.done) };
-        }
-        return { text:"", done:false };
-      }).filter(t => t.text.trim().length > 0);
+      return list
+        .map(x => {
+          if(typeof x === "string") return { text:x, done:false };
+          if(x && typeof x === "object"){
+            return { text: String(x.text ?? ""), done: Boolean(x.done) };
+          }
+          return { text:"", done:false };
+        })
+        .filter(t => t.text.trim().length > 0);
     }
 
     function getTasks(iso){
@@ -825,7 +883,7 @@
 
     function fmtCount(n){ return n > 9 ? "9+" : String(n); }
 
-    /* ===== backups ===== */
+    /* ===== Backup ===== */
     function loadBackups(){
       const arr = safeParse(localStorage.getItem(BACKUP_KEY));
       return Array.isArray(arr) ? arr : [];
@@ -837,12 +895,17 @@
       const data = loadAll();
       const now = new Date();
       const ts = now.toISOString();
-      const item = { id: String(now.getTime()), ts, memo: (memo || "").trim(), data };
-
+      const item = {
+        id: now.getTime(),
+        ts,
+        memo: (memo || "").trim(),
+        data
+      };
       const list = loadBackups();
       list.unshift(item);
-      saveBackups(list.slice(0, 10));
+      saveBackups(list.slice(0, 10)); // 최근 10개
     }
+
     function fmtTS(ts){
       const d = new Date(ts);
       if(!isFinite(d.getTime())) return ts;
@@ -887,6 +950,7 @@
         const restore = document.createElement("button");
         restore.className = "restoreBtn";
         restore.textContent = "RESTORE";
+
         restore.addEventListener("click", (e) => {
           e.preventDefault();
 
@@ -899,7 +963,6 @@
             alert("백업 데이터가 손상됐어요.");
             return;
           }
-
           saveAll(b.data);
           render();
           if(state.selectedISO) renderTaskList();
@@ -912,7 +975,7 @@
       });
     }
 
-    /* ===== layout fit ===== */
+    /* ===== Layout fit ===== */
     function fitToFrame(){
       const rootStyle = getComputedStyle(document.documentElement);
       const baseW = Number(rootStyle.getPropertyValue("--baseW")) || 360;
@@ -926,17 +989,20 @@
 
       let scale = Math.min(availW / baseW, availH / baseH);
       if(!isFinite(scale) || scale <= 0) scale = 1;
+
       scale = Math.min(3, Math.max(0.55, scale));
       scale = Math.floor(scale * 100) / 100;
 
       document.documentElement.style.setProperty("--scale", String(scale));
     }
 
+    /* ===== Render calendar ===== */
     function render(){
       gridEl.innerHTML = "";
 
       const y = state.viewDate.getFullYear();
       const m = state.viewDate.getMonth();
+
       monthTitleEl.textContent = `${y}-${pad2(m+1)}`;
 
       const first = new Date(y, m, 1);
@@ -952,7 +1018,6 @@
         cell.className = "day";
 
         const dayNum = i - firstDow + 1;
-
         let cellDate;
         let disabled = false;
         let displayNum;
@@ -1020,11 +1085,14 @@
       }
     }
 
+    /* ===== Modal ===== */
     function openModal(iso){
       state.selectedISO = iso;
       state.editingIndex = null;
+
       modalTitle.textContent = `TASK · ${iso}`;
       taskInput.value = "";
+
       renderTaskList();
       modalBack.classList.add("show");
       modalBack.setAttribute("aria-hidden", "false");
@@ -1054,7 +1122,6 @@
         taskList.appendChild(empty);
         return;
       }
-
       if(state.hideDone && tasks.length === 0){
         const empty = document.createElement("div");
         empty.className = "help";
@@ -1063,7 +1130,6 @@
         return;
       }
 
-      // NOTE: 동일 text/상태 중복이 있을 수 있어, index를 직접 매핑
       tasks.forEach((task) => {
         const listAll = getTasks(iso);
         const idx = listAll.findIndex(t => t.text === task.text && t.done === task.done);
@@ -1076,6 +1142,7 @@
         check.textContent = task.done ? "✓" : "";
         if(task.done) check.classList.add("done");
         check.title = "완료 체크";
+
         check.addEventListener("pointerdown", (e) => {
           e.preventDefault();
           const list = getTasks(iso);
@@ -1086,7 +1153,6 @@
           renderTaskList();
           render();
         }, { passive:false });
-        item.appendChild(check);
 
         const text = document.createElement("div");
         text.className = "taskText";
@@ -1124,8 +1190,10 @@
         actions.appendChild(edit);
         actions.appendChild(del);
 
+        item.appendChild(check);
         item.appendChild(text);
         item.appendChild(actions);
+
         taskList.appendChild(item);
       });
     }
@@ -1147,6 +1215,7 @@
         check.className = "checkBtn";
         check.textContent = task.done ? "✓" : "";
         if(task.done) check.classList.add("done");
+
         check.addEventListener("pointerdown", (e) => {
           e.preventDefault();
           const list = getTasks(iso);
@@ -1175,9 +1244,11 @@
             e.preventDefault();
             const v = input.value.trim();
             if(!v) return;
+
             const list = getTasks(iso);
             list[i].text = v;
             setTasks(iso, list);
+
             state.editingIndex = null;
             renderTaskList();
             render();
@@ -1199,13 +1270,13 @@
           item.appendChild(input);
           item.appendChild(actions);
 
+          taskList.appendChild(item);
+
           setTimeout(() => input.focus(), 0);
           input.addEventListener("keydown", (e) => {
             if(e.key === "Enter") save.click();
             if(e.key === "Escape") cancel.click();
           });
-
-          taskList.appendChild(item);
           return;
         }
 
@@ -1243,6 +1314,7 @@
 
         item.appendChild(text);
         item.appendChild(actions);
+
         taskList.appendChild(item);
       });
     }
@@ -1263,7 +1335,28 @@
       render();
     }
 
-    /* ===== top navigation ===== */
+    /* ===== Sheets ===== */
+    function openListSheet(){
+      renderBackupList();
+      listSheetBack.classList.add("show");
+      listSheetBack.setAttribute("aria-hidden", "false");
+    }
+    function closeListSheet(){
+      listSheetBack.classList.remove("show");
+      listSheetBack.setAttribute("aria-hidden", "true");
+    }
+    function openMemoSheet(){
+      memoInput.value = "";
+      memoSheetBack.classList.add("show");
+      memoSheetBack.setAttribute("aria-hidden", "false");
+      setTimeout(()=> memoInput.focus(), 0);
+    }
+    function closeMemoSheet(){
+      memoSheetBack.classList.remove("show");
+      memoSheetBack.setAttribute("aria-hidden", "true");
+    }
+
+    /* ===== Events ===== */
     prevBtn.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       const d = new Date(state.viewDate);
@@ -1286,7 +1379,6 @@
       render();
     }, { passive:false });
 
-    /* ===== task modal ===== */
     closeBtn.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       closeModal();
@@ -1313,27 +1405,7 @@
       renderTaskList();
     }, { passive:false });
 
-    /* ===== bottom bar actions ===== */
-    function openListSheet(){
-      renderBackupList();
-      listSheetBack.classList.add("show");
-      listSheetBack.setAttribute("aria-hidden", "false");
-    }
-    function closeListSheet(){
-      listSheetBack.classList.remove("show");
-      listSheetBack.setAttribute("aria-hidden", "true");
-    }
-    function openMemoSheet(){
-      memoInput.value = "";
-      memoSheetBack.classList.add("show");
-      memoSheetBack.setAttribute("aria-hidden", "false");
-      setTimeout(() => memoInput.focus(), 0);
-    }
-    function closeMemoSheet(){
-      memoSheetBack.classList.remove("show");
-      memoSheetBack.setAttribute("aria-hidden", "true");
-    }
-
+    /* bottom bar */
     backupBtn.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       openMemoSheet();
@@ -1347,10 +1419,12 @@
     lightBtn.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       state.isLight = !state.isLight;
-      applyTheme(state.isLight);
       saveUI();
+      render();
+      if(state.selectedISO) renderTaskList();
     }, { passive:false });
 
+    /* list sheet close */
     closeListSheetBtn.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       closeListSheet();
@@ -1360,6 +1434,7 @@
       if(e.target === listSheetBack) closeListSheet();
     }, { passive:false });
 
+    /* memo sheet close */
     closeMemoSheetBtn.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       closeMemoSheet();
@@ -1381,6 +1456,7 @@
       alert("백업 저장 완료!");
     }, { passive:false });
 
+    /* ESC: 열린 것 우선 닫기 */
     window.addEventListener("keydown", (e) => {
       if(e.key !== "Escape") return;
       if(memoSheetBack.classList.contains("show")) return closeMemoSheet();
@@ -1388,9 +1464,9 @@
       if(modalBack.classList.contains("show")) return closeModal();
     });
 
-    // boot
+    /* ===== Boot ===== */
     loadUI();
-    saveUI();
+    saveUI();     // 버튼 라벨 동기화
     render();
     fitToFrame();
     window.addEventListener("resize", fitToFrame);
