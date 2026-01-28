@@ -1,27 +1,17 @@
 {
-  "version": 2,
   "rewrites": [
-    { "source": "/embed", "destination": "/embed/clock.html" },
-    { "source": "/embed/", "destination": "/embed/clock.html" },
-
-    { "source": "/embed/clock", "destination": "/embed/clock.html" },
-    { "source": "/embed/clock/", "destination": "/embed/clock.html" },
-
-    { "source": "/embed/calendar", "destination": "/embed/calendar.html" },
-    { "source": "/embed/calendar/", "destination": "/embed/calendar.html" }
+    { "source": "/", "destination": "/embed/clock.html" },
+    { "source": "/clock", "destination": "/embed/clock.html" },
+    { "source": "/calendar", "destination": "/embed/calendar.html" },
+    { "source": "/embed/:path*", "destination": "/embed/:path*" }
   ],
   "headers": [
     {
-      "source": "/embed/(.*)",
+      "source": "/embed/:path*",
       "headers": [
-        {
-          "key": "Content-Security-Policy",
-          "value": "frame-ancestors https://notion.so https://www.notion.so https://*.notion.site https://*.notion.so;"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "no-store, max-age=0"
-        }
+        { "key": "Content-Security-Policy", "value": "frame-ancestors *" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
       ]
     }
   ]
