@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -11,7 +11,7 @@
 
   <style>
     :root{
-      /* ====== DARK (기본) ====== */
+      /* ===== DARK ===== */
       --panel:#111319;
       --panel2:#0f1117;
       --card:#0b0c10;
@@ -30,34 +30,35 @@
       --sun:#ff8f8f;
       --sat:#8fb6ff;
 
-      --w: 360px;
-      --h: 440px;
+      /* ===== LAYOUT ===== */
+      --baseW: 360;
+      --baseH: 520; /* 하단바 포함 */
+      --scale: 1;
+
       --cell: 46px;
       --gap: 4px;
-
-      --footerH: 62px;
-      --pad: 8px;
     }
 
-    /* ====== LIGHT (회색 패널 + 밝은 카드) ====== */
-    html.light{
-      --panel:#e5e7eb;     /* 회색 패널 */
-      --panel2:#d7dbe3;    /* 살짝 진한 패널 */
-      --card:#f8fafc;      /* 밝은 카드 */
-      --card2:#eef2f7;     /* 카드 헤더/바 */
+    /* ===== LIGHT (회색 패널 + 살짝 밝은 카드 느낌) ===== */
+    html[data-theme="light"]{
+      --panel:#e1e5ec;
+      --panel2:#d4d9e3;
+      --card:#f7f8fb;
+      --card2:#eef2f7;
 
-      --line:#cbd5e1;
-      --line2:#94a3b8;
+      --line:#c7ccd7;
+      --line2:#97a1b4;
 
-      --text:#0b1020;
-      --muted:#475569;
+      --text:#111522;
+      --muted:#4f5a70;
 
-      --accent:#2563eb;
-      --today:#b45309;
-      --danger:#b91c1c;
+      /* ✅ 라이트에서 뱃지/하트가 “너무 하얗게” 뜨지 않도록 살짝 톤다운 */
+      --accent:#2a57d8;
+      --today:#9a5b20;
+      --danger:#c93b3b;
 
-      --sun:#b91c1c;
-      --sat:#1d4ed8;
+      --sun:#b94848;
+      --sat:#2f57c9;
     }
 
     *{ box-sizing:border-box; }
@@ -72,33 +73,49 @@
       font-family: ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace;
       -webkit-font-smoothing: antialiased;
       text-rendering: geometricPrecision;
-      overflow:hidden; /* 바깥 스크롤 제거 */
+      overflow:hidden;
     }
 
+    /* ✅ “여백이 보이는” 가장 큰 이유는 center 정렬 때문이라,
+       캘린더는 clock처럼 fit은 유지하되 배치를 좌상단으로 고정 */
     .stage{
       width:100%;
       height:100%;
       background: var(--panel);
       display:flex;
+      align-items:flex-start;     /* ✅ center → start */
+      justify-content:flex-start; /* ✅ center → start */
+      overflow:hidden;
+      padding:0;
+      position:relative;
+    }
+
+    /* ✅ scaler는 “클릭영역” 보정용. 크기를 100%로 두고 wrap만 스케일 */
+    .scaler{
+      width:100%;
+      height:100%;
+      display:flex;
       align-items:flex-start;
       justify-content:flex-start;
-      overflow:hidden;
-      padding: var(--pad);
-      margin:0;
     }
 
     .wrap{
-      width:var(--w);
-      height:var(--h);
+      width:  calc(var(--baseW) * 1px);
+      height: calc(var(--baseH) * 1px);
+      transform: scale(var(--scale));
+      transform-origin: top left;
+
       background:var(--panel);
       border:2px solid var(--line2);
       border-radius:0;
       overflow:hidden;
       position:relative;
+
       display:flex;
       flex-direction:column;
     }
 
+    /* ===== TOP BAR ===== */
     .topbar{
       display:flex;
       align-items:center;
@@ -148,6 +165,7 @@
       user-select:none;
     }
 
+    /* ===== DOW ===== */
     .dow{
       display:grid;
       grid-template-columns: repeat(7, 1fr);
@@ -169,29 +187,18 @@
       user-select:none;
     }
 
-    .dow .sunHead{ color:var(--sun); border-color:rgba(255,143,143,.45); }
-    html.light .dow .sunHead{ border-color:rgba(185,28,28,.35); }
-    .dow .satHead{ color:var(--sat); border-color:rgba(143,182,255,.45); }
-    html.light .dow .satHead{ border-color:rgba(29,78,216,.35); }
+    .dow .sunHead{ color:var(--sun); border-color:color-mix(in srgb, var(--sun) 35%, var(--line)); }
+    .dow .satHead{ color:var(--sat); border-color:color-mix(in srgb, var(--sat) 35%, var(--line)); }
 
-    /* ====== grid + footer 공간 확보 ====== */
-    .gridWrap{
-      position:relative;
-      flex:1 1 auto;
-      min-height:0;
-      background:var(--panel);
-      overflow:hidden;
-    }
-
+    /* ===== GRID ===== */
     .grid{
-      position:absolute;
-      top:0; left:0; right:0;
-      bottom: var(--footerH); /* ✅ 하단바 만큼 띄움 */
       padding:8px;
       display:grid;
       grid-template-columns: repeat(7, 1fr);
       gap: var(--gap);
       background:var(--panel);
+      flex:1 1 auto;
+      min-height:0;
       overflow:hidden;
     }
 
@@ -207,65 +214,99 @@
       justify-content:flex-start;
       padding:6px;
       user-select:none;
-      transition: border-color .12s ease;
+      transition: border-color .12s ease, background .12s ease;
       overflow:hidden;
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
     }
     .day:hover{ border-color:var(--accent); }
 
+    /* ✅ 다음달/이전달 숫자 “가려짐(너무 연함)” 개선 */
     .day.disabled{
-      opacity:.35;
       cursor:default;
-      background: color-mix(in srgb, var(--card) 70%, var(--panel) 30%);
+      opacity: .78; /* ✅ 0.58 → 0.78 */
+      background: color-mix(in srgb, var(--card) 78%, var(--panel));
+      filter: saturate(.95);
+    }
+    html[data-theme="light"] .day.disabled{
+      opacity: .86; /* 라이트는 더 또렷하게 */
+      background: color-mix(in srgb, var(--card) 88%, var(--panel));
     }
     .day.disabled:hover{ border-color:var(--line); }
 
-    .day.sun:not(.disabled){ border-color: rgba(255,143,143,.30); }
-    html.light .day.sun:not(.disabled){ border-color: rgba(185,28,28,.25); }
-    .day.sat:not(.disabled){ border-color: rgba(143,182,255,.30); }
-    html.light .day.sat:not(.disabled){ border-color: rgba(29,78,216,.25); }
+    .day.sun:not(.disabled){ border-color: color-mix(in srgb, var(--sun) 25%, var(--line)); }
+    .day.sat:not(.disabled){ border-color: color-mix(in srgb, var(--sat) 25%, var(--line)); }
 
-    .num{ font-size:10px; color:var(--text); }
+    .num{
+      font-size:10px;
+      color:var(--text);
+    }
+    .day.disabled .num{
+      color: color-mix(in srgb, var(--text) 40%, var(--muted));
+      opacity: 1;
+    }
+    html[data-theme="light"] .day.disabled .num{
+      color: color-mix(in srgb, var(--text) 55%, var(--muted));
+    }
 
+    .today{
+      border-color: var(--today) !important;
+      box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--today) 35%, transparent);
+    }
+
+    /* ===== BADGES (라이트에서 “묻힘/너무 밝음” 개선) ===== */
     .todoBadge{
       position:absolute;
       left:0; bottom:0;
       width:18px; height:18px;
       clip-path: polygon(0 0, 0 100%, 100% 100%);
       background: var(--accent);
-      color: color-mix(in srgb, var(--card) 20%, #000 80%);
+      color: #fff;
       display:flex;
       align-items:flex-end;
       justify-content:flex-start;
       font-size:9px;
       line-height:1;
       padding:0 0 2px 3px;
-      box-shadow: inset 0 0 0 2px rgba(11,12,16,.18);
       user-select:none;
       pointer-events:none;
-      z-index:1;
+      z-index:2;
+      text-shadow: 0 1px 0 rgba(0,0,0,.35);
+      box-shadow:
+        inset 0 0 0 2px rgba(255,255,255,.18),
+        0 1px 0 rgba(0,0,0,.10);
     }
 
+    /* ✅ 라이트에서 오른쪽 하단(완료) 삼각형이 너무 “연하게+밝게” 떠서 톤 정리 */
     .doneBadge{
       position:absolute;
       right:0; bottom:0;
       width:18px; height:18px;
       clip-path: polygon(100% 0, 0 100%, 100% 100%);
-      background: color-mix(in srgb, var(--accent) 22%, transparent 78%);
-      color: var(--accent);
+      background: color-mix(in srgb, var(--accent) 16%, transparent); /* ✅ 22% → 16% */
+      color: color-mix(in srgb, var(--accent) 90%, var(--text));     /* ✅ 더 또렷 */
       display:flex;
       align-items:flex-end;
       justify-content:flex-end;
       font-size:9px;
       line-height:1;
       padding:0 3px 2px 0;
-      box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent 75%);
       user-select:none;
       pointer-events:none;
-      z-index:1;
+      z-index:2;
+      text-shadow: 0 1px 0 rgba(255,255,255,.28);
+      box-shadow:
+        inset 0 0 0 2px color-mix(in srgb, var(--accent) 22%, transparent);
+    }
+    html[data-theme="light"] .doneBadge{
+      background: color-mix(in srgb, var(--accent) 12%, transparent);
+      color: color-mix(in srgb, var(--accent) 92%, #000);
+      text-shadow: 0 1px 0 rgba(255,255,255,.35);
     }
 
+    /* ✅ 하트가 흰 배경에서 “너무 밝게/묻히게” 보이는 문제 해결:
+       - 하트 색을 accent 그대로 쓰되
+       - 얇은 외곽선 느낌(그림자) + 살짝 어둡게 필터 */
     .heartMarker{
       position:absolute;
       left:50%;
@@ -274,19 +315,25 @@
       font-size:12px;
       line-height:1.2;
       color:var(--accent);
-      opacity:1;
       user-select:none;
       pointer-events:none;
-      z-index:2;
+      z-index:3;
+      text-shadow:
+        0 1px 0 rgba(0,0,0,.22),
+        0 0 2px rgba(0,0,0,.10);
+      filter: saturate(1.0);
     }
-    .heartMarker.doneAll{ filter: drop-shadow(0 0 2px color-mix(in srgb, var(--accent) 25%, transparent 75%)); }
-
-    .today{
-      border-color: var(--today) !important;
-      box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--today) 25%, transparent 75%);
+    html[data-theme="light"] .heartMarker{
+      text-shadow:
+        0 1px 0 rgba(0,0,0,.28),
+        0 0 2px rgba(0,0,0,.12);
+      filter: saturate(.98) brightness(.95); /* ✅ “밝아서 뜸” 완화 */
+    }
+    .heartMarker.doneAll{
+      filter: drop-shadow(0 0 2px color-mix(in srgb, var(--accent) 30%, transparent));
     }
 
-    /* ====== TASK MODAL ====== */
+    /* ===== TASK MODAL ===== */
     .modalBack{
       position:absolute;
       inset:0;
@@ -317,7 +364,7 @@
       align-items:center;
       justify-content:space-between;
       border-bottom:2px solid var(--line2);
-      background:var(--card);
+      background: var(--card);
       gap:6px;
     }
 
@@ -374,7 +421,6 @@
       gap:8px;
       height:100%;
       min-height:0;
-      background:var(--card2);
     }
 
     .addRow{ display:flex; gap:6px; }
@@ -390,7 +436,7 @@
       padding:0 8px;
       font-size:10px;
     }
-    .taskInput::placeholder{ color: color-mix(in srgb, var(--muted) 75%, transparent 25%); }
+    .taskInput::placeholder{ color:color-mix(in srgb, var(--muted) 80%, transparent); }
 
     .addBtn{
       width:70px;
@@ -447,7 +493,7 @@
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
     }
-    .checkBtn.done{ background: var(--accent); color: color-mix(in srgb, var(--card) 15%, #000 85%); }
+    .checkBtn.done{ background: var(--accent); color:#fff; }
 
     .taskText{
       font-size:10px;
@@ -463,7 +509,7 @@
     }
 
     .editInput{
-      flex:1;
+           flex:1;
       height:30px;
       border:2px solid var(--line2);
       background:var(--card);
@@ -498,42 +544,39 @@
     .help{
       font-size:9px;
       color:var(--muted);
-      opacity:.9;
+      opacity:.95;
       line-height:1.4;
       user-select:none;
     }
 
-    /* ====== FOOTER BAR ====== */
-    .footer{
-      position:absolute;
-      left:0; right:0; bottom:0;
-      height: var(--footerH);
+    /* ===== BOTTOM BAR ===== */
+    .bottomBar{
+      flex:0 0 auto;
+      height:74px;
       border-top:2px solid var(--line2);
-      background: linear-gradient(180deg, var(--panel), var(--panel2));
+      background:linear-gradient(180deg, var(--panel), var(--panel2));
       display:flex;
       align-items:center;
       justify-content:space-between;
-      padding: 10px 10px;
+      padding:10px;
       gap:10px;
-      z-index:20;
     }
 
-    .footerLeft{
+    .bottomLeft{
       display:flex;
       gap:10px;
       align-items:center;
     }
 
-    .footerBtn{
-      height:38px;
-      min-width:104px;
-      padding:0 12px;
+    .bigBtn{
+      width:120px;
+      height:46px;
+      border:2px solid var(--line2);
       background:var(--card2);
       color:var(--text);
-      border:2px solid var(--line2);
       border-radius:0;
       cursor:pointer;
-      font-size:10px;
+      font-size:12px;
       display:flex;
       align-items:center;
       justify-content:center;
@@ -541,228 +584,188 @@
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
     }
-    .footerBtn:hover{ border-color:var(--accent); }
-    .footerBtn.on{
+    .bigBtn:hover{ border-color:var(--accent); }
+
+    .bigBtn.on{
       border-color:var(--accent);
-      box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 12%, transparent 88%);
+      box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 18%, transparent);
       color:var(--accent);
     }
 
-    /* ====== BACKUP DRAWER ====== */
-    .drawer{
+    /* ===== BACKUP LIST / MEMO MODAL (하단 시트) ===== */
+    .sheetBack{
       position:absolute;
-      left:0; right:0;
-      bottom: var(--footerH);
-      height: 210px;
-      background: var(--panel);
-      border-top:2px solid var(--line2);
+      inset:0;
+      background: rgba(0,0,0,.45);
       display:none;
-      flex-direction:column;
-      z-index:25;
+      align-items:flex-end;
+      justify-content:center;
+      z-index:80;
     }
-    .drawer.show{ display:flex; }
+    .sheetBack.show{ display:flex; }
 
-    .drawerHead{
-      height:40px;
+    .sheet{
+      width:100%;
+      max-width:360px;
+      height:240px;
+      background: var(--card2);
+      border:2px solid var(--line2);
+      border-radius:0;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      margin:8px;
+    }
+
+    .sheetHeader{
+      height:38px;
       display:flex;
       align-items:center;
       justify-content:space-between;
-      padding: 6px 10px;
-      background: var(--panel2);
-      border-bottom:2px solid var(--line2);
       gap:8px;
+      padding:6px 8px;
+      border-bottom:2px solid var(--line2);
+      background: var(--card);
     }
-    .drawerTitle{
+
+    .sheetTitle{
       font-size:10px;
       color:var(--text);
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
-      user-select:none;
       flex:1;
+      user-select:none;
     }
-    .drawerBody{
-      padding:10px;
+
+    .sheetBody{
+      padding:8px;
       display:flex;
       flex-direction:column;
-      gap:10px;
-      min-height:0;
+      gap:8px;
       flex:1;
-      background: var(--panel);
+      min-height:0;
     }
 
-    .row{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      justify-content:space-between;
-    }
-
-    .smallBtn{
-      height:32px;
-      padding:0 10px;
-      background:var(--card2);
-      color:var(--text);
+    .sheetList{
       border:2px solid var(--line2);
-      border-radius:0;
-      cursor:pointer;
-      font-size:10px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      user-select:none;
-      touch-action: manipulation;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .smallBtn:hover{ border-color:var(--accent); }
-
-    .backupList{
-      border:2px solid var(--line2);
-      background:var(--card);
-      padding:8px;
+      background: var(--card);
+      padding:6px;
       overflow:auto;
       flex:1;
       min-height:0;
-      -webkit-overflow-scrolling: touch;
     }
 
-    .backupItem{
-      border:2px solid var(--line);
-      background:var(--card2);
-      padding:8px;
-      margin-bottom:8px;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-    }
-    .backupMeta{
-      font-size:9px;
-      color:var(--muted);
-      line-height:1.35;
-      word-break:break-word;
-    }
-    .backupActions{
-      display:flex;
-      gap:8px;
-      justify-content:flex-end;
-    }
-    .tag{
-      display:inline-block;
-      border:2px solid var(--line2);
-      background:var(--card);
-      padding:2px 6px;
-      font-size:9px;
-      color:var(--text);
-    }
-
-    /* ====== IN-PAGE MODAL (backup memo / restore confirm) ====== */
-    .uiModalBack{
-      position:absolute;
-      inset:0;
-      background: rgba(0,0,0,.55);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding:10px;
-      z-index:80;
-    }
-    .uiModalBack.show{ display:flex; }
-
-    .uiModal{
-      width:100%;
-      max-width: 340px;
-      background: var(--card2);
-      border:2px solid var(--line2);
-      overflow:hidden;
-    }
-    .uiModalHead{
-      height:40px;
+    .backupRow{
       display:flex;
       align-items:center;
       justify-content:space-between;
-      padding: 6px 10px;
-      background: var(--card);
-      border-bottom:2px solid var(--line2);
       gap:8px;
+      border:2px solid var(--line);
+      background: var(--card2);
+      padding:6px;
+      margin-bottom:6px;
     }
-    .uiModalTitle{
-      font-size:10px;
-      color:var(--text);
+
+    .backupMeta{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      min-width:0;
       flex:1;
+    }
+    .backupMeta .t1{
+      font-size:9px;
+      color:var(--text);
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
-      user-select:none;
     }
-    .uiModalBody{
-      padding:10px;
+    .backupMeta .t2{
+      font-size:8px;
+      color:var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .restoreBtn{
+      height:28px;
+      padding:0 8px;
+      border:2px solid var(--line2);
+      background: var(--card);
+      color:var(--text);
+      cursor:pointer;
+      font-size:9px;
+      border-radius:0;
+      flex:0 0 auto;
+    }
+    .restoreBtn:hover{ border-color:var(--accent); }
+
+    .memoRow{
       display:flex;
-      flex-direction:column;
-      gap:10px;
-      background: var(--card2);
+      gap:8px;
+      align-items:center;
     }
-    .uiInput{
-      height:36px;
+
+    .memoInput{
+      flex:1;
+      height:34px;
       border:2px solid var(--line2);
       background: var(--card);
       color: var(--text);
       outline:none;
-      padding:0 10px;
+      padding:0 8px;
       font-size:10px;
+      border-radius:0;
     }
-    .uiInput::placeholder{ color: color-mix(in srgb, var(--muted) 75%, transparent 25%); }
+    .memoInput::placeholder{ color:color-mix(in srgb, var(--muted) 80%, transparent); }
 
-    .uiText{
+    .doBackupBtn{
+      width:86px;
+      height:34px;
+      border:2px solid var(--line2);
+      background: var(--card);
+      color: var(--text);
+      cursor:pointer;
       font-size:10px;
-      color:var(--text);
-      line-height:1.45;
-      word-break:break-word;
+      border-radius:0;
     }
-
-    .uiModalActions{
-      display:flex;
-      gap:10px;
-      justify-content:flex-end;
-    }
-
-    .dangerBtn:hover{ border-color:var(--danger); }
+    .doBackupBtn:hover{ border-color:var(--accent); }
   </style>
 </head>
 
 <body>
   <div class="stage">
-    <div class="wrap" id="app">
-      <div class="topbar">
-        <div class="leftBtns">
-          <button class="btn" id="prevBtn">◀</button>
-          <button class="btn" id="nextBtn">▶</button>
+    <div class="scaler" id="scaler">
+      <div class="wrap" id="app">
+
+        <div class="topbar">
+          <div class="leftBtns">
+            <button class="btn" id="prevBtn">◀</button>
+            <button class="btn" id="nextBtn">▶</button>
+          </div>
+
+          <div class="monthTitle" id="monthTitle">0000-00</div>
+
+          <div class="rightBtns">
+            <button class="btn" id="clockBtn">CLOCK</button>
+            <button class="btn" id="todayBtn">TODAY</button>
+          </div>
         </div>
 
-        <div class="monthTitle" id="monthTitle">0000-00</div>
-
-        <div class="rightBtns">
-          <button class="btn" id="clockBtn">CLOCK</button>
-          <button class="btn" id="todayBtn">TODAY</button>
+        <div class="dow">
+          <div class="sunHead">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div class="satHead">토</div>
         </div>
-      </div>
 
-      <div class="dow" id="dow">
-        <div class="sunHead">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div class="satHead">토</div>
-      </div>
-
-      <div class="gridWrap">
         <div class="grid" id="grid"></div>
 
-        <!-- ✅ TASK 모달 -->
+        <!-- TASK MODAL -->
         <div class="modalBack" id="modalBack" aria-hidden="true">
           <div class="modal" role="dialog" aria-modal="true">
             <div class="modalHeader">
               <div class="modalTitle" id="modalTitle">TASK</div>
-
               <button class="miniBtn" id="hideDoneBtn" title="완료 숨김 토글">HIDE</button>
-              <button class="miniBtn" id="exportBtn" title="내보내기(JSON)">EXPORT</button>
-              <button class="miniBtn" id="importBtn" title="가져오기(JSON)">IMPORT</button>
-
               <button class="closeBtn" id="closeBtn">X</button>
             </div>
 
@@ -779,44 +782,46 @@
           </div>
         </div>
 
-        <!-- ✅ BACKUP DRAWER -->
-        <div class="drawer" id="backupDrawer" aria-hidden="true">
-          <div class="drawerHead">
-            <div class="drawerTitle" id="drawerTitle">BACKUP</div>
-            <button class="smallBtn" id="closeDrawerBtn">CLOSE</button>
+        <!-- BOTTOM BAR -->
+        <div class="bottomBar">
+          <div class="bottomLeft">
+            <button class="bigBtn" id="backupBtn">BACKUP</button>
+            <button class="bigBtn" id="listBtn">LIST</button>
           </div>
-
-          <div class="drawerBody">
-            <div class="row">
-              <div class="help">최근 10개만 유지 · 수동 백업</div>
-              <button class="smallBtn" id="backupNowBtn">BACKUP NOW</button>
-            </div>
-
-            <div class="backupList" id="backupList"></div>
-          </div>
+          <button class="bigBtn" id="lightBtn">LIGHT</button>
         </div>
 
-        <!-- ✅ UI MODALS: 백업 메모 / 복원 확인 -->
-        <div class="uiModalBack" id="uiModalBack" aria-hidden="true">
-          <div class="uiModal" role="dialog" aria-modal="true">
-            <div class="uiModalHead">
-              <div class="uiModalTitle" id="uiModalTitle">UI</div>
-              <button class="smallBtn dangerBtn" id="uiModalCloseBtn">X</button>
+        <!-- BACKUP LIST SHEET -->
+        <div class="sheetBack" id="listSheetBack" aria-hidden="true">
+          <div class="sheet">
+            <div class="sheetHeader">
+              <div class="sheetTitle">BACKUP LIST (최근 10개)</div>
+              <button class="miniBtn" id="closeListSheetBtn">CLOSE</button>
             </div>
-            <div class="uiModalBody" id="uiModalBody">
-              <!-- JS에서 내용 주입 -->
+            <div class="sheetBody">
+              <div class="sheetList" id="backupList"></div>
+              <div class="help">RESTORE 클릭 시 현재 TASK 데이터가 백업 시점으로 복원됨</div>
             </div>
           </div>
         </div>
 
-        <!-- ✅ FOOTER -->
-        <div class="footer">
-          <div class="footerLeft">
-            <button class="footerBtn" id="backupBtn">BACKUP</button>
-            <button class="footerBtn" id="listBtn">LIST</button>
+        <!-- MEMO + BACKUP SHEET -->
+        <div class="sheetBack" id="memoSheetBack" aria-hidden="true">
+          <div class="sheet" style="height:170px;">
+            <div class="sheetHeader">
+              <div class="sheetTitle">NEW BACKUP</div>
+              <button class="miniBtn" id="closeMemoSheetBtn">CLOSE</button>
+            </div>
+            <div class="sheetBody">
+              <div class="memoRow">
+                <input class="memoInput" id="memoInput" placeholder="메모 입력 (선택)" maxlength="40" />
+                <button class="doBackupBtn" id="doBackupBtn">SAVE</button>
+              </div>
+              <div class="help">수동 백업만 저장됨 · 자동 백업 없음</div>
+            </div>
           </div>
-          <button class="footerBtn" id="lightBtn">LIGHT</button>
         </div>
+
       </div>
     </div>
   </div>
@@ -835,36 +840,27 @@
     const modalBack = $("#modalBack");
     const closeBtn = $("#closeBtn");
     const modalTitle = $("#modalTitle");
-
     const hideDoneBtn = $("#hideDoneBtn");
-    const exportBtn = $("#exportBtn");
-    const importBtn = $("#importBtn");
-
     const taskInput = $("#taskInput");
     const addBtn = $("#addBtn");
     const taskList = $("#taskList");
 
-    /* footer / drawer */
     const backupBtn = $("#backupBtn");
     const listBtn = $("#listBtn");
     const lightBtn = $("#lightBtn");
 
-    const backupDrawer = $("#backupDrawer");
-    const closeDrawerBtn = $("#closeDrawerBtn");
-    const backupNowBtn = $("#backupNowBtn");
+    const listSheetBack = $("#listSheetBack");
+    const closeListSheetBtn = $("#closeListSheetBtn");
     const backupListEl = $("#backupList");
-    const drawerTitle = $("#drawerTitle");
 
-    /* ui modal (no prompt/confirm) */
-    const uiModalBack = $("#uiModalBack");
-    const uiModalTitle = $("#uiModalTitle");
-    const uiModalBody = $("#uiModalBody");
-    const uiModalCloseBtn = $("#uiModalCloseBtn");
+    const memoSheetBack = $("#memoSheetBack");
+    const closeMemoSheetBtn = $("#closeMemoSheetBtn");
+    const memoInput = $("#memoInput");
+    const doBackupBtn = $("#doBackupBtn");
 
-    /* storage keys */
     const STORE_KEY = "pixel_calendar_tasks_v6";
     const UI_KEY = "pixel_calendar_ui_v6";
-    const BACKUP_KEY = "pixel_calendar_backups_v6";
+    const BACKUP_KEY = "pixel_calendar_backups_v1";
 
     const LEGACY_KEYS = [
       "pixel_calendar_tasks_v5_backup_hideDone",
@@ -878,7 +874,7 @@
       selectedISO: null,
       editingIndex: null,
       hideDone: false,
-      drawerMode: "backup",  // "backup" | "list"
+      isLight: false
     };
 
     const pad2 = (n) => String(n).padStart(2, "0");
@@ -896,19 +892,27 @@
     function loadUI(){
       const ui = safeParse(localStorage.getItem(UI_KEY)) || {};
       state.hideDone = Boolean(ui.hideDone);
+      state.isLight = Boolean(ui.isLight);
+
       hideDoneBtn.textContent = state.hideDone ? "SHOW" : "HIDE";
+      applyTheme(state.isLight);
+    }
+    function saveUI(){
+      localStorage.setItem(UI_KEY, JSON.stringify({
+        hideDone: state.hideDone,
+        isLight: state.isLight
+      }));
+      hideDoneBtn.textContent = state.hideDone ? "SHOW" : "HIDE";
+      lightBtn.classList.toggle("on", state.isLight);
+      lightBtn.textContent = state.isLight ? "DARK" : "LIGHT";
+    }
 
-      const isLight = Boolean(ui.lightMode);
-      document.documentElement.classList.toggle("light", isLight);
+    function applyTheme(isLight){
+      document.documentElement.setAttribute("data-theme", isLight ? "light" : "dark");
       lightBtn.classList.toggle("on", isLight);
-    }
-    function saveUI(patch){
-      const prev = safeParse(localStorage.getItem(UI_KEY)) || {};
-      const next = { ...prev, ...patch };
-      localStorage.setItem(UI_KEY, JSON.stringify(next));
+      lightBtn.textContent = isLight ? "DARK" : "LIGHT";
     }
 
-    /* ====== tasks load/save ====== */
     function loadAll(){
       const cur = safeParse(localStorage.getItem(STORE_KEY));
       if(cur && typeof cur === "object" && !Array.isArray(cur)) return cur;
@@ -953,7 +957,123 @@
       return n > 9 ? "9+" : String(n);
     }
 
-    /* ====== render calendar ====== */
+    /* ===== backup utils ===== */
+    function loadBackups(){
+      const arr = safeParse(localStorage.getItem(BACKUP_KEY));
+      return Array.isArray(arr) ? arr : [];
+    }
+    function saveBackups(arr){
+      localStorage.setItem(BACKUP_KEY, JSON.stringify(arr));
+    }
+    function makeBackup(memo){
+      const data = loadAll();
+      const now = new Date();
+      const ts = now.toISOString();
+
+      const item = {
+        id: `${now.getTime()}`,
+        ts,
+        memo: (memo || "").trim(),
+        data
+      };
+
+      const list = loadBackups();
+      list.unshift(item);
+
+      const trimmed = list.slice(0, 10); /* ✅ 최근 10개만 */
+      saveBackups(trimmed);
+    }
+
+    function fmtTS(ts){
+      const d = new Date(ts);
+      if(!isFinite(d.getTime())) return ts;
+      const y = d.getFullYear();
+      const m = pad2(d.getMonth()+1);
+      const da = pad2(d.getDate());
+      const hh = pad2(d.getHours());
+      const mm = pad2(d.getMinutes());
+      return `${y}-${m}-${da} ${hh}:${mm}`;
+    }
+
+    function renderBackupList(){
+      const list = loadBackups();
+      backupListEl.innerHTML = "";
+
+      if(list.length === 0){
+        const empty = document.createElement("div");
+        empty.className = "help";
+        empty.textContent = "백업 없음 (BACKUP으로 수동 저장)";
+        backupListEl.appendChild(empty);
+        return;
+      }
+
+      list.forEach((b) => {
+        const row = document.createElement("div");
+        row.className = "backupRow";
+
+        const meta = document.createElement("div");
+        meta.className = "backupMeta";
+
+        const t1 = document.createElement("div");
+        t1.className = "t1";
+        t1.textContent = fmtTS(b.ts);
+
+        const t2 = document.createElement("div");
+        t2.className = "t2";
+        t2.textContent = b.memo ? `memo: ${b.memo}` : "memo: (없음)";
+
+        meta.appendChild(t1);
+        meta.appendChild(t2);
+
+        const restore = document.createElement("button");
+        restore.className = "restoreBtn";
+        restore.textContent = "RESTORE";
+        restore.addEventListener("click", (e) => {
+          e.preventDefault();
+          const ok = confirm(
+            `복원할까요?\n\n- 백업: ${fmtTS(b.ts)}\n- 메모: ${b.memo || "(없음)"}\n\n현재 TASK 데이터는 백업 시점으로 바뀝니다.`
+          );
+          if(!ok) return;
+
+          if(!b.data || typeof b.data !== "object" || Array.isArray(b.data)){
+            alert("백업 데이터가 손상됐어요.");
+            return;
+          }
+
+          saveAll(b.data);
+          render();
+          if(state.selectedISO) renderTaskList();
+          alert("복원 완료!");
+        });
+
+        row.appendChild(meta);
+        row.appendChild(restore);
+        backupListEl.appendChild(row);
+      });
+    }
+
+    /* ===== layout fit (calendar도 clock처럼) ===== */
+    function fitToFrame(){
+      const rootStyle = getComputedStyle(document.documentElement);
+      const baseW = Number(rootStyle.getPropertyValue("--baseW")) || 360;
+      const baseH = Number(rootStyle.getPropertyValue("--baseH")) || 520;
+
+      const vw = (window.visualViewport && window.visualViewport.width) ? window.visualViewport.width : window.innerWidth;
+      const vh = (window.visualViewport && window.visualViewport.height) ? window.visualViewport.height : window.innerHeight;
+
+      /* ✅ -24 같은 여백 보정 “없음” */
+      const availW = Math.max(1, vw);
+      const availH = Math.max(1, vh);
+
+      let scale = Math.min(availW / baseW, availH / baseH);
+      if(!isFinite(scale) || scale <= 0) scale = 1;
+
+      scale = Math.min(3, Math.max(0.55, scale));
+      scale = Math.floor(scale * 100) / 100;
+
+      document.documentElement.style.setProperty("--scale", String(scale));
+    }
+
     function render(){
       gridEl.innerHTML = "";
 
@@ -969,6 +1089,7 @@
       const lastDay = last.getDate();
 
       const prevLast = new Date(y, m, 0).getDate();
+
       const totalCells = 42;
 
       for(let i=0; i<totalCells; i++){
@@ -1044,7 +1165,6 @@
       }
     }
 
-    /* ====== task modal ====== */
     function openModal(iso){
       state.selectedISO = iso;
       state.editingIndex = null;
@@ -1292,47 +1412,7 @@
       render();
     }
 
-    /* ====== export / import ====== */
-    exportBtn.addEventListener("pointerdown", (e) => {
-      e.preventDefault();
-      const data = loadAll();
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = `pixel_calendar_backup_${new Date().toISOString().slice(0,10)}.json`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-    }, { passive:false });
-
-    importBtn.addEventListener("pointerdown", (e) => {
-      e.preventDefault();
-      const input = document.createElement("input");
-      input.type = "file";
-      input.accept = "application/json";
-      input.addEventListener("change", async () => {
-        const file = input.files?.[0];
-        if(!file) return;
-        try{
-          const text = await file.text();
-          const obj = safeParse(text);
-          if(!obj || typeof obj !== "object" || Array.isArray(obj)){
-            showInfo("IMPORT", "JSON 형식이 올바르지 않아요.");
-            return;
-          }
-          saveAll(obj);
-          render();
-          if(state.selectedISO) renderTaskList();
-          showInfo("IMPORT", "가져오기 완료!");
-        }catch(err){
-          showInfo("IMPORT", "가져오기 실패");
-        }
-      });
-      input.click();
-    }, { passive:false });
-
-    /* ====== url query open: ?date=YYYY-MM-DD&open=1 ====== */
+    /* ===== query boot: ?date=YYYY-MM-DD&open=1 ===== */
     function parseISODateParam(){
       const sp = new URLSearchParams(location.search);
       const iso = sp.get("date");
@@ -1341,11 +1421,13 @@
       if(!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null;
       return { iso, open: open === "1" };
     }
+
     function setViewToISO(iso){
       const [Y,M] = iso.split("-").map(n => parseInt(n,10));
       if(!Y || !M) return;
       state.viewDate = new Date(Y, M-1, 1);
     }
+
     function bootFromQuery(){
       const q = parseISODateParam();
       if(!q) return;
@@ -1356,265 +1438,7 @@
       }
     }
 
-    /* ====== UI modal helpers (no alert/confirm/prompt) ====== */
-    function closeUiModal(){
-      uiModalBack.classList.remove("show");
-      uiModalBack.setAttribute("aria-hidden", "true");
-      uiModalBody.innerHTML = "";
-    }
-
-    uiModalCloseBtn.addEventListener("pointerdown", (e)=>{
-      e.preventDefault();
-      closeUiModal();
-    }, { passive:false });
-
-    uiModalBack.addEventListener("pointerdown", (e)=>{
-      if(e.target === uiModalBack) closeUiModal();
-    }, { passive:false });
-
-    function showInfo(title, message){
-      uiModalTitle.textContent = title;
-      uiModalBody.innerHTML = `
-        <div class="uiText">${escapeHtml(message)}</div>
-        <div class="uiModalActions">
-          <button class="smallBtn" id="uiOkBtn">OK</button>
-        </div>
-      `;
-      uiModalBack.classList.add("show");
-      uiModalBack.setAttribute("aria-hidden", "false");
-      $("#uiOkBtn").addEventListener("pointerdown", (e)=>{
-        e.preventDefault();
-        closeUiModal();
-      }, { passive:false });
-    }
-
-    function askBackupMemo(onSubmit){
-      uiModalTitle.textContent = "BACKUP MEMO";
-      uiModalBody.innerHTML = `
-        <div class="help">메모를 입력하고 저장하세요. (비워도 저장됨)</div>
-        <input class="uiInput" id="memoInput" placeholder="예: 1월 계획 정리 전" maxlength="60" />
-        <div class="uiModalActions">
-          <button class="smallBtn dangerBtn" id="memoCancelBtn">CANCEL</button>
-          <button class="smallBtn" id="memoSaveBtn">SAVE</button>
-        </div>
-      `;
-      uiModalBack.classList.add("show");
-      uiModalBack.setAttribute("aria-hidden", "false");
-
-      const memoInput = $("#memoInput");
-      setTimeout(()=> memoInput.focus(), 0);
-
-      $("#memoCancelBtn").addEventListener("pointerdown", (e)=>{
-        e.preventDefault();
-        closeUiModal();
-      }, { passive:false });
-
-      $("#memoSaveBtn").addEventListener("pointerdown", (e)=>{
-        e.preventDefault();
-        const memo = memoInput.value.trim();
-        closeUiModal();
-        onSubmit(memo);
-      }, { passive:false });
-
-      memoInput.addEventListener("keydown", (e)=>{
-        if(e.key === "Enter") $("#memoSaveBtn").click();
-        if(e.key === "Escape") $("#memoCancelBtn").click();
-      });
-    }
-
-    function askConfirmRestore(metaText, onYes){
-      uiModalTitle.textContent = "RESTORE?";
-      uiModalBody.innerHTML = `
-        <div class="uiText">이 백업으로 복원할까요?</div>
-        <div class="backupMeta">${escapeHtml(metaText)}</div>
-        <div class="uiModalActions">
-          <button class="smallBtn dangerBtn" id="restoreNoBtn">NO</button>
-          <button class="smallBtn" id="restoreYesBtn">YES</button>
-        </div>
-      `;
-      uiModalBack.classList.add("show");
-      uiModalBack.setAttribute("aria-hidden", "false");
-
-      $("#restoreNoBtn").addEventListener("pointerdown", (e)=>{
-        e.preventDefault();
-        closeUiModal();
-      }, { passive:false });
-
-      $("#restoreYesBtn").addEventListener("pointerdown", (e)=>{
-        e.preventDefault();
-        closeUiModal();
-        onYes();
-      }, { passive:false });
-    }
-
-    function escapeHtml(s){
-      return String(s ?? "")
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
-    }
-
-    /* ====== Backup logic (최근 10개) ====== */
-    function loadBackups(){
-      const arr = safeParse(localStorage.getItem(BACKUP_KEY));
-      if(Array.isArray(arr)) return arr;
-      return [];
-    }
-
-    function saveBackups(list){
-      localStorage.setItem(BACKUP_KEY, JSON.stringify(list));
-    }
-
-    function makeBackup(memo){
-      const data = loadAll();
-      const backups = loadBackups();
-
-      const item = {
-        id: crypto?.randomUUID ? crypto.randomUUID() : String(Date.now()) + "_" + Math.random().toString(16).slice(2),
-        ts: Date.now(),
-        memo: String(memo ?? ""),
-        data
-      };
-
-      backups.unshift(item);
-
-      /* ✅ 최근 10개만 유지 */
-      const trimmed = backups.slice(0, 10);
-      saveBackups(trimmed);
-      renderBackupList();
-      return item;
-    }
-
-    function restoreBackup(id){
-      const backups = loadBackups();
-      const found = backups.find(b => b.id === id);
-      if(!found) return;
-
-      /* ✅ 복원 */
-      if(found.data && typeof found.data === "object" && !Array.isArray(found.data)){
-        saveAll(found.data);
-      }
-
-      /* UI 업데이트 */
-      render();
-      if(state.selectedISO) renderTaskList();
-      renderBackupList();
-    }
-
-    function fmtTime(ts){
-      const d = new Date(ts);
-      const Y = d.getFullYear();
-      const M = pad2(d.getMonth()+1);
-      const D = pad2(d.getDate());
-      const hh = pad2(d.getHours());
-      const mm = pad2(d.getMinutes());
-      return `${Y}-${M}-${D} ${hh}:${mm}`;
-    }
-
-    function renderBackupList(){
-      const backups = loadBackups();
-      backupListEl.innerHTML = "";
-
-      if(backups.length === 0){
-        const empty = document.createElement("div");
-        empty.className = "help";
-        empty.textContent = "백업이 아직 없습니다. (BACKUP NOW로 생성)";
-        backupListEl.appendChild(empty);
-        return;
-      }
-
-      backups.forEach((b, idx) => {
-        const box = document.createElement("div");
-        box.className = "backupItem";
-
-        const meta = document.createElement("div");
-        meta.className = "backupMeta";
-
-        const memo = (b.memo || "").trim();
-        const memoLine = memo ? `MEMO: ${memo}` : `MEMO: (없음)`;
-        meta.innerHTML = `
-          <div><span class="tag">#${idx+1}</span> ${escapeHtml(fmtTime(b.ts))}</div>
-          <div>${escapeHtml(memoLine)}</div>
-        `;
-        box.appendChild(meta);
-
-        const actions = document.createElement("div");
-        actions.className = "backupActions";
-
-        const restoreBtn = document.createElement("button");
-        restoreBtn.className = "smallBtn";
-        restoreBtn.textContent = "RESTORE";
-        restoreBtn.addEventListener("pointerdown", (e)=>{
-          e.preventDefault();
-          const metaText = `${fmtTime(b.ts)} · ${memoLine}`;
-          askConfirmRestore(metaText, ()=> restoreBackup(b.id));
-        }, { passive:false });
-
-        const delBtn = document.createElement("button");
-        delBtn.className = "smallBtn dangerBtn";
-        delBtn.textContent = "DELETE";
-        delBtn.addEventListener("pointerdown", (e)=>{
-          e.preventDefault();
-          // 삭제도 confirm 없이 하면 실수 많아서 같은 confirm UI 재사용
-          const metaText = `${fmtTime(b.ts)} · ${memoLine}\n(이 백업을 삭제합니다)`;
-          uiModalTitle.textContent = "DELETE?";
-          uiModalBody.innerHTML = `
-            <div class="uiText">이 백업을 삭제할까요?</div>
-            <div class="backupMeta">${escapeHtml(metaText)}</div>
-            <div class="uiModalActions">
-              <button class="smallBtn" id="delNoBtn">NO</button>
-              <button class="smallBtn dangerBtn" id="delYesBtn">YES</button>
-            </div>
-          `;
-          uiModalBack.classList.add("show");
-          uiModalBack.setAttribute("aria-hidden","false");
-
-          $("#delNoBtn").addEventListener("pointerdown", (ev)=>{
-            ev.preventDefault();
-            closeUiModal();
-          }, { passive:false });
-
-          $("#delYesBtn").addEventListener("pointerdown", (ev)=>{
-            ev.preventDefault();
-            const list = loadBackups().filter(x => x.id !== b.id);
-            saveBackups(list);
-            closeUiModal();
-            renderBackupList();
-          }, { passive:false });
-        }, { passive:false });
-
-        actions.appendChild(restoreBtn);
-        actions.appendChild(delBtn);
-
-        box.appendChild(actions);
-        backupListEl.appendChild(box);
-      });
-    }
-
-    /* ====== Drawer controls ====== */
-    function openDrawer(mode){
-      state.drawerMode = mode;
-      backupDrawer.classList.add("show");
-      backupDrawer.setAttribute("aria-hidden","false");
-
-      // 버튼 상태
-      backupBtn.classList.toggle("on", mode === "backup");
-      listBtn.classList.toggle("on", mode === "list");
-
-      drawerTitle.textContent = (mode === "backup") ? "BACKUP" : "BACKUP LIST";
-      renderBackupList();
-    }
-
-    function closeDrawer(){
-      backupDrawer.classList.remove("show");
-      backupDrawer.setAttribute("aria-hidden","true");
-      backupBtn.classList.remove("on");
-      listBtn.classList.remove("on");
-    }
-
-    /* ====== Events ====== */
+    /* ===== top navigation ===== */
     prevBtn.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       const d = new Date(state.viewDate);
@@ -1637,13 +1461,14 @@
       render();
     }, { passive:false });
 
-    /* CLOCK: 같은 origin이면 이동 */
+    /* ✅ CLOCK: 같은 iframe에서 시계로 복귀 */
     clockBtn.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       const url = new URL("/embed/clock.html", window.location.origin);
       window.location.href = url.toString();
     }, { passive:false });
 
+    /* ===== task modal ===== */
     closeBtn.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       closeModal();
@@ -1666,62 +1491,98 @@
     hideDoneBtn.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       state.hideDone = !state.hideDone;
-      saveUI({ hideDone: state.hideDone });
-      hideDoneBtn.textContent = state.hideDone ? "SHOW" : "HIDE";
+      saveUI();
       renderTaskList();
     }, { passive:false });
 
-    /* footer buttons */
+    /* ===== bottom bar actions ===== */
+    function openListSheet(){
+      renderBackupList();
+      listSheetBack.classList.add("show");
+      listSheetBack.setAttribute("aria-hidden", "false");
+    }
+    function closeListSheet(){
+      listSheetBack.classList.remove("show");
+      listSheetBack.setAttribute("aria-hidden", "true");
+    }
+
+    function openMemoSheet(){
+      memoInput.value = "";
+      memoSheetBack.classList.add("show");
+      memoSheetBack.setAttribute("aria-hidden", "false");
+      setTimeout(()=> memoInput.focus(), 0);
+    }
+    function closeMemoSheet(){
+      memoSheetBack.classList.remove("show");
+      memoSheetBack.setAttribute("aria-hidden", "true");
+    }
+
     backupBtn.addEventListener("pointerdown", (e)=>{
       e.preventDefault();
-      openDrawer("backup");
+      openMemoSheet(); /* ✅ 수동 백업만 */
     }, { passive:false });
 
     listBtn.addEventListener("pointerdown", (e)=>{
       e.preventDefault();
-      openDrawer("list");
-    }, { passive:false });
-
-    closeDrawerBtn.addEventListener("pointerdown", (e)=>{
-      e.preventDefault();
-      closeDrawer();
-    }, { passive:false });
-
-    backupNowBtn.addEventListener("pointerdown", (e)=>{
-      e.preventDefault();
-      // ✅ prompt 대신 UI 모달 입력
-      askBackupMemo((memo)=>{
-        makeBackup(memo);
-        openDrawer(state.drawerMode); // 리스트 갱신 유지
-        showInfo("BACKUP", "저장 완료!");
-      });
+      openListSheet();
     }, { passive:false });
 
     lightBtn.addEventListener("pointerdown", (e)=>{
       e.preventDefault();
-      const isLight = !document.documentElement.classList.contains("light");
-      document.documentElement.classList.toggle("light", isLight);
-      lightBtn.classList.toggle("on", isLight);
-      saveUI({ lightMode: isLight });
-      // 라이트/다크 모두에서 리스트 재렌더하면 색/대비 즉시 반영
-      render();
-      renderBackupList();
-      if(state.selectedISO) renderTaskList();
+      state.isLight = !state.isLight;
+      applyTheme(state.isLight);
+      saveUI();
     }, { passive:false });
 
-    /* ESC: 열려있으면 닫기 우선순위 */
-    window.addEventListener("keydown", (e)=>{
-      if(e.key !== "Escape") return;
-      if(uiModalBack.classList.contains("show")) { closeUiModal(); return; }
-      if(modalBack.classList.contains("show")) { closeModal(); return; }
-      if(backupDrawer.classList.contains("show")) { closeDrawer(); return; }
+    /* list sheet close */
+    closeListSheetBtn.addEventListener("pointerdown", (e)=>{
+      e.preventDefault();
+      closeListSheet();
+    }, { passive:false });
+
+    listSheetBack.addEventListener("pointerdown", (e)=>{
+      if(e.target === listSheetBack) closeListSheet();
+    }, { passive:false });
+
+    /* memo sheet close */
+    closeMemoSheetBtn.addEventListener("pointerdown", (e)=>{
+      e.preventDefault();
+      closeMemoSheet();
+    }, { passive:false });
+
+    memoSheetBack.addEventListener("pointerdown", (e)=>{
+      if(e.target === memoSheetBack) closeMemoSheet();
+    }, { passive:false });
+
+    memoInput.addEventListener("keydown", (e)=>{
+      if(e.key === "Enter") doBackupBtn.click();
+      if(e.key === "Escape") closeMemoSheet();
     });
 
-    /* ====== Boot ====== */
+    doBackupBtn.addEventListener("pointerdown", (e)=>{
+      e.preventDefault();
+      makeBackup(memoInput.value);
+      closeMemoSheet();
+      alert("백업 저장 완료!");
+    }, { passive:false });
+
+    /* ESC: 우선순위로 열린 것 닫기 */
+    window.addEventListener("keydown", (e)=>{
+      if(e.key !== "Escape") return;
+      if(memoSheetBack.classList.contains("show")) return closeMemoSheet();
+      if(listSheetBack.classList.contains("show")) return closeListSheet();
+      if(modalBack.classList.contains("show")) return closeModal();
+    });
+
+    /* ===== boot ===== */
     loadUI();
+    saveUI(); /* 버튼 라벨 동기화 */
     render();
     bootFromQuery();
-    renderBackupList();
+
+    fitToFrame();
+    window.addEventListener("resize", fitToFrame);
+    setInterval(fitToFrame, 500);
   </script>
 </body>
 </html>
