@@ -8,7 +8,18 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-
+  
+    .top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      padding:8px 8px;
+      border-bottom:2px solid var(--line2);
+      background: linear-gradient(180deg, var(--panel2), var(--panel));
+      flex:0 0 auto;
+    }
+  
   <style>
     :root{
       --panel:#111319;
@@ -52,31 +63,21 @@
       overflow:hidden;
       padding:0px;
     }
-
-    .wrap{
-      width: calc(var(--baseW) * 1px);
-      height: calc(var(--baseH) * 1px);
     
-      /* ✅ zoom 제거, transform만 */
-      transform: scale(var(--scale));
-      transform-origin: top left;
-    
-      background:var(--panel);
-      border:2px solid var(--line2);
-      border-radius:0;
-      overflow:hidden;
+        .scaler{
+      width: calc(var(--baseW) * 1px * var(--scale));
+      height: calc(var(--baseH) * 1px * var(--scale));
       display:flex;
-      flex-direction:column;
-      pointer-events:auto;
+      align-items:flex-start;
+      justify-content:flex-start;
     }
 
+
     .wrap{
       width: calc(var(--baseW) * 1px);
       height: calc(var(--baseH) * 1px);
-    
       transform: scale(var(--scale));
       transform-origin: top left;
-    
       background:var(--panel);
       border:2px solid var(--line2);
       border-radius:0;
@@ -84,6 +85,8 @@
       display:flex;
       flex-direction:column;
       pointer-events:auto;
+    
+      position:relative; /* ✅ 모달/절대요소 기준 */
     }
 
     .title{
@@ -249,7 +252,7 @@
       align-items:stretch;
       justify-content:stretch;
       background:rgba(0,0,0,.55);
-      padding:8px;
+      padding:0px;
       z-index:99;
     }
     .calModal.on{ display:flex; }
