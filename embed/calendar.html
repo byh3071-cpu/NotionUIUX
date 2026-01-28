@@ -976,25 +976,30 @@
     }
 
     /* ===== Layout fit ===== */
-    function fitToFrame(){
-      const rootStyle = getComputedStyle(document.documentElement);
-      const baseW = Number(rootStyle.getPropertyValue("--baseW")) || 360;
-      const baseH = Number(rootStyle.getPropertyValue("--baseH")) || 520;
+function fitToFrame(){
+  const rootStyle = getComputedStyle(document.documentElement);
+  const baseW = Number(rootStyle.getPropertyValue("--baseW")) || 360;
+  const baseH = Number(rootStyle.getPropertyValue("--baseH")) || 520;
 
-      const vw = (window.visualViewport && window.visualViewport.width) ? window.visualViewport.width : window.innerWidth;
-      const vh = (window.visualViewport && window.visualViewport.height) ? window.visualViewport.height : window.innerHeight;
+  const vv = window.visualViewport;
+  const vw = vv?.width  ?? window.innerWidth;
+  const vh = vv?.height ?? window.innerHeight;
 
-      const availW = Math.max(1, vw);
-      const availH = Math.max(1, vh);
+  const availW = Math.max(1, vw);
+  const availH = Math.max(1, vh);
 
-      let scale = Math.min(availW / baseW, availH / baseH);
-      if(!isFinite(scale) || scale <= 0) scale = 1;
+  // ✅ 기본은 contain(안 잘리게). 대신 "버림(floor)" 금지 → 타이트하게 맞춤
+  let scale = Math.min(availW / baseW, availH / baseH);
+  if(!isFinite(scale) || scale <= 0) scale = 1;
 
-      scale = Math.min(3, Math.max(0.55, scale));
-      scale = Math.floor(scale * 100) / 100;
+  scale = Math.min(3, Math.max(0.55, scale));
 
-      document.documentElement.style.setProperty("--scale", String(scale));
-    }
+  // ✅ 2자리 floor는 항상 작아져서 여백이 남음 → 3자리 반올림으로 교체
+  scale = Math.round(scale * 1000) / 1000;
+
+  document.documentElement.style.setProperty("--scale", String(scale));
+}
+
 
     /* ===== Render calendar ===== */
     function render(){
@@ -1474,4 +1479,5 @@
   </script>
 </body>
 </html>
+
 
