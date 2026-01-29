@@ -722,22 +722,34 @@ html.light .todoBadge{ color:#0b0c10; }
 
   <script>
     
-    // ✅ Notion에서 콘솔 못 볼 때: 에러를 화면에 표시
-const __err = document.createElement("pre");
-__err.style.cssText =
-  "position:fixed;left:8px;right:8px;bottom:8px;max-height:45vh;overflow:auto;z-index:9999;" +
-  "padding:8px;border:2px solid #ff6b6b;background:#0b0c10;color:#ffecec;" +
-  "font:12px/1.4 ui-monospace,monospace;white-space:pre-wrap;";
-__err.textContent = "";
-if (document.body) document.body.appendChild(__err);
-else document.addEventListener("DOMContentLoaded", ()=>document.body.appendChild(__err));
-
-window.addEventListener("error", (e)=>{
-  __err.textContent = "[ERROR]\n" + (e.message || e.error || e) + "\n" + (e.filename||"") + ":" + (e.lineno||"") + ":" + (e.colno||"");
-});
-window.addEventListener("unhandledrejection", (e)=>{
-  __err.textContent = "[PROMISE]\n" + (e.reason?.message || String(e.reason));
-});
+    const __err = document.createElement("pre");
+    __err.style.cssText =
+      "position:fixed;left:8px;right:8px;bottom:8px;max-height:45vh;overflow:auto;" +
+      "z-index:9999;padding:8px;border:2px solid #ff6b6b;background:#0b0c10;color:#ffecec;" +
+      "font:12px/1.4 ui-monospace,monospace;white-space:pre-wrap;" +
+      "display:none;pointer-events:none;"; // ✅ 평소엔 숨김 + 클릭 막지 않음
+    __err.textContent = "";
+    
+    if (document.body) document.body.appendChild(__err);
+    else document.addEventListener("DOMContentLoaded", ()=>document.body.appendChild(__err));
+    
+    function showErr(msg){
+      __err.style.display = "block";       // ✅ 에러 때만 표시
+      __err.style.pointerEvents = "auto";  // ✅ 에러 났을 때는 드래그/복사 가능
+      __err.textContent = msg;
+    }
+    
+    window.addEventListener("error", (e)=>{
+      showErr(
+        "[ERROR]\n" +
+        (e.message || e.error || e) + "\n" +
+        (e.filename||"") + ":" + (e.lineno||"") + ":" + (e.colno||"")
+      );
+    });
+    
+    window.addEventListener("unhandledrejection", (e)=>{
+      showErr("[PROMISE]\n" + (e.reason?.message || String(e.reason)));
+    });
     const $ = (sel) => document.querySelector(sel);
 
     const gridEl = $("#grid");
@@ -1497,6 +1509,7 @@ window.addEventListener("unhandledrejection", (e)=>{
   </script>
 </body>
 </html>
+
 
 
 
