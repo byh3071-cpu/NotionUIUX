@@ -721,10 +721,28 @@ html.light .todoBadge{ color:#0b0c10; }
   </div>
 
   <script>
+    
+    // ✅ Notion에서 콘솔 못 볼 때: 에러를 화면에 표시
+const __err = document.createElement("pre");
+__err.style.cssText =
+  "position:fixed;left:8px;right:8px;bottom:8px;max-height:45vh;overflow:auto;z-index:9999;" +
+  "padding:8px;border:2px solid #ff6b6b;background:#0b0c10;color:#ffecec;" +
+  "font:12px/1.4 ui-monospace,monospace;white-space:pre-wrap;";
+__err.textContent = "";
+if (document.body) document.body.appendChild(__err);
+else document.addEventListener("DOMContentLoaded", ()=>document.body.appendChild(__err));
+
+window.addEventListener("error", (e)=>{
+  __err.textContent = "[ERROR]\n" + (e.message || e.error || e) + "\n" + (e.filename||"") + ":" + (e.lineno||"") + ":" + (e.colno||"");
+});
+window.addEventListener("unhandledrejection", (e)=>{
+  __err.textContent = "[PROMISE]\n" + (e.reason?.message || String(e.reason));
+});
     const $ = (sel) => document.querySelector(sel);
 
     const gridEl = $("#grid");
     const monthTitleEl = $("#monthTitle");
+    if(!gridEl || !monthTitleEl) throw new Error("필수 DOM(#grid 또는 #monthTitle) 못 찾음");
 
     const prevBtn = $("#prevBtn");
     const nextBtn = $("#nextBtn");
@@ -782,6 +800,11 @@ html.light .todoBadge{ color:#0b0c10; }
       a.getMonth() === b.getMonth() &&
       a.getDate() === b.getDate();
 
+    const storage = {
+  get(k){ try{ return localStorage.getItem(k); } catch(e){ return null; } },
+  set(k,v){ try{ localStorage.setItem(k,v); } catch(e){} }
+};
+
     function safeParse(s){
       try{ return JSON.parse(s); }catch(e){ return null; }
     }
@@ -793,7 +816,7 @@ html.light .todoBadge{ color:#0b0c10; }
     }
 
     function loadUI(){
-      const ui = safeParse(localStorage.getItem(UI_KEY)) || {};
+      const ui = safeParse(storage.get(UI_KEY)) || {};
       state.hideDone = Boolean(ui.hideDone);
       state.theme = (ui.theme === "light") ? "light" : "dark";
 
@@ -801,8 +824,8 @@ html.light .todoBadge{ color:#0b0c10; }
       applyTheme();
     }
     function saveUI(){
-      localStorage.setItem(UI_KEY, JSON.stringify({
-        hideDone: state.hideDone,
+       storage.set(UI_KEY, JSON.stringify({
+        hideDone: state.hideDone, 
         theme: state.theme
       }));
       hideDoneBtn.textContent = state.hideDone ? "SHOW" : "HIDE";
@@ -810,13 +833,13 @@ html.light .todoBadge{ color:#0b0c10; }
     }
 
     function loadAll(){
-      const cur = safeParse(localStorage.getItem(STORE_KEY));
+      const cur = safeParse(storage.get(STORE_KEY));
       if(cur && typeof cur === "object" && !Array.isArray(cur)) return cur;
 
       for(const k of LEGACY_KEYS){
-        const v = safeParse(localStorage.getItem(k));
+        const v = safeParse(storage.get(k));
         if(v && typeof v === "object" && !Array.isArray(v)){
-          localStorage.setItem(STORE_KEY, JSON.stringify(v));
+          storage.set(STORE_KEY, JSON.stringify(v));  
           return v;
         }
       }
@@ -824,7 +847,7 @@ html.light .todoBadge{ color:#0b0c10; }
     }
 
     function saveAll(obj){
-      localStorage.setItem(STORE_KEY, JSON.stringify(obj));
+      storage.set(STORE_KEY, JSON.stringify(obj));
     }
 
     function normalizeList(list){
@@ -858,13 +881,13 @@ html.light .todoBadge{ color:#0b0c10; }
        ✅ 백업/복원 (수동, 최근 10개)
        ========================= */
     function loadBackups(){
-      const arr = safeParse(localStorage.getItem(BACKUP_KEY));
+     const arr = safeParse(storage.get(BACKUP_KEY));
       return Array.isArray(arr) ? arr : [];
     }
 
     function saveBackups(arr){
       const trimmed = arr.slice(0, MAX_BACKUPS);
-      localStorage.setItem(BACKUP_KEY, JSON.stringify(trimmed));
+      storage.set(BACKUP_KEY, JSON.stringify(trimmed));
       return trimmed;
     }
 
@@ -1052,7 +1075,12 @@ html.light .todoBadge{ color:#0b0c10; }
           if(!hasUndone) heart.classList.add("doneAll");
           cell.appendChild(heart);
         }
-
+    cell.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      if(disabled) return;
+      openModal(iso);
+    }, { passive:false });
+        
         gridEl.appendChild(cell);
       }
     }
@@ -1310,7 +1338,7 @@ html.light .todoBadge{ color:#0b0c10; }
     /* =========================
        ✅ 네비/기타
        ========================= */
-    prevBtn.addEventListener("pointerdown", (e) => {
+    if(prevBtn) prevBtn.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       const d = new Date(state.viewDate);
       d.setMonth(d.getMonth() - 1);
@@ -1318,7 +1346,7 @@ html.light .todoBadge{ color:#0b0c10; }
       render();
     }, { passive:false });
 
-    nextBtn.addEventListener("pointerdown", (e) => {
+    if(nextBtn) nextBtn.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       const d = new Date(state.viewDate);
       d.setMonth(d.getMonth() + 1);
@@ -1326,18 +1354,12 @@ html.light .todoBadge{ color:#0b0c10; }
       render();
     }, { passive:false });
 
-    todayBtn.addEventListener("pointerdown", (e) => {
+    if(todayBtn) todayBtn.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       state.viewDate = new Date();
       render();
     }, { passive:false });
 
-    /* ✅ CLOCK: 같은 iframe에서 시계로 복귀 */
-    clockBtn.addEventListener("pointerdown", (e) => {
-      e.preventDefault();
-      const url = new URL("/embed/clock.html", window.location.origin);
-      window.location.href = url.toString();
-    }, { passive:false });
 
     closeBtn.addEventListener("pointerdown", (e) => {
       e.preventDefault();
@@ -1475,6 +1497,7 @@ html.light .todoBadge{ color:#0b0c10; }
   </script>
 </body>
 </html>
+
 
 
 
