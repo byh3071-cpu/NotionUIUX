@@ -666,7 +666,6 @@ html.light .todoBadge{ color:#0b0c10; }
         <div class="monthTitle" id="monthTitle">2026-01</div>
 
         <div class="rightBtns">
-          <button class="btn" id="clockBtn">CLOCK</button>
           <button class="btn" id="todayBtn">TODAY</button>
         </div>
       </div>
@@ -730,7 +729,6 @@ html.light .todoBadge{ color:#0b0c10; }
     const prevBtn = $("#prevBtn");
     const nextBtn = $("#nextBtn");
     const todayBtn = $("#todayBtn");
-    const clockBtn = $("#clockBtn");
 
     const modalBack = $("#modalBack");
     const closeBtn = $("#closeBtn");
@@ -1054,12 +1052,6 @@ html.light .todoBadge{ color:#0b0c10; }
           if(!hasUndone) heart.classList.add("doneAll");
           cell.appendChild(heart);
         }
-
-        cell.addEventListener("pointerdown", (e) => {
-          e.preventDefault();
-          if(disabled) return;
-          openModal(iso);
-        }, { passive:false });
 
         gridEl.appendChild(cell);
       }
@@ -1483,5 +1475,6 @@ html.light .todoBadge{ color:#0b0c10; }
   </script>
 </body>
 </html>
+
 
 
