@@ -303,7 +303,6 @@
       <div class="wrap" id="wrap">
         <div class="top">
           <button class="chip on" id="modeBtn" title="12/24 토글">24H</button>
-          <button class="chip" id="openTodayBtn" title="캘린더(모달)에서 오늘 열기">OPEN</button>
           <div class="title">PIXEL CLOCK</div>
         </div>
 
@@ -327,17 +326,6 @@
           </div>
         </div>
       </div>
-
-      <!-- ✅ 캘린더 모달(노션 안) -->
-      <div class="calModal" id="calModal" aria-hidden="true">
-        <div class="calPanel">
-          <div class="calTop">
-            <div class="calTitle" id="calTitle">CALENDAR</div>
-            <button class="chip" id="closeCalBtn" title="닫기">CLOSE</button>
-          </div>
-          <iframe class="calFrame" id="calFrame" title="calendar"></iframe>
-        </div>
-      </div>
     </div>
   </div>
 </body>
@@ -353,12 +341,6 @@
     const taskBar   = $("#taskBar");
     const taskPctText = $("#taskPctText");
     const modeBtn   = $("#modeBtn");
-    const openTodayBtn = $("#openTodayBtn");
-
-    const calModal = $("#calModal");
-    const calFrame = $("#calFrame");
-    const calTitle = $("#calTitle");
-    const closeCalBtn = $("#closeCalBtn");
 
     const state = { is24h: true };
     const DOW_KR = ["일","월","화","수","목","금","토"];
@@ -470,46 +452,8 @@
       tick();
     }
 
-    function openCalendarFor(iso){
-      const url = new URL("/embed/calendar.html", window.location.origin);
-      url.searchParams.set("date", iso);
-      url.searchParams.set("open", "1");
-
-      calTitle.textContent = `CALENDAR · ${iso}`;
-      calFrame.src = url.toString();
-
-      calModal.classList.add("on");
-      calModal.setAttribute("aria-hidden", "false");
-    }
-
-    function closeCalendar(){
-      calModal.classList.remove("on");
-      calModal.setAttribute("aria-hidden", "true");
-      // 필요하면 캐시 유지하려면 아래 줄 주석 처리
-      calFrame.src = "about:blank";
-    }
-
-    function openToday(){
-      const iso = toISO(new Date());
-      // ✅ 노션에서 새 웹창으로 튀는 "페이지 이동" 대신,
-      // ✅ clock.html 안에서 캘린더를 모달로 띄움
-      openCalendarFor(iso);
-    }
 
     modeBtn.addEventListener("click", (e)=>{ e.preventDefault(); toggleMode(); });
-    openTodayBtn.addEventListener("click", (e)=>{ e.preventDefault(); openToday(); });
-
-    closeCalBtn.addEventListener("click", (e)=>{ e.preventDefault(); closeCalendar(); });
-
-    // 모달 배경 클릭 닫기
-    calModal.addEventListener("click", (e)=>{
-      if(e.target === calModal) closeCalendar();
-    });
-
-    // ESC 닫기
-    window.addEventListener("keydown", (e)=>{
-      if(e.key === "Escape" && calModal.classList.contains("on")) closeCalendar();
-    });
 
     fitToFrame();
     window.addEventListener("resize", fitToFrame);
