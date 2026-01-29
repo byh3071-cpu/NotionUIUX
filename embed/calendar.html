@@ -152,35 +152,51 @@
       background:var(--panel);
     }
 
-    .day{
-      height: var(--cell);
-      border:2px solid var(--line);
-      border-radius:0;
-      background:#0b0c10;
-      position:relative;
-      cursor:pointer;
-      display:flex;
-      align-items:flex-start;
-      justify-content:flex-start;
-      padding:6px;
-      user-select:none;
-      transition: border-color .12s ease;
-      overflow:hidden;
-      touch-action: manipulation;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .day:hover{ border-color:var(--accent); }
+.day{
+  height: var(--cell);
+  border:2px solid rgba(233,238,247,.22);     /* 기존 var(--line)보다 대비↑ */
+  border-radius:0;
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+  position:relative;
+  cursor:pointer;
+  display:flex;
+  align-items:flex-start;
+  justify-content:flex-start;
+  padding:6px;
+  user-select:none;
+  transition: border-color .12s ease, background .12s ease;
+  overflow:hidden;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.25); /* 칸 경계 또렷 */
+}
+.day:hover{ border-color:var(--accent); }
 
-    .day.disabled{
-      opacity:.35;
-      cursor:default;
-    }
-    .day.disabled:hover{ border-color:var(--line); }
+/* ✅ 이전/다음 달(disabled) : "회색칸" 느낌을 실제 톤으로 분리 */
+.day.disabled{
+  opacity: 1;                 /* 흐림 처리(opacity) 대신 톤으로 구분 */
+  cursor:default;
+  background: rgba(255,255,255,.015);
+  border-color: rgba(233,238,247,.10);
+  box-shadow: none;
+}
+.day.disabled .num{
+  color: rgba(167,176,194,.40);  /* 숫자 더 연하게(진짜 회색칸) */
+}
+.day.disabled:hover{ border-color: rgba(233,238,247,.10); }
 
-    .day.sun:not(.disabled){ border-color: rgba(255,143,143,.30); }
-    .day.sat:not(.disabled){ border-color: rgba(143,182,255,.30); }
+/* ✅ 날짜 숫자: 기본은 더 선명하게 */
+.num{
+  font-size:10px;
+  color: var(--text);
+  text-shadow: 0 1px 0 rgba(0,0,0,.35);
+}
 
-    .num{ font-size:10px; color:var(--text); }
+/* ✅ 주말: 테두리뿐 아니라 숫자도 살짝 강조 */
+.day.sun:not(.disabled){ border-color: rgba(255,143,143,.40); }
+.day.sat:not(.disabled){ border-color: rgba(143,182,255,.40); }
+.day.sun:not(.disabled) .num{ color: rgba(255,200,200,.95); }
+.day.sat:not(.disabled) .num{ color: rgba(200,220,255,.95); }
 
     .todoBadge{
       position:absolute;
@@ -574,7 +590,11 @@
   --sun:#d14a4a;
   --sat:#2a5bd6;
 }
-
+    
+html.light .num{ text-shadow: none; }  
+html.light .day.sun:not(.disabled) .num{ color: var(--sun); }
+html.light .day.sat:not(.disabled) .num{ color: var(--sat); }
+    
 html.light .btn,
 html.light .miniBtn,
 html.light .closeBtn,
@@ -606,11 +626,15 @@ html.light .dow div{
 html.light .day{
   background: #ffffff;
   border-color: var(--line2);
+  box-shadow: inset 0 0 0 1px rgba(17,19,25,.06);
 }
 
 html.light .day.disabled{
-  background: #eef1f7;
-  opacity: .55;
+  background:#e9edf6;
+  border-color: rgba(17,19,25,.18);
+}
+html.light .day.disabled .num{
+  color: rgba(76,85,105,.45);
 }
 
 .day.hasTasks{ border-color: rgba(124,199,255,.55); }
@@ -1459,4 +1483,5 @@ html.light .todoBadge{ color:#0b0c10; }
   </script>
 </body>
 </html>
+
 
