@@ -2,148 +2,139 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Pixel Pomodoro Blue</title>
+    <title>Pixel Pomodoro Full</title>
     <link href="https://fonts.googleapis.com/css2?family=Silkscreen&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* 요한 님 스크린샷의 색상 테마 적용 */
-            --bg-color: #0f1115;       /* 아주 어두운 남색 배경 */
-            --border-color: #3b4261;   /* 짙은 회색 테두리 */
-            --accent-color: #82aaff;   /* 포인트 사이버 블루 */
-            --text-color: #dbe6f5;     /* 밝은 회색 텍스트 */
-            --alert-color: #ff5370;    /* 알림용 레드 */
+            --bg-color: #0f1115;       /* 배경색 */
+            --border-color: #3b4261;   /* 테두리 색 */
+            --accent-color: #82aaff;   /* 포인트 색 (블루) */
+            --text-color: #dbe6f5;     /* 텍스트 색 */
+            --off-color: #1a1e29;      /* 꺼진 블록 색 */
         }
 
         body {
             margin: 0; padding: 0;
-            background-color: transparent;
+            background-color: var(--bg-color); /* 흰 여백 방지 */
             font-family: 'Silkscreen', cursive;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             height: 100vh;
+            width: 100vw;
+            overflow: hidden; /* 스크롤바 방지 */
             color: var(--text-color);
         }
 
         .timer-container {
-            width: 240px;
-            height: 140px;
+            width: 100%;
+            height: 100%;
             background: var(--bg-color);
             border: 2px solid var(--border-color);
-            padding: 15px;
-            box-shadow: 4px 4px 0px #08090b; /* 깊이감 있는 그림자 */
+            box-sizing: border-box; /* 테두리 포함해서 크기 계산 */
             display: flex;
             flex-direction: column;
             justify-content: space-between;
         }
 
-        /* 상단 헤더 */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        /* 헤더 */
+        .header-bar {
+            height: 28px;
             border-bottom: 2px solid var(--border-color);
-            padding-bottom: 5px;
-            margin-bottom: 5px;
-        }
-
-        .title-badge {
-            background: var(--border-color);
+            background: rgba(59, 66, 97, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+            font-size: 11px;
             color: var(--accent-color);
-            padding: 2px 6px;
-            font-size: 10px;
-            border-radius: 2px;
+            flex-shrink: 0; /* 크기 줄어들지 않게 고정 */
         }
 
-        /* 시간 표시 */
+        /* 메인 영역 (가운데 정렬) */
+        .content {
+            padding: 0 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1; /* 남은 공간 모두 차지 */
+        }
+
         .timer-display {
-            font-size: 42px;
-            text-align: center;
+            font-size: 18vw; /* 화면 크기에 비례해서 글자 커짐 */
+            max-font-size: 60px; /* 너무 커지지 않게 제한 */
             color: var(--accent-color);
-            letter-spacing: 2px;
-            margin: 5px 0;
+            text-shadow: 0 0 10px rgba(130, 170, 255, 0.3);
+            margin-bottom: 2vh;
+            line-height: 1;
         }
 
-        /* 진행 바 (픽셀 블록 스타일) */
+        /* 미디어 쿼리: 화면이 너무 클 때 폰트 고정 */
+        @media (min-width: 400px) {
+            .timer-display { font-size: 50px; }
+        }
+
+        /* 픽셀 진행 바 */
         .progress-bar {
             display: flex;
-            gap: 2px;
+            gap: 4px;
+            width: 90%;
+            height: 10px;
             margin-bottom: 10px;
         }
         .block {
             flex: 1;
-            height: 6px;
-            background: #1e222a; /* 꺼진 상태 */
+            height: 100%;
+            background: var(--off-color);
+            border-radius: 1px;
         }
         .block.active {
-            background: var(--accent-color); /* 켜진 상태 */
+            background: var(--accent-color);
             box-shadow: 0 0 5px var(--accent-color);
         }
 
-        /* 컨트롤 버튼 영역 */
+        /* 버튼 영역 */
         .controls {
             display: flex;
-            gap: 8px;
+            border-top: 2px solid var(--border-color);
+            height: 40px; /* 버튼 높이 고정 */
+            flex-shrink: 0;
         }
-
         button {
             flex: 1;
             background: transparent;
-            border: 1px solid var(--border-color);
+            border: none;
             color: var(--text-color);
             font-family: 'Silkscreen';
-            font-size: 11px;
-            padding: 6px 0;
+            font-size: 12px;
             cursor: pointer;
             transition: all 0.2s;
         }
-
+        button:first-child { border-right: 2px solid var(--border-color); }
         button:hover {
-            border-color: var(--accent-color);
-            color: var(--accent-color);
             background: rgba(130, 170, 255, 0.1);
+            color: var(--accent-color);
         }
+        button:active { background: rgba(130, 170, 255, 0.2); }
 
-        button:active {
-            transform: translateY(2px);
-        }
-
-        /* 알림 모드 */
-        .alarm-mode {
-            border-color: var(--alert-color);
-            animation: shake 0.5s infinite;
-        }
-        .alarm-mode .timer-display { color: var(--alert-color); }
-        
-        @keyframes shake {
-            0% { transform: translate(1px, 1px) rotate(0deg); }
-            10% { transform: translate(-1px, -2px) rotate(-1deg); }
-            20% { transform: translate(-3px, 0px) rotate(1deg); }
-            30% { transform: translate(3px, 2px) rotate(0deg); }
-            40% { transform: translate(1px, -1px) rotate(1deg); }
-            50% { transform: translate(-1px, 2px) rotate(-1deg); }
-            60% { transform: translate(-3px, 1px) rotate(0deg); }
-            70% { transform: translate(3px, 1px) rotate(-1deg); }
-            80% { transform: translate(-1px, -1px) rotate(1deg); }
-            90% { transform: translate(1px, 2px) rotate(0deg); }
-            100% { transform: translate(1px, -2px) rotate(-1deg); }
-        }
     </style>
 </head>
 <body>
-    <div class="timer-container" id="container">
-        <div class="header">
-            <span style="font-size: 12px;">POMODORO</span>
-            <span class="title-badge">25m</span>
+
+    <div class="timer-container">
+        <div class="header-bar">
+            <span>FOCUS.EXE</span>
+            <span id="mode-badge">25m</span>
         </div>
 
-        <div class="timer-display" id="time">25:00</div>
-
-        <div class="progress-bar" id="progress-bar">
-            <div class="block active"></div><div class="block active"></div><div class="block active"></div>
-            <div class="block active"></div><div class="block active"></div><div class="block active"></div>
-            <div class="block active"></div><div class="block active"></div><div class="block active"></div>
-            <div class="block active"></div>
+        <div class="content">
+            <div class="timer-display" id="time">25:00</div>
+            
+            <div class="progress-bar">
+                <div class="block active"></div><div class="block active"></div>
+                <div class="block active"></div><div class="block active"></div>
+                <div class="block active"></div><div class="block active"></div>
+                <div class="block active"></div><div class="block active"></div>
+                <div class="block active"></div><div class="block active"></div>
+            </div>
         </div>
 
         <div class="controls">
@@ -153,7 +144,7 @@
     </div>
 
     <script>
-        let timeLeft = 25 * 60; 
+        let timeLeft = 25 * 60;
         let maxTime = 25 * 60;
         let timerId = null;
         let isRunning = false;
@@ -161,19 +152,17 @@
         const timeDisplay = document.getElementById("time");
         const btnMain = document.getElementById("btn-main");
         const blocks = document.querySelectorAll(".block");
-        const container = document.getElementById("container");
 
         function updateDisplay() {
             const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
             const s = (timeLeft % 60).toString().padStart(2, '0');
             timeDisplay.innerText = `${m}:${s}`;
-            
-            // 픽셀 바 업데이트 (시간이 줄어들면 블록이 하나씩 꺼짐)
-            const percentage = timeLeft / maxTime;
-            const activeBlocks = Math.ceil(percentage * 10);
+
+            const percent = timeLeft / maxTime;
+            const activeCount = Math.ceil(percent * 10);
             
             blocks.forEach((block, idx) => {
-                if (idx < activeBlocks) block.classList.add("active");
+                if (idx < activeCount) block.classList.add("active");
                 else block.classList.remove("active");
             });
         }
@@ -194,7 +183,7 @@
                         updateDisplay();
                     } else {
                         clearInterval(timerId);
-                        container.classList.add("alarm-mode");
+                        isRunning = false;
                         btnMain.innerText = "DONE";
                     }
                 }, 1000);
@@ -204,10 +193,10 @@
         function resetTimer() {
             clearInterval(timerId);
             isRunning = false;
-            container.classList.remove("alarm-mode");
             timeLeft = 25 * 60;
             updateDisplay();
             btnMain.innerText = "START";
+            btnMain.style.color = "";
         }
     </script>
 </body>
