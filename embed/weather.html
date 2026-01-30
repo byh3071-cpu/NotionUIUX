@@ -15,7 +15,7 @@
 
         body {
             margin: 0; padding: 0;
-            background-color: var(--bg-color); /* 흰 여백 삭제 */
+            background-color: var(--bg-color);
             font-family: 'Silkscreen', cursive;
             width: 100vw;
             height: 100vh;
@@ -28,7 +28,7 @@
             height: 100%;
             background: var(--bg-color);
             border: 2px solid var(--border-color);
-            box-sizing: border-box; /* 테두리 포함 */
+            box-sizing: border-box;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -85,7 +85,7 @@
             color: var(--text-color);
         }
 
-        /* 배경 효과 (전체 화면 대응) */
+        /* 배경 효과 */
         .bg-effect {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -106,13 +106,12 @@
             opacity: 0.4;
         }
 
-        /* 구름이 화면 끝까지 가도록 애니메이션 거리 수정 */
         .c1 { top: 30%; left: -60px; animation: float 18s linear infinite; }
         .c2 { top: 60%; left: -40px; animation: float 25s linear infinite; animation-delay: 5s; transform: scale(0.8); }
 
         @keyframes float {
             from { left: -70px; }
-            to { left: 110%; } /* 화면 밖까지 이동 */
+            to { left: 110%; }
         }
 
     </style>
@@ -140,19 +139,20 @@
     </div>
 
     <script>
-        const API_KEY = "28d973834adf062cd5ce35560b8d1091Y"; 
+        // ▼▼▼ 수정된 부분: 끝에 'Y' 제거했습니다! ▼▼▼
+        const API_KEY = "28d973834adf062cd5ce35560b8d1091"; 
         const CITY = "Seoul";
 
         async function fetchWeather() {
             try {
-                if (API_KEY === "28d973834adf062cd5ce35560b8d1091") {
-                    document.getElementById("temp").innerText = "24°";
-                    document.getElementById("weather-desc").innerText = "> SYSTEM: CLEAR";
-                    return;
-                }
+                // 방해되는 if 문 삭제함 (바로 호출 시작)
 
                 const url = `https://api.openweathermap.org/data/2.5/weather?q=${CITY}&appid=${API_KEY}&units=metric`;
                 const response = await fetch(url);
+                
+                // 에러 체크: 키가 틀리거나 호출 실패시
+                if (!response.ok) throw new Error("API Error");
+
                 const data = await response.json();
 
                 const temp = Math.round(data.main.temp);
@@ -162,6 +162,8 @@
 
             } catch (error) {
                 console.error("Error:", error);
+                // 에러나면 화면에 표시
+                document.getElementById("weather-desc").innerText = "ERR: CHECK KEY";
             }
         }
         fetchWeather();
@@ -169,5 +171,3 @@
     </script>
 </body>
 </html>
-
-
