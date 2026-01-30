@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Pixel Pomodoro Blue</title>
+    <link href="https://fonts.googleapis.com/css2?family=Silkscreen&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* 요한 님 스크린샷의 색상 테마 적용 */
+            --bg-color: #0f1115;       /* 아주 어두운 남색 배경 */
+            --border-color: #3b4261;   /* 짙은 회색 테두리 */
+            --accent-color: #82aaff;   /* 포인트 사이버 블루 */
+            --text-color: #dbe6f5;     /* 밝은 회색 텍스트 */
+            --alert-color: #ff5370;    /* 알림용 레드 */
+        }
+
+        body {
+            margin: 0; padding: 0;
+            background-color: transparent;
+            font-family: 'Silkscreen', cursive;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: var(--text-color);
+        }
+
+        .timer-container {
+            width: 240px;
+            height: 140px;
+            background: var(--bg-color);
+            border: 2px solid var(--border-color);
+            padding: 15px;
+            box-shadow: 4px 4px 0px #08090b; /* 깊이감 있는 그림자 */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* 상단 헤더 */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 5px;
+            margin-bottom: 5px;
+        }
+
+        .title-badge {
+            background: var(--border-color);
+            color: var(--accent-color);
+            padding: 2px 6px;
+            font-size: 10px;
+            border-radius: 2px;
+        }
+
+        /* 시간 표시 */
+        .timer-display {
+            font-size: 42px;
+            text-align: center;
+            color: var(--accent-color);
+            letter-spacing: 2px;
+            margin: 5px 0;
+        }
+
+        /* 진행 바 (픽셀 블록 스타일) */
+        .progress-bar {
+            display: flex;
+            gap: 2px;
+            margin-bottom: 10px;
+        }
+        .block {
+            flex: 1;
+            height: 6px;
+            background: #1e222a; /* 꺼진 상태 */
+        }
+        .block.active {
+            background: var(--accent-color); /* 켜진 상태 */
+            box-shadow: 0 0 5px var(--accent-color);
+        }
+
+        /* 컨트롤 버튼 영역 */
+        .controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        button {
+            flex: 1;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            font-family: 'Silkscreen';
+            font-size: 11px;
+            padding: 6px 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            background: rgba(130, 170, 255, 0.1);
+        }
+
+        button:active {
+            transform: translateY(2px);
+        }
+
+        /* 알림 모드 */
+        .alarm-mode {
+            border-color: var(--alert-color);
+            animation: shake 0.5s infinite;
+        }
+        .alarm-mode .timer-display { color: var(--alert-color); }
+        
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="timer-container" id="container">
+        <div class="header">
+            <span style="font-size: 12px;">POMODORO</span>
+            <span class="title-badge">25m</span>
+        </div>
+
+        <div class="timer-display" id="time">25:00</div>
+
+        <div class="progress-bar" id="progress-bar">
+            <div class="block active"></div><div class="block active"></div><div class="block active"></div>
+            <div class="block active"></div><div class="block active"></div><div class="block active"></div>
+            <div class="block active"></div><div class="block active"></div><div class="block active"></div>
+            <div class="block active"></div>
+        </div>
+
+        <div class="controls">
+            <button onclick="toggleTimer()" id="btn-main">START</button>
+            <button onclick="resetTimer()">RESET</button>
+        </div>
+    </div>
+
+    <script>
+        let timeLeft = 25 * 60; 
+        let maxTime = 25 * 60;
+        let timerId = null;
+        let isRunning = false;
+
+        const timeDisplay = document.getElementById("time");
+        const btnMain = document.getElementById("btn-main");
+        const blocks = document.querySelectorAll(".block");
+        const container = document.getElementById("container");
+
+        function updateDisplay() {
+            const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+            const s = (timeLeft % 60).toString().padStart(2, '0');
+            timeDisplay.innerText = `${m}:${s}`;
+            
+            // 픽셀 바 업데이트 (시간이 줄어들면 블록이 하나씩 꺼짐)
+            const percentage = timeLeft / maxTime;
+            const activeBlocks = Math.ceil(percentage * 10);
+            
+            blocks.forEach((block, idx) => {
+                if (idx < activeBlocks) block.classList.add("active");
+                else block.classList.remove("active");
+            });
+        }
+
+        function toggleTimer() {
+            if (isRunning) {
+                clearInterval(timerId);
+                isRunning = false;
+                btnMain.innerText = "START";
+                btnMain.style.color = "";
+            } else {
+                isRunning = true;
+                btnMain.innerText = "PAUSE";
+                btnMain.style.color = "#82aaff";
+                timerId = setInterval(() => {
+                    if (timeLeft > 0) {
+                        timeLeft--;
+                        updateDisplay();
+                    } else {
+                        clearInterval(timerId);
+                        container.classList.add("alarm-mode");
+                        btnMain.innerText = "DONE";
+                    }
+                }, 1000);
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerId);
+            isRunning = false;
+            container.classList.remove("alarm-mode");
+            timeLeft = 25 * 60;
+            updateDisplay();
+            btnMain.innerText = "START";
+        }
+    </script>
+</body>
+</html>
