@@ -110,13 +110,14 @@
 
     .meterLabel { font-size: 8px; color: var(--muted); opacity: .95; }
     .meter {
-      height: 10px; border: 2px solid var(--line2); background: #0e1016;
+      height: 12px; border: 2px solid var(--line2); background: #0e1016;
       position: relative; overflow: hidden;
     }
-    .bar { position: absolute; left: 0; top: 0; bottom: 0; width: 0%; background: var(--accent); }
+    .bar { position: absolute; left: 0; top: 0; bottom: 0; width: 0%; background: var(--accent); transition: width .2s ease; }
     .meterText {
-      font-size: 8px; color: rgba(233,238,247,.75);
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 10px;
+      font-size: 10px; font-weight: 900; color: var(--accent);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 12px;
+      letter-spacing: 0.5px;
     }
 
     @media (max-width: 300px) { .rightBox { display: none; } }
@@ -127,7 +128,7 @@
   <div class="wrap" id="wrap">
     <div class="top">
       <button class="chip on" id="modeBtn" title="12/24 토글">24H</button>
-      <div class="title">PIXEL CLOCK</div>
+      <div class="title">PIXEL CLOCK<span id="offlineBadge" style="display:none; margin-left:6px; font-size:8px; color:#ffa94d;">[테스트]</span></div>
     </div>
 
     <div class="main">
@@ -144,7 +145,7 @@
         <div class="meterLabel">DAY</div>
         <div class="meter"><div class="bar" id="dayBar"></div></div>
 
-        <div class="meterLabel">TASK</div>
+        <div class="meterLabel">TASK 진행률</div>
         <div class="meter"><div class="bar" id="taskBar"></div></div>
         <div class="meterText" id="taskPctText">0/0 · 0%</div>
       </div>
@@ -153,6 +154,10 @@
 
 <script>
     const $ = (s) => document.querySelector(s);
+
+    // ✅ 오프라인 모드: ?offline=1 → Notion API 호출 안 함 (투두와 동일 localStorage 사용)
+    const OFFLINE_MODE = window.location.search.includes('offline=1');
+    const OFFLINE_KEY = "missionlog_offline_tasks_v1";
 
     const dateText   = $("#dateText");
     const timeText   = $("#timeText");
@@ -214,17 +219,19 @@ let _bcTimer = null;
     bc.onmessage = (ev) => {
       const t = ev?.data?.type;
     
-      // ✅ 투두에서 추가 즉시: 서버 fetch 기다리지 않고 UI 먼저 반영
       if (t === "TASK_ADDED") {
         const today = getTodayISO();
-        const p = loadPendingTodayCount(today);
-      
-        // ✅ 서버값은 모르니, 일단 pending만큼은 정확히 반영되게 보정
-        // (현재 notionStats.total이 서버 기반일 수도 있어서, 최소 보정만)
+        let p = { total: 0, done: 0 };
+        if (OFFLINE_MODE) {
+          const store = JSON.parse(localStorage.getItem(OFFLINE_KEY) || "{}");
+          const arr = Array.isArray(store[today]) ? store[today] : [];
+          p = { total: arr.length, done: arr.filter(x => isDone(x?.done)).length };
+        } else {
+          p = loadPendingTodayCount(today);
+        }
         notionStats.total = Math.max(notionStats.total, p.total);
-        // done은 pending에선 거의 0이라 굳이 건드리지 않음
+        notionStats.done = Math.max(notionStats.done, p.done);
         updateTaskUI();
-      
         clearTimeout(_bcTimer);
         _bcTimer = setTimeout(fetchNotionData, 200);
         return;
@@ -244,7 +251,18 @@ let _bcTimer = null;
       if (syncInFlight) return;
       syncInFlight = true;
       try {
-        if (noteText) noteText.textContent = "동기화 중...";
+        if (noteText) noteText.textContent = OFFLINE_MODE ? "테스트 모드" : "동기화 중...";
+        
+        if (OFFLINE_MODE) {
+          const today = getTodayISO();
+          const store = JSON.parse(localStorage.getItem(OFFLINE_KEY) || "{}");
+          const arr = Array.isArray(store[today]) ? store[today] : [];
+          notionStats.total = arr.length;
+          notionStats.done = arr.filter(t => isDone(t?.done)).length;
+          updateTaskUI();
+          syncInFlight = false;
+          return;
+        }
         
         const ctrl = new AbortController();
         const timer = setTimeout(() => ctrl.abort(), 8000);
@@ -351,6 +369,7 @@ let _bcTimer = null;
     };
 
     // 초기 실행
+    if (OFFLINE_MODE) document.getElementById("offlineBadge").style.display = "inline";
     tick();
     fetchNotionData();
 

@@ -155,15 +155,16 @@ if (NOTION_EVENTS_DB_ID) {
       return res.status(200).json({ success: true, id: data.id });
     }
 
-    // ✅ 완료 토글 + 날짜 변경(미루기)
+    // ✅ 완료 토글 + 날짜 변경(미루기) + 텍스트 수정
     if (action === 'update' && pageId) {
       const props = {};
       if (done !== undefined) props['완료'] = { checkbox: !!done };
       const safeNewDate = normalizeISODate(newDate);
       if (safeNewDate) props['날짜'] = { date: { start: safeNewDate } };
+      if (text !== undefined && String(text).trim()) props['할 일'] = { title: [{ text: { content: String(text).trim() } }] };
 
       if (Object.keys(props).length === 0) {
-        return res.status(400).json({ error: 'update requires done or newDate' });
+        return res.status(400).json({ error: 'update requires done, newDate or text' });
       }
 
       const response = await fetch(`https://api.notion.com/v1/pages/${pageId}`, {

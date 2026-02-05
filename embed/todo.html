@@ -28,18 +28,20 @@
         .text-content { font-family: 'Noto Sans KR', sans-serif; font-size: 12px; font-weight: 700; color: #ffffff; line-height: 1.2; letter-spacing: -0.3px; padding-top: 2px; word-break: break-word; }
         .mission-item.done { opacity: 0.6; border-color: var(--dim-color); }
         .mission-item.done .text-content { text-decoration: line-through; color: #888; }
-        .btn-delete { color: #4c566a; cursor: pointer; padding: 4px 6px; margin-left: 4px; opacity: 0.8; font-family: 'Silkscreen'; font-size: 10px; background: transparent; border: 1px solid var(--border-color); min-width: 24px; }
-        .btn-delete:hover { color: #ff5370; opacity: 1; border-color: #ff5370; }
+        .btn-action { color: #4c566a; cursor: pointer; padding: 4px 6px; opacity: 0.8; font-family: 'Silkscreen'; font-size: 10px; background: transparent; border: 1px solid var(--border-color); min-width: 24px; display: flex; align-items: center; justify-content: center; }
+        .btn-action:hover { opacity: 1; }
+        .btn-postpone { color: #82aaff; }
+        .btn-postpone:hover { border-color: var(--accent-color); background: rgba(130, 170, 255, 0.15); }
+        .btn-edit { color: #82aaff; }
+        .btn-edit:hover { border-color: var(--accent-color); background: rgba(130, 170, 255, 0.15); }
+        .btn-delete { color: #4c566a; }
+        .btn-delete:hover { color: #ff5370; border-color: #ff5370; }
         .mission-item-actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+        .mission-item.done .btn-postpone { display: none; }
 
         /* ✅ temp(동기화 전) 표시용 */
 .mission-item.is-temp { opacity: 0.7; border-style: dashed; }
 .mission-item.is-temp .mission-left { cursor: default; }
-
-        /* ✅ 미루기 버튼 */
-        .btn-postpone { color: #82aaff; cursor: pointer; padding: 4px 6px; opacity: 0.9; font-family: 'Silkscreen'; font-size: 9px; background: transparent; border: 1px solid var(--border-color); min-width: 52px; }
-        .btn-postpone:hover { opacity: 1; border-color: var(--accent-color); background: rgba(130, 170, 255, 0.15); }
-        .mission-item.done .btn-postpone { display: none; }
         .carryover-header { font-size: 10px; color: var(--accent-color); opacity: 0.85; padding: 6px 10px 4px; border-bottom: 1px dashed var(--border-color); margin-bottom: 4px; }
         .carryover-header::before { content: "⏪ "; }
 
@@ -53,12 +55,13 @@
 <body>
     <div class="todo-container">
         <div class="header-bar">
-            <span>MISSION LOG</span>
+            <span>MISSION LOG<span id="offlineBadge" style="display:none; margin-left:6px; font-size:9px; color:#ffa94d;">[테스트]</span></span>
             <span id="task-count">LOADING...</span>
+            <span id="syncStatus" style="font-size:8px; opacity:0.8; margin-left:4px;" title="동기화 상태">—</span>
         </div>
         <div class="input-area">
-            <input type="text" id="input" placeholder="> TODAY'S QUEST..." autocomplete="off">
-            <button class="btn-add" onclick="addTask()">+</button>
+            <input type="text" id="input" placeholder="> TODAY'S QUEST..." autocomplete="off" title="Enter로 추가">
+            <button class="btn-add" onclick="addTask()" title="할 일 추가 (Enter)">+</button>
         </div>
         <div class="mission-list" id="list"></div>
         <div id="undoToast" class="undo-toast" style="display:none;"></div>
@@ -69,6 +72,14 @@
     const list = document.getElementById("list");
     const countDisplay = document.getElementById("task-count");
     
+    // ✅ 오프라인 모드: ?offline=1 → Notion API 호출 안 함, localStorage만 사용 (테스트용)
+    const OFFLINE_MODE = window.location.search.includes('offline=1');
+    const OFFLINE_KEY = "missionlog_offline_tasks_v1";
+    function loadOfflineStore(){ try{ return JSON.parse(localStorage.getItem(OFFLINE_KEY)) || {}; }catch(_){ return {}; } }
+    function saveOfflineStore(obj){ localStorage.setItem(OFFLINE_KEY, JSON.stringify(obj)); }
+    function getOfflineTasks(iso){ const s = loadOfflineStore(); return Array.isArray(s[iso]) ? s[iso] : []; }
+    function setOfflineTasks(iso, arr){ const s = loadOfflineStore(); s[iso] = arr; saveOfflineStore(s); }
+    
     // globalTasks: 오늘 할 일 목록
     let globalTasks = [];
     // carryOverTasks: 어제 미완료 할 일 (다음 날로 미룰 수 있음)
@@ -76,7 +87,9 @@
     // deletedIds: 사용자가 '삭제' 버튼을 누른 ID들을 영원히 기억하는 블랙리스트
     let inFlight = 0; // ✅ 서버 반영 중이면 sync가 덮어쓰지 않게
     
-    let deletedIds = new Set(); 
+    let deletedIds = new Set();
+    let editingId = null;
+    let editingCarryOver = false;
 
     const bc = new BroadcastChannel("missionlog_bus_v1");
         let _bcTimer = null;
@@ -130,6 +143,15 @@ function loadLocalTasks(){
 
 function saveLocalTasks(){
   try{
+    if (OFFLINE_MODE) {
+      const today = getTodayISO();
+      const yesterday = getYesterdayISO();
+      const safeToday = globalTasks.filter(t => !deletedIds.has(t.id)).map(t => ({ id: t.id, text: t.text, done: t.done, date: today }));
+      const safeYesterday = carryOverTasks.filter(t => !deletedIds.has(t.id)).map(t => ({ id: t.id, text: t.text, done: t.done, date: yesterday }));
+      setOfflineTasks(today, safeToday);
+      setOfflineTasks(yesterday, safeYesterday);
+      return;
+    }
     const safe = globalTasks.filter(t => !deletedIds.has(t.id));
     localStorage.setItem(LOCAL_KEY, JSON.stringify(safe));
   }catch(_){}
@@ -170,18 +192,34 @@ function getPrevDayISO(iso) {
   localStorage.setItem(LASTDAY_KEY, today);
 }
 
+    const syncStatusEl = document.getElementById("syncStatus");
+    function setSyncStatus(txt) { if (syncStatusEl) syncStatusEl.textContent = txt; }
+
     async function syncFromNotion() {
-        if (inFlight > 0) return; // ✅ 업데이트/생성 중이면 덮어쓰기 방지
+        if (inFlight > 0) return;
         try {
             const today = getTodayISO();
             const yesterday = getYesterdayISO();
+            if (!OFFLINE_MODE) setSyncStatus("동기화중");
+
+            // ✅ 오프라인 모드
+            if (OFFLINE_MODE) {
+                setSyncStatus("테스트");
+                const todayTasks = getOfflineTasks(today).map(t => ({ ...t, isSynced: true, date: today }));
+                carryOverTasks = getOfflineTasks(yesterday).filter(t => !t.done);
+                globalTasks = todayTasks;
+                saveLocalTasks();
+                renderList();
+                return;
+            }
+
             const res = await fetch('/api/notion', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'fetch', from: yesterday, to: today })
             });
             const data = await res.json();
-            if (!res.ok || !data?.success) return; // ✅ 실패면 아무것도 건드리지 않음
+            if (!res.ok || !data?.success) { setSyncStatus("실패"); return; }
 
 
             if (data.success) {
@@ -250,9 +288,10 @@ function getPrevDayISO(iso) {
           return true;
         });
                 saveLocalTasks();
+                setSyncStatus("완료");
                 renderList();
             }
-        } catch (err) { console.error(err); }
+        } catch (err) { console.error(err); setSyncStatus("실패"); }
     }
 
         function renderList() {
@@ -260,80 +299,160 @@ function getPrevDayISO(iso) {
           const esc = (s) => String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
           const escId = (id) => String(id || "").replace(/'/g, "\\'");
 
-          // ✅ 어제 미완료 할 일 (미루기 가능)
+          function renderTaskItem(task, isCarryOver) {
+            const isEditing = editingId === task.id && editingCarryOver === isCarryOver;
+            if (isEditing) {
+              const div = document.createElement("div");
+              div.className = "mission-item";
+              div.innerHTML = `
+                <div class="mission-left" style="flex:1; min-width:0;">
+                  <input type="text" id="editInput" value="${esc(task.text)}" maxlength="60" style="width:100%; background:#0b0c10; border:1px solid var(--border-color); color:var(--text-color); padding:6px 8px; font-size:12px; outline:none;">
+                </div>
+                <div class="mission-item-actions">
+                  <button type="button" class="btn-action btn-edit" title="저장" onclick="event.stopPropagation(); saveEdit(); return false;">✔</button>
+                  <button type="button" class="btn-action btn-delete" title="취소" onclick="event.stopPropagation(); cancelEdit(); return false;">↩</button>
+                </div>
+              `;
+              list.appendChild(div);
+              setTimeout(() => { const inp = document.getElementById("editInput"); if (inp) { inp.focus(); inp.select(); inp.onkeydown = (e) => { if (e.key==="Enter") saveEdit(); if (e.key==="Escape") cancelEdit(); }; } }, 0);
+              return;
+            }
+            const div = document.createElement("div");
+            div.className = `mission-item ${task.done ? "done" : ""} ${String(task.id||"").startsWith("temp-") ? "is-temp" : ""}`;
+            const showPostpone = !task.done && !String(task.id||"").startsWith("temp-");
+            div.innerHTML = `
+              <div class="mission-left" onclick="toggleTask('${escId(task.id)}', ${task.done}, ${isCarryOver})">
+                <div class="pixel-checkbox"></div>
+                <span class="text-content">${esc(task.text)}</span>
+              </div>
+              <div class="mission-item-actions">
+                ${showPostpone ? `<button type="button" class="btn-action btn-postpone" title="다음 날로 미루기" onclick="event.stopPropagation(); postponeTask('${escId(task.id)}', '${task.date || getTodayISO()}'); return false;">→</button>` : ""}
+                <button type="button" class="btn-action btn-edit" title="수정" onclick="event.stopPropagation(); startEdit('${escId(task.id)}', ${isCarryOver}); return false;">✎</button>
+                <button type="button" class="btn-action btn-delete" title="삭제" onclick="event.stopPropagation(); deleteTask('${escId(task.id)}', ${isCarryOver}); return false;">X</button>
+              </div>
+            `;
+            list.appendChild(div);
+          }
+
           if (carryOverTasks.length > 0) {
             const header = document.createElement("div");
             header.className = "carryover-header";
             header.textContent = "어제 미완료";
             list.appendChild(header);
-            carryOverTasks.forEach((task) => {
-              const div = document.createElement("div");
-              div.className = `mission-item ${task.done ? "done" : ""}`;
-              div.innerHTML = `
-                <div class="mission-left" onclick="toggleTask('${escId(task.id)}', ${task.done}, true)">
-                  <div class="pixel-checkbox"></div>
-                  <span class="text-content">${esc(task.text)}</span>
-                </div>
-                <div class="mission-item-actions">
-                  <button type="button" class="btn-postpone" onclick="event.stopPropagation(); postponeTask('${escId(task.id)}', '${task.date}'); return false;">→다음날</button>
-                  <button type="button" class="btn-delete" onclick="event.stopPropagation(); deleteTask('${escId(task.id)}', true); return false;">X</button>
-                </div>
-              `;
-              list.appendChild(div);
-            });
+            carryOverTasks.forEach((task) => renderTaskItem(task, true));
           }
 
-          globalTasks.forEach((task) => {
-            const div = document.createElement("div");
-            const isTemp = String(task.id || "").startsWith("temp-");
-            div.className = `mission-item ${task.done ? "done" : ""} ${isTemp ? "is-temp" : ""}`;
-            const showPostpone = !task.done && !isTemp;
-            div.innerHTML = `
-              <div class="mission-left" onclick="toggleTask('${escId(task.id)}', ${task.done}, false)">
-                <div class="pixel-checkbox"></div>
-                <span class="text-content">${esc(task.text)}</span>
-              </div>
-              <div class="mission-item-actions">
-                ${showPostpone ? `<button type="button" class="btn-postpone" onclick="event.stopPropagation(); postponeTask('${escId(task.id)}', '${task.date || getTodayISO()}'); return false;">→다음날</button>` : ""}
-                <button type="button" class="btn-delete" onclick="event.stopPropagation(); deleteTask('${escId(task.id)}', false); return false;">X</button>
-              </div>
-            `;
-            list.appendChild(div);
-          });
+          globalTasks.forEach((task) => renderTaskItem(task, false));
 
           const active = globalTasks.filter(t => !t.done).length + carryOverTasks.filter(t => !t.done).length;
           countDisplay.innerText = `${active} ACTIVE`;
+          if (carryOverTasks.length === 0 && globalTasks.length === 0) {
+            const empty = document.createElement("div");
+            empty.style.padding = "16px";
+            empty.style.color = "var(--accent-color)";
+            empty.style.opacity = "0.7";
+            empty.style.fontSize = "11px";
+            empty.style.textAlign = "center";
+            empty.textContent = "등록된 할 일이 없습니다.\n위에서 추가해보세요.";
+            empty.style.whiteSpace = "pre";
+            list.appendChild(empty);
+          }
         }
 
 
+
+function startEdit(id, isCarryOver) {
+  editingId = id;
+  editingCarryOver = isCarryOver;
+  renderList();
+}
+
+function cancelEdit() {
+  editingId = null;
+  editingCarryOver = false;
+  renderList();
+}
+
+async function saveEdit() {
+  const inp = document.getElementById("editInput");
+  const newText = inp ? inp.value.trim() : "";
+  if (!newText || !editingId) { cancelEdit(); return; }
+  const today = getTodayISO();
+  const yesterday = getYesterdayISO();
+  let task = globalTasks.find(t => t.id === editingId);
+  if (!task && editingCarryOver) task = carryOverTasks.find(t => t.id === editingId);
+  if (!task) { cancelEdit(); return; }
+
+  task.text = newText;
+  if (OFFLINE_MODE) {
+    if (editingCarryOver) {
+      const arr = getOfflineTasks(yesterday).map(t => t.id === editingId ? { ...t, text: newText } : t);
+      setOfflineTasks(yesterday, arr);
+    } else {
+      const arr = getOfflineTasks(today).map(t => t.id === editingId ? { ...t, text: newText } : t);
+      setOfflineTasks(today, arr);
+    }
+    saveLocalTasks();
+    editingId = null;
+    editingCarryOver = false;
+    renderList();
+    bc.postMessage({ type: "TASKS_UPDATED" });
+    return;
+  }
+
+  if (String(editingId).startsWith("temp-")) {
+    cancelEdit();
+    renderList();
+    return;
+  }
+
+  inFlight++;
+  try {
+    const res = await fetch("/api/notion", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "update", pageId: editingId, text: newText })
+    });
+    const data = await res.json().catch(() => null);
+    if (data?.success) {
+      saveLocalTasks();
+      bc.postMessage({ type: "TASKS_UPDATED" });
+    }
+  } catch (e) { console.error(e); }
+  finally { inFlight--; }
+  editingId = null;
+  editingCarryOver = false;
+  renderList();
+}
 
 async function addTask() {
   const text = input.value.trim();
   if (!text) return;
 
   const today = getTodayISO();
-  const tempId = 'temp-' + Date.now();
-
-  const newTask = { id: tempId, text, done: false, date: today, isSynced: false, createdAt: Date.now(), pending: true };
+  const newId = OFFLINE_MODE ? 'off-' + Date.now() : 'temp-' + Date.now();
+  const newTask = { id: newId, text, done: false, date: today, isSynced: OFFLINE_MODE, createdAt: Date.now(), pending: !OFFLINE_MODE };
   globalTasks.unshift(newTask);
 
-       // ✅ 추가 즉시(서버 fetch 지연 대비) pending 저장소에 기록
-try{
-  const pending = JSON.parse(localStorage.getItem(PENDING_KEY) || "{}");
-  (pending[today] ||= []).unshift(newTask);
-  localStorage.setItem(PENDING_KEY, JSON.stringify(pending));
-}catch(_){}
+  if (!OFFLINE_MODE) {
+    try{
+      const pending = JSON.parse(localStorage.getItem(PENDING_KEY) || "{}");
+      (pending[today] ||= []).unshift(newTask);
+      localStorage.setItem(PENDING_KEY, JSON.stringify(pending));
+    }catch(_){}
+  }
 
-    // ✅ 시계/캘린더가 즉시 반응하도록 이벤트 전파
-bc.postMessage({ type: "TASK_ADDED", task: newTask });
-    
-    // (여기) pending 저장 + TASK_ADDED 브로드캐스트
-    saveLocalTasks();
+  bc.postMessage({ type: "TASK_ADDED", task: newTask });
+  saveLocalTasks();
   input.value = "";
   renderList();
-    
 
-  inFlight++; // ✅ create 중 sync 덮어쓰기 방지
+  if (OFFLINE_MODE) {
+    bc.postMessage({ type: "TASKS_UPDATED" });
+    return;
+  }
+
+  inFlight++;
   try {
     const res = await fetch('/api/notion', {
       method: 'POST',
@@ -352,7 +471,7 @@ bc.postMessage({ type: "TASK_ADDED", task: newTask });
       return;
     }
 
-    const target = globalTasks.find(t => t.id === tempId);
+    const target = globalTasks.find(t => t.id === newId);
 
         if (target) {
           target.id = data.id;
@@ -361,7 +480,7 @@ bc.postMessage({ type: "TASK_ADDED", task: newTask });
 try{
   const pending = JSON.parse(localStorage.getItem(PENDING_KEY) || "{}");
   const arr = Array.isArray(pending[today]) ? pending[today] : [];
-  pending[today] = arr.map(p => (p && p.id === tempId) ? { ...p, id: data.id } : p);
+  pending[today] = arr.map(p => (p && p.id === newId) ? { ...p, id: data.id } : p);
   localStorage.setItem(PENDING_KEY, JSON.stringify(pending));
 }catch(_){}
             
@@ -381,7 +500,7 @@ try{
         }
 
     // temp를 이미 지운 경우: 서버에서 바로 archive
-    if (deletedIds.has(tempId)) {
+    if (deletedIds.has(newId)) {
       deletedIds.add(data.id);
       await fetch('/api/notion', {
         method: 'POST',
@@ -407,11 +526,10 @@ async function toggleTask(id, done, isCarryOver) {
 
   const nextDone = !done;
 
-  // ✅ temp 작업: 로컬만 반영 (API 없이 동작)
-  if (String(id).startsWith('temp-')) {
+  // ✅ temp/off 작업: 로컬만 반영 (API 없이 동작)
+  if (String(id).startsWith('temp-') || OFFLINE_MODE) {
     task.done = nextDone;
-    const today = getTodayISO();
-    patchPendingDone(today, { id, text: task.text }, nextDone);
+    if (!OFFLINE_MODE) patchPendingDone(getTodayISO(), { id, text: task.text }, nextDone);
     saveLocalTasks();
     renderList();
     bc.postMessage({ type: "TASKS_UPDATED" });
@@ -421,9 +539,7 @@ async function toggleTask(id, done, isCarryOver) {
   // ✅ optimistic UI
   task.done = nextDone;
   renderList();
-
-  const today = getTodayISO();
-  patchPendingDone(today, { id, text: task.text }, nextDone);
+  patchPendingDone(getTodayISO(), { id, text: task.text }, nextDone);
 
   inFlight++;
   try {
@@ -478,10 +594,11 @@ async function deleteTask(id, isCarryOver) {
   carryOverTasks = carryOverTasks.filter(t => t.id !== id);
   saveLocalTasks();
   deletedIds.add(id);
-  localStorage.setItem(DELETED_KEY, JSON.stringify([...deletedIds]));
+  if (!OFFLINE_MODE) localStorage.setItem(DELETED_KEY, JSON.stringify([...deletedIds]));
   renderList();
   bc.postMessage({ type: "TASKS_UPDATED" });
 
+  if (OFFLINE_MODE) return;
   if (!String(id).startsWith('temp-')) {
     try {
       const r = await fetch('/api/notion', {
@@ -505,6 +622,27 @@ async function postponeTask(id, taskDate) {
 
   const task = globalTasks.find(t => t.id === id) || carryOverTasks.find(t => t.id === id);
   if (!task) return;
+
+  if (OFFLINE_MODE) {
+    const prevArr = getOfflineTasks(originalDate).filter(t => t.id !== id);
+    const nextArr = getOfflineTasks(nextDate);
+    nextArr.unshift({ ...task, date: nextDate, done: task.done });
+    setOfflineTasks(originalDate, prevArr);
+    setOfflineTasks(nextDate, nextArr);
+    globalTasks = globalTasks.filter(t => t.id !== id);
+    carryOverTasks = carryOverTasks.filter(t => t.id !== id);
+    renderList();
+    bc.postMessage({ type: "TASKS_UPDATED" });
+    undoPostponeData = { id, originalDate, task: { ...task, date: originalDate } };
+    const toast = document.getElementById("undoToast");
+    if (toast) {
+      toast.innerHTML = '다음 날로 미뤘어요. <button type="button" class="btn-undo" onclick="undoPostpone()">되돌리기</button>';
+      toast.style.display = "flex";
+    }
+    if (undoToastTimer) clearTimeout(undoToastTimer);
+    undoToastTimer = setTimeout(() => { undoPostponeData = null; if (toast) toast.style.display = "none"; }, 5000);
+    return;
+  }
 
   inFlight++;
   try {
@@ -551,6 +689,22 @@ async function undoPostpone() {
   if (toast) toast.style.display = "none";
   if (undoToastTimer) { clearTimeout(undoToastTimer); undoToastTimer = null; }
 
+  if (OFFLINE_MODE) {
+    const nextDate = getNextDayISO(originalDate);
+    const nextArr = getOfflineTasks(nextDate).filter(t => t.id !== id);
+    const origArr = getOfflineTasks(originalDate);
+    origArr.unshift({ ...task, date: originalDate });
+    setOfflineTasks(nextDate, nextArr);
+    setOfflineTasks(originalDate, origArr);
+    const today = getTodayISO();
+    const yesterday = getYesterdayISO();
+    if (originalDate === today) globalTasks.unshift({ ...task, date: originalDate, isSynced: true });
+    else if (originalDate === yesterday) carryOverTasks.push({ ...task, date: originalDate, isSynced: true });
+    renderList();
+    bc.postMessage({ type: "TASKS_UPDATED" });
+    return;
+  }
+
   inFlight++;
   try {
     const r = await fetch('/api/notion', {
@@ -582,13 +736,16 @@ async function undoPostpone() {
 
     input.addEventListener("keypress", (e) => { if (e.key === "Enter") addTask(); });
     
-    reconcileDayBoundary();           // ✅ 추가: 자정 넘어가면 전날 데이터 정리
-setInterval(reconcileDayBoundary, 60000); // ✅ 추가: 1분마다 날짜 변경 감지
+    reconcileDayBoundary();
+    setInterval(reconcileDayBoundary, 60000);
     
-        loadLocalTasks();
-        renderList();      // 로컬 먼저 보여주기
-        syncFromNotion();  // 그 다음 서버로 최신화
-        setInterval(syncFromNotion, 5000);
+    if (OFFLINE_MODE) {
+      document.getElementById("offlineBadge").style.display = "inline";
+    }
+    if (!OFFLINE_MODE) loadLocalTasks();
+    renderList();
+    syncFromNotion();
+    setInterval(syncFromNotion, 5000);
     </script>
 </body>
 </html>
