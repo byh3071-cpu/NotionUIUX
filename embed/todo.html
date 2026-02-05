@@ -10,6 +10,7 @@
         body { margin: 0; padding: 0; background-color: var(--bg-color); font-family: 'Silkscreen', cursive; width: 100vw; height: 100vh; overflow: hidden; color: var(--text-color); }
         .todo-container { width: 100%; height: 100%; border: 2px solid var(--border-color); box-sizing: border-box; display: flex; flex-direction: column; }
         .header-bar { height: 32px; flex-shrink: 0; border-bottom: 1px solid var(--border-color); background: rgba(59, 66, 97, 0.2); display: flex; align-items: center; justify-content: space-between; padding: 0 12px; font-size: 11px; color: var(--accent-color); }
+        .header-left { display: flex; align-items: center; gap: 8px; }
         .input-area { height: 40px; flex-shrink: 0; border-bottom: 2px solid var(--border-color); display: flex; background: rgba(130, 170, 255, 0.05); }
         input { flex: 1; background: transparent; border: none; color: #ffffff; font-family: 'Noto Sans KR', sans-serif; font-size: 12px; font-weight: 700; padding: 0 12px; outline: none; }
         input::placeholder { font-family: 'Silkscreen'; color: var(--accent-color); opacity: 0.5; font-size: 11px; font-weight: 400; }
@@ -55,9 +56,11 @@
 <body>
     <div class="todo-container">
         <div class="header-bar">
-            <span>MISSION LOG<span id="offlineBadge" style="display:none; margin-left:6px; font-size:9px; color:#ffa94d;">[테스트]</span></span>
-            <span id="task-count">LOADING...</span>
-            <span id="syncStatus" style="font-size:8px; opacity:0.8; margin-left:4px;" title="동기화 상태">—</span>
+            <span class="header-left">
+                <span>MISSION LOG<span id="offlineBadge" style="display:none; margin-left:6px; font-size:9px; color:#ffa94d;">[테스트]</span></span>
+                <span id="task-count">LOADING...</span>
+            </span>
+            <span id="syncStatus" style="font-size:8px; opacity:0.8;" title="동기화 상태">—</span>
         </div>
         <div class="input-area">
             <input type="text" id="input" placeholder="> TODAY'S QUEST..." autocomplete="off" title="Enter로 추가">
