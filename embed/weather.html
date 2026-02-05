@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Yohan's System Weather Full</title>
+    <link href="https://fonts.googleapis.com/css2?family=Silkscreen&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f1115;
+            --border-color: #3b4261;
+            --accent-color: #82aaff;
+            --text-color: #dbe6f5;
+            --cloud-color: #3b4261;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--bg-color);
+            font-family: 'Silkscreen', cursive;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            color: var(--text-color);
+        }
+
+        .weather-container {
+            width: 100%;
+            height: 100%;
+            background: var(--bg-color);
+            border: 2px solid var(--border-color);
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 윈도우 헤더 */
+        .header-bar {
+            height: 28px;
+            border-bottom: 2px solid var(--border-color);
+            background: rgba(59, 66, 97, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+            font-size: 11px;
+            color: var(--accent-color);
+            z-index: 10;
+        }
+        
+        /* 내용물 */
+        .content {
+            flex: 1;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 5; 
+        }
+
+        .info-left {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .city {
+            font-size: 11px;
+            color: #697098;
+            letter-spacing: 1px;
+        }
+
+        .temp {
+            font-size: 18vw;
+            max-font-size: 50px;
+            color: var(--accent-color);
+            text-shadow: 2px 2px 0px #000;
+        }
+        @media (min-width: 300px) { .temp { font-size: 45px; } }
+
+        .desc {
+            font-size: 11px;
+            color: var(--text-color);
+        }
+
+        /* 배경 효과 */
+        .bg-effect {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .cloud-pixel {
+            position: absolute;
+            width: 50px; height: 16px;
+            background: var(--cloud-color);
+            box-shadow: 
+                10px -10px 0 0 var(--cloud-color), 
+                20px -10px 0 0 var(--cloud-color), 
+                10px 10px 0 0 var(--cloud-color), 
+                20px 10px 0 0 var(--cloud-color), 
+                30px 0 0 0 var(--cloud-color);
+            opacity: 0.4;
+        }
+
+        .c1 { top: 30%; left: -60px; animation: float 18s linear infinite; }
+        .c2 { top: 60%; left: -40px; animation: float 25s linear infinite; animation-delay: 5s; transform: scale(0.8); }
+
+        @keyframes float {
+            from { left: -70px; }
+            to { left: 110%; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="weather-container">
+        <div class="header-bar">
+            <span>WEATHER.MOD</span>
+            <span>KR-SEOUL</span>
+        </div>
+
+        <div class="content">
+            <div class="info-left">
+                <span class="city">CURRENT TEMP</span>
+                <span class="temp" id="temp">--°</span>
+                <span class="desc" id="weather-desc">SCANNING...</span>
+            </div>
+        </div>
+
+        <div id="weather-effect" class="bg-effect">
+            <div class="cloud-pixel c1"></div>
+            <div class="cloud-pixel c2"></div>
+        </div>
+    </div>
+
+    <script>
+        // ▼▼▼ 수정된 부분: 끝에 'Y' 제거했습니다! ▼▼▼
+        const API_KEY = "28d973834adf062cd5ce35560b8d1091"; 
+        const CITY = "Seoul";
+
+        async function fetchWeather() {
+            try {
+                // 방해되는 if 문 삭제함 (바로 호출 시작)
+
+                const url = `https://api.openweathermap.org/data/2.5/weather?q=${CITY}&appid=${API_KEY}&units=metric`;
+                const response = await fetch(url);
+                
+                // 에러 체크: 키가 틀리거나 호출 실패시
+                if (!response.ok) throw new Error("API Error");
+
+                const data = await response.json();
+
+                const temp = Math.round(data.main.temp);
+                document.getElementById("temp").innerText = `${temp}°`;
+                const weatherMain = data.weather[0].main;
+                document.getElementById("weather-desc").innerText = `> ${weatherMain.toUpperCase()}`;
+
+            } catch (error) {
+                console.error("Error:", error);
+                // 에러나면 화면에 표시
+                document.getElementById("weather-desc").innerText = "ERR: CHECK KEY";
+            }
+        }
+        fetchWeather();
+        setInterval(fetchWeather, 600000); 
+    </script>
+</body>
+</html>

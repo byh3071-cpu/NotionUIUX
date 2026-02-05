@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Pixel Pomodoro Full</title>
+    <link href="https://fonts.googleapis.com/css2?family=Silkscreen&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f1115;       /* 배경색 */
+            --border-color: #3b4261;   /* 테두리 색 */
+            --accent-color: #82aaff;   /* 포인트 색 (블루) */
+            --text-color: #dbe6f5;     /* 텍스트 색 */
+            --off-color: #1a1e29;      /* 꺼진 블록 색 */
+        }
+
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--bg-color); /* 흰 여백 방지 */
+            font-family: 'Silkscreen', cursive;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden; /* 스크롤바 방지 */
+            color: var(--text-color);
+        }
+
+        .timer-container {
+            width: 100%;
+            height: 100%;
+            background: var(--bg-color);
+            border: 2px solid var(--border-color);
+            box-sizing: border-box; /* 테두리 포함해서 크기 계산 */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* 헤더 */
+        .header-bar {
+            height: 28px;
+            border-bottom: 2px solid var(--border-color);
+            background: rgba(59, 66, 97, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+            font-size: 11px;
+            color: var(--accent-color);
+            flex-shrink: 0; /* 크기 줄어들지 않게 고정 */
+        }
+
+        /* 메인 영역 (가운데 정렬) */
+        .content {
+            padding: 0 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1; /* 남은 공간 모두 차지 */
+        }
+
+        .timer-display {
+            font-size: 18vw; /* 화면 크기에 비례해서 글자 커짐 */
+            max-font-size: 60px; /* 너무 커지지 않게 제한 */
+            color: var(--accent-color);
+            text-shadow: 0 0 10px rgba(130, 170, 255, 0.3);
+            margin-bottom: 2vh;
+            line-height: 1;
+        }
+
+        /* 미디어 쿼리: 화면이 너무 클 때 폰트 고정 */
+        @media (min-width: 400px) {
+            .timer-display { font-size: 50px; }
+        }
+
+        /* 픽셀 진행 바 */
+        .progress-bar {
+            display: flex;
+            gap: 4px;
+            width: 90%;
+            height: 10px;
+            margin-bottom: 10px;
+        }
+        .block {
+            flex: 1;
+            height: 100%;
+            background: var(--off-color);
+            border-radius: 1px;
+        }
+        .block.active {
+            background: var(--accent-color);
+            box-shadow: 0 0 5px var(--accent-color);
+        }
+
+        /* 버튼 영역 */
+        .controls {
+            display: flex;
+            border-top: 2px solid var(--border-color);
+            height: 40px; /* 버튼 높이 고정 */
+            flex-shrink: 0;
+        }
+        button {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-color);
+            font-family: 'Silkscreen';
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        button:first-child { border-right: 2px solid var(--border-color); }
+        button:hover {
+            background: rgba(130, 170, 255, 0.1);
+            color: var(--accent-color);
+        }
+        button:active { background: rgba(130, 170, 255, 0.2); }
+
+    </style>
+</head>
+<body>
+
+    <div class="timer-container">
+        <div class="header-bar">
+            <span>FOCUS.EXE</span>
+            <span id="mode-badge">25m</span>
+        </div>
+
+        <div class="content">
+            <div class="timer-display" id="time">25:00</div>
+            
+            <div class="progress-bar">
+                <div class="block active"></div><div class="block active"></div>
+                <div class="block active"></div><div class="block active"></div>
+                <div class="block active"></div><div class="block active"></div>
+                <div class="block active"></div><div class="block active"></div>
+                <div class="block active"></div><div class="block active"></div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button onclick="toggleTimer()" id="btn-main">START</button>
+            <button onclick="resetTimer()">RESET</button>
+        </div>
+    </div>
+
+    <script>
+        let timeLeft = 25 * 60;
+        let maxTime = 25 * 60;
+        let timerId = null;
+        let isRunning = false;
+
+        const timeDisplay = document.getElementById("time");
+        const btnMain = document.getElementById("btn-main");
+        const blocks = document.querySelectorAll(".block");
+
+        function updateDisplay() {
+            const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+            const s = (timeLeft % 60).toString().padStart(2, '0');
+            timeDisplay.innerText = `${m}:${s}`;
+
+            const percent = timeLeft / maxTime;
+            const activeCount = Math.ceil(percent * 10);
+            
+            blocks.forEach((block, idx) => {
+                if (idx < activeCount) block.classList.add("active");
+                else block.classList.remove("active");
+            });
+        }
+
+        function toggleTimer() {
+            if (isRunning) {
+                clearInterval(timerId);
+                isRunning = false;
+                btnMain.innerText = "START";
+                btnMain.style.color = "";
+            } else {
+                isRunning = true;
+                btnMain.innerText = "PAUSE";
+                btnMain.style.color = "#82aaff";
+                timerId = setInterval(() => {
+                    if (timeLeft > 0) {
+                        timeLeft--;
+                        updateDisplay();
+                    } else {
+                        clearInterval(timerId);
+                        isRunning = false;
+                        btnMain.innerText = "DONE";
+                    }
+                }, 1000);
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerId);
+            isRunning = false;
+            timeLeft = 25 * 60;
+            updateDisplay();
+            btnMain.innerText = "START";
+            btnMain.style.color = "";
+        }
+    </script>
+</body>
+</html>

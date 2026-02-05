@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notion Pixel Calendar (Tasks Only)</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --panel:#111319;
+      --panel2:#0f1117;
+      --line:#2a2f3a;
+      --line2:#3a4150;
+      --text:#e9eef7;
+      --muted:#a7b0c2;
+
+      --accent:#7cc7ff;
+      --today:#ffe08a;
+      --danger:#ff6b6b;
+
+      --sun:#ff8f8f;
+      --sat:#8fb6ff;
+
+      --w: 360px;
+      --h: 440px;
+      --cell: 46px;
+      --gap: 4px;
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{
+      margin:0;
+      padding:0;
+      background:transparent;
+      color:var(--text);
+      font-family: ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace;
+    }
+
+    .wrap{
+      width:var(--w);
+      height:var(--h);
+      background:var(--panel);
+      border:2px solid var(--line2);
+      border-radius:0;
+      overflow:hidden;
+      position:relative;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:8px 8px;
+      border-bottom:2px solid var(--line2);
+      background:linear-gradient(180deg, var(--panel2), var(--panel));
+      gap:6px;
+    }
+
+    .leftBtns, .rightBtns{
+      display:flex;
+      gap:6px;
+      align-items:center;
+    }
+
+    .btn{
+      height:32px;
+      padding:0 10px;
+      background:#0e1016;
+      color:var(--text);
+      border:2px solid var(--line2);
+      border-radius:0;
+      cursor:pointer;
+      font-size:10px;
+      line-height:1;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      user-select:none;
+      transition: transform .05s ease;
+    }
+    .btn:active{ transform: translateY(1px); }
+    .btn:hover{ border-color:var(--accent); }
+
+    .monthTitle{
+      flex:1;
+      text-align:center;
+      font-size:11px;
+      color:var(--text);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .dow{
+      display:grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: var(--gap);
+      padding:8px 8px 6px;
+      border-bottom:2px solid var(--line2);
+      background:#0e1016;
+    }
+
+    .dow div{
+      text-align:center;
+      font-size:9px;
+      color:var(--muted);
+      padding:6px 0;
+      border:2px solid var(--line);
+      border-radius:0;
+      background:#0b0c10;
+    }
+
+    .dow .sunHead{
+      color:var(--sun);
+      border-color:rgba(255,143,143,.45);
+    }
+    .dow .satHead{
+      color:var(--sat);
+      border-color:rgba(143,182,255,.45);
+    }
+
+    .grid{
+      padding:8px;
+      display:grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: var(--gap);
+      background:var(--panel);
+    }
+
+    .day{
+      height: var(--cell);
+      border:2px solid var(--line);
+      border-radius:0;
+      background:#0b0c10;
+      position:relative;
+      cursor:pointer;
+      display:flex;
+      align-items:flex-start;
+      justify-content:flex-start;
+      padding:6px;
+      user-select:none;
+      transition: border-color .12s ease;
+      overflow:hidden;
+    }
+    .day:hover{ border-color:var(--accent); }
+
+    .day.disabled{
+      opacity:.35;
+      cursor:default;
+    }
+
+    .day.sun:not(.disabled){
+      border-color: rgba(255,143,143,.30);
+    }
+    .day.sat:not(.disabled){
+      border-color: rgba(143,182,255,.30);
+    }
+
+    .num{
+      font-size:10px;
+      color:var(--text);
+    }
+
+    /* ✅ 하단 코너 "대각선 세모 배지" */
+    .countBadge{
+      position:absolute;
+      bottom:0;
+      right:0;
+      width:18px;
+      height:18px;
+      clip-path: polygon(100% 100%, 0 100%, 100% 0);
+      background: var(--accent);
+      color:#0b0c10;
+
+      display:flex;
+      align-items:flex-end;
+      justify-content:flex-end;
+
+      font-size:9px;
+      line-height:1;
+      padding:0 3px 2px 0;
+
+      box-shadow: inset 0 0 0 2px rgba(11,12,16,.25);
+      user-select:none;
+      pointer-events:none;
+    }
+
+    .doneBadge{
+      position:absolute;
+      bottom:0;
+      left:0;
+      width:18px;
+      height:18px;
+      clip-path: polygon(0 100%, 0 0, 100% 100%);
+      background: rgba(124,199,255,.22);
+      color: var(--accent);
+
+      display:flex;
+      align-items:flex-end;
+      justify-content:flex-start;
+
+      font-size:9px;
+      line-height:1;
+      padding:0 0 2px 3px;
+
+      box-shadow: inset 0 0 0 2px rgba(124,199,255,.25);
+      user-select:none;
+      pointer-events:none;
+    }
+
+    /* ✅ 하트(완료 상태만) */
+    .heartMarker{
+      position:absolute;
+      left:50%;
+      transform: translateX(-50%);
+      bottom:6px;
+      font-size:12px;
+      line-height:1;
+      color:var(--accent);
+      opacity:0.95;
+      user-select:none;
+      pointer-events:none;
+    }
+
+    .today{
+      border-color: var(--today) !important;
+      box-shadow: inset 0 0 0 2px rgba(255,224,138,.25);
+    }
+
+    .modalBack{
+      position:absolute;
+      inset:0;
+      background: rgba(0,0,0,.55);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:10px;
+    }
+    .modalBack.show{ display:flex; }
+
+    .modal{
+      width: 100%;
+      max-width: 340px;
+      height: 360px;
+      background: #0e1016;
+      border: 2px solid var(--line2);
+      border-radius:0;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+    }
+
+    .modalHeader{
+      padding:8px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      border-bottom:2px solid var(--line2);
+      background:#0b0c10;
+      gap:8px;
+    }
+    .modalTitle{
+      font-size:10px;
+      color:var(--text);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      flex:1;
+    }
+
+    .headerBtns{
+      display:flex;
+      gap:6px;
+      align-items:center;
+      flex:0 0 auto;
+    }
+
+    .miniBtn{
+      height:28px;
+      padding:0 8px;
+      border:2px solid var(--line2);
+      background:#0e1016;
+      color:var(--text);
+      border-radius:0;
+      cursor:pointer;
+      font-size:9px;
+      line-height:1;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      user-select:none;
+    }
+    .miniBtn:hover{ border-color:var(--accent); }
+    .miniBtn.active{
+      border-color: var(--accent);
+      box-shadow: inset 0 0 0 2px rgba(124,199,255,.15);
+    }
+
+    .closeBtn{
+      width:32px;
+      height:28px;
+      border:2px solid var(--line2);
+      background:#0e1016;
+      color:var(--text);
+      border-radius:0;
+      cursor:pointer;
+      font-size:12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .closeBtn:hover{ border-color:var(--danger); }
+
+    .modalBody{
+      padding:8px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      height:100%;
+      min-height:0;
+    }
+
+    .addRow{
+      display:flex;
+      gap:6px;
+    }
+    .taskInput{
+      flex:1;
+      height:34px;
+      border:2px solid var(--line2);
+      background:#0b0c10;
+      color:var(--text);
+      border-radius:0;
+      outline:none;
+      padding:0 8px;
+      font-size:10px;
+    }
+    .taskInput::placeholder{ color:#7b8497; }
+
+    .addBtn{
+      width:70px;
+      height:34px;
+      border:2px solid var(--line2);
+      background:#0b0c10;
+      color:var(--text);
+      border-radius:0;
+      cursor:pointer;
+      font-size:10px;
+    }
+    .addBtn:hover{ border-color:var(--accent); }
+
+    .taskList{
+      border:2px solid var(--line2);
+      background:#0b0c10;
+      border-radius:0;
+      padding:6px;
+      overflow:auto;
+      flex:1;
+      min-height:0;
+    }
+
+    .taskItem{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      padding:6px;
+      border:2px solid var(--line);
+      border-radius:0;
+      margin-bottom:6px;
+      background:#0e1016;
+    }
+
+    .checkBtn{
+      width:30px;
+      height:28px;
+      border:2px solid var(--accent);
+      background:transparent;
+      color:var(--text);
+      border-radius:0;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:11px;
+      flex:0 0 auto;
+    }
+    .checkBtn.done{
+      background: var(--accent);
+      color:#0b0c10;
+    }
+
+    .taskText{
+      font-size:10px;
+      color:var(--text);
+      line-height:1.25;
+      word-break:break-word;
+      flex:1;
+    }
+    .taskText.done{
+      color: var(--muted);
+      text-decoration: line-through;
+      opacity:.9;
+    }
+
+    .editInput{
+      flex:1;
+      height:30px;
+      border:2px solid var(--line2);
+      background:#0b0c10;
+      color:var(--text);
+      border-radius:0;
+      outline:none;
+      padding:0 8px;
+      font-size:10px;
+    }
+
+    .taskActions{
+      display:flex;
+      gap:6px;
+      flex:0 0 auto;
+    }
+    .iconBtn{
+      width:30px;
+      height:28px;
+      border:2px solid var(--line2);
+      background:#0b0c10;
+      color:var(--text);
+      border-radius:0;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:11px;
+    }
+    .iconBtn:hover{ border-color:var(--accent); }
+    .iconBtn.delete:hover{ border-color:var(--danger); }
+
+    .backupRow{
+      display:flex;
+      gap:6px;
+      align-items:center;
+      justify-content:flex-end;
+    }
+
+    .help{
+      font-size:9px;
+      color:var(--muted);
+      opacity:.9;
+      line-height:1.35;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap" id="app">
+    <div class="topbar">
+      <div class="leftBtns">
+        <button class="btn" id="prevBtn">◀</button>
+        <button class="btn" id="nextBtn">▶</button>
+      </div>
+
+      <div class="monthTitle" id="monthTitle">2026-01</div>
+
+      <div class="rightBtns">
+        <button class="btn" id="todayBtn">TODAY</button>
+      </div>
+    </div>
+
+    <div class="dow" id="dow">
+      <div class="sunHead">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div class="satHead">토</div>
+    </div>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="modalBack" id="modalBack" aria-hidden="true">
+      <div class="modal" role="dialog" aria-modal="true">
+        <div class="modalHeader">
+          <div class="modalTitle" id="modalTitle">TASK</div>
+
+          <div class="headerBtns">
+            <button class="miniBtn" id="toggleHideDoneBtn" title="완료 숨김 토글">완료숨김</button>
+            <button class="closeBtn" id="closeBtn">X</button>
+          </div>
+        </div>
+
+        <div class="modalBody">
+          <div class="addRow">
+            <input class="taskInput" id="taskInput" placeholder="할 일 입력" maxlength="60" />
+            <button class="addBtn" id="addBtn">추가</button>
+          </div>
+
+          <div class="taskList" id="taskList"></div>
+
+          <div class="backupRow">
+            <button class="miniBtn" id="exportBtn" title="데이터 내보내기">내보내기</button>
+            <button class="miniBtn" id="importBtn" title="데이터 가져오기">가져오기</button>
+          </div>
+
+          <div class="help">
+            좌하단=완료 / 우하단=총 / ♥=올완료 / ♡=미완료 포함<br>
+            완료숨김 ON이면 체크된 항목은 리스트에서 숨김
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const $ = (sel) => document.querySelector(sel);
+
+    const gridEl = $("#grid");
+    const monthTitleEl = $("#monthTitle");
+
+    const prevBtn = $("#prevBtn");
+    const nextBtn = $("#nextBtn");
+    const todayBtn = $("#todayBtn");
+
+    const modalBack = $("#modalBack");
+    const closeBtn = $("#closeBtn");
+    const modalTitle = $("#modalTitle");
+
+    const taskInput = $("#taskInput");
+    const addBtn = $("#addBtn");
+    const taskList = $("#taskList");
+
+    const toggleHideDoneBtn = $("#toggleHideDoneBtn");
+    const exportBtn = $("#exportBtn");
+    const importBtn = $("#importBtn");
+
+    const state = {
+      viewDate: new Date(),
+      selectedISO: null,
+      editingIndex: null,
+      hideDone: false
+    };
+
+    const pad2 = (n) => String(n).padStart(2, "0");
+    const toISO = (y,m,d) => `${y}-${pad2(m)}-${pad2(d)}`;
+
+    const isSameDay = (a, b) =>
+      a.getFullYear() === b.getFullYear() &&
+      a.getMonth() === b.getMonth() &&
+      a.getDate() === b.getDate();
+
+    const STORE_KEY = "pixel_calendar_tasks_v5_backup_hideDone";
+
+    function loadAll(){
+      try{ return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; }
+      catch(e){ return {}; }
+    }
+    function saveAll(obj){
+      localStorage.setItem(STORE_KEY, JSON.stringify(obj));
+    }
+
+    function normalizeList(list){
+      if(!Array.isArray(list)) return [];
+      return list.map(x => {
+        if(typeof x === "string") return { text:x, done:false };
+        if(x && typeof x === "object"){
+          return { text: String(x.text ?? ""), done: Boolean(x.done) };
+        }
+        return { text:"", done:false };
+      }).filter(t => t.text.trim().length > 0);
+    }
+
+    function getTasks(iso){
+      const all = loadAll();
+      return normalizeList(all[iso]);
+    }
+    function setTasks(iso, list){
+      const all = loadAll();
+      all[iso] = normalizeList(list);
+      saveAll(all);
+    }
+
+    function updateHideDoneBtnUI(){
+      if(state.hideDone){
+        toggleHideDoneBtn.classList.add("active");
+        toggleHideDoneBtn.textContent = "숨김ON";
+      }else{
+        toggleHideDoneBtn.classList.remove("active");
+        toggleHideDoneBtn.textContent = "완료숨김";
+      }
+    }
+
+    function render(){
+      gridEl.innerHTML = "";
+
+      const y = state.viewDate.getFullYear();
+      const m = state.viewDate.getMonth();
+
+      monthTitleEl.textContent = `${y}-${pad2(m+1)}`;
+
+      const first = new Date(y, m, 1);
+      const firstDow = first.getDay();
+
+      const last = new Date(y, m+1, 0);
+      const lastDay = last.getDate();
+
+      const prevLast = new Date(y, m, 0).getDate();
+
+      const totalCells = 42;
+
+      for(let i=0; i<totalCells; i++){
+        const cell = document.createElement("div");
+        cell.className = "day";
+
+        const dayNum = i - firstDow + 1;
+
+        let cellDate;
+        let disabled = false;
+        let displayNum;
+
+        if(dayNum < 1){
+          displayNum = prevLast + dayNum;
+          cellDate = new Date(y, m-1, displayNum);
+          disabled = true;
+        }else if(dayNum > lastDay){
+          displayNum = dayNum - lastDay;
+          cellDate = new Date(y, m+1, displayNum);
+          disabled = true;
+        }else{
+          displayNum = dayNum;
+          cellDate = new Date(y, m, displayNum);
+        }
+
+        const iso = toISO(cellDate.getFullYear(), cellDate.getMonth()+1, cellDate.getDate());
+        const dow = cellDate.getDay();
+
+        if(disabled) cell.classList.add("disabled");
+        if(dow === 0) cell.classList.add("sun");
+        if(dow === 6) cell.classList.add("sat");
+
+        const now = new Date();
+        if(isSameDay(cellDate, now) && !disabled){
+          cell.classList.add("today");
+        }
+
+        const num = document.createElement("div");
+        num.className = "num";
+        num.textContent = displayNum;
+        cell.appendChild(num);
+
+        const tasks = getTasks(iso);
+        if(tasks.length > 0){
+          const total = tasks.length;
+          const done = tasks.filter(t => t.done).length;
+          const fmt = (n) => (n > 9 ? "9+" : String(n));
+
+          // ✅ 좌하단: 완료 개수(세모)
+          const doneBadge = document.createElement("div");
+          doneBadge.className = "doneBadge";
+          doneBadge.textContent = fmt(done);
+          cell.appendChild(doneBadge);
+
+          // ✅ 우하단: 총 개수(세모)
+          const totalBadge = document.createElement("div");
+          totalBadge.className = "countBadge";
+          totalBadge.textContent = fmt(total);
+          cell.appendChild(totalBadge);
+
+          // ✅ 하트: 전부 완료면 ♥ / 미완료 포함이면 ♡
+          const allDone = done === total;
+          const heart = document.createElement("div");
+          heart.className = "heartMarker";
+          heart.textContent = allDone ? "♥" : "♡";
+          cell.appendChild(heart);
+        }
+
+        cell.addEventListener("click", () => {
+          if(disabled) return; // 흐린 날짜 클릭 막음
+          openModal(iso);
+        });
+
+        gridEl.appendChild(cell);
+      }
+    }
+
+    function openModal(iso){
+      state.selectedISO = iso;
+      state.editingIndex = null;
+
+      modalTitle.textContent = `TASK · ${iso}`;
+      taskInput.value = "";
+      updateHideDoneBtnUI();
+      renderTaskList();
+
+      modalBack.classList.add("show");
+      modalBack.setAttribute("aria-hidden", "false");
+      setTimeout(() => taskInput.focus(), 0);
+    }
+
+    function closeModal(){
+      modalBack.classList.remove("show");
+      modalBack.setAttribute("aria-hidden", "true");
+      state.selectedISO = null;
+      state.editingIndex = null;
+    }
+
+    function renderTaskList(){
+      const iso = state.selectedISO;
+      if(!iso) return;
+
+      const tasks = getTasks(iso);
+      taskList.innerHTML = "";
+
+      // ✅ 완료 숨김 적용
+      const viewList = state.hideDone ? tasks.filter(t => !t.done) : tasks;
+
+      if(viewList.length === 0){
+        const empty = document.createElement("div");
+        empty.className = "help";
+        empty.textContent = state.hideDone ? "미완료 TASK 없음" : "등록된 TASK 없음";
+        taskList.appendChild(empty);
+        return;
+      }
+
+      viewList.forEach((task, viewIdx) => {
+        // ✅ viewIdx → 실제 idx 매핑(완료숨김 상태에서 정확히 수정/삭제/체크하려고)
+        const realIdx = state.hideDone
+          ? tasks.findIndex((t, i) => !t.done && tasks.slice(0, i+1).filter(x => !x.done).length - 1 === viewIdx)
+          : viewIdx;
+
+        const item = document.createElement("div");
+        item.className = "taskItem";
+
+        const check = document.createElement("button");
+        check.className = "checkBtn";
+        check.textContent = task.done ? "✓" : "";
+        if(task.done) check.classList.add("done");
+        check.title = "완료 체크";
+        check.addEventListener("click", () => {
+          const list = getTasks(iso);
+          list[realIdx].done = !list[realIdx].done;
+          setTasks(iso, list);
+          renderTaskList();
+          render();
+        });
+
+        item.appendChild(check);
+
+        if(state.editingIndex === realIdx){
+          const input = document.createElement("input");
+          input.className = "editInput";
+          input.value = task.text;
+          input.maxLength = 60;
+
+          const actions = document.createElement("div");
+          actions.className = "taskActions";
+
+          const save = document.createElement("button");
+          save.className = "iconBtn";
+          save.textContent = "✔";
+          save.title = "저장";
+          save.addEventListener("click", () => {
+            const v = input.value.trim();
+            if(!v) return;
+            const list = getTasks(iso);
+            list[realIdx].text = v;
+            setTasks(iso, list);
+            state.editingIndex = null;
+            renderTaskList();
+            render();
+          });
+
+          const cancel = document.createElement("button");
+          cancel.className = "iconBtn delete";
+          cancel.textContent = "↩";
+          cancel.title = "취소";
+          cancel.addEventListener("click", () => {
+            state.editingIndex = null;
+            renderTaskList();
+          });
+
+          actions.appendChild(save);
+          actions.appendChild(cancel);
+
+          item.appendChild(input);
+          item.appendChild(actions);
+
+          setTimeout(() => input.focus(), 0);
+          input.addEventListener("keydown", (e) => {
+            if(e.key === "Enter") save.click();
+            if(e.key === "Escape") cancel.click();
+          });
+
+          taskList.appendChild(item);
+          return;
+        }
+
+        const text = document.createElement("div");
+        text.className = "taskText";
+        text.textContent = task.text;
+        if(task.done) text.classList.add("done");
+
+        const actions = document.createElement("div");
+        actions.className = "taskActions";
+
+        const edit = document.createElement("button");
+        edit.className = "iconBtn";
+        edit.textContent = "✎";
+        edit.title = "수정";
+        edit.addEventListener("click", () => {
+          state.editingIndex = realIdx;
+          renderTaskList();
+        });
+
+        const del = document.createElement("button");
+        del.className = "iconBtn delete";
+        del.textContent = "⌫";
+        del.title = "삭제";
+        del.addEventListener("click", () => {
+          const ok = confirm("삭제할까?");
+          if(!ok) return;
+          const list = getTasks(iso);
+          list.splice(realIdx, 1);
+          setTasks(iso, list);
+          renderTaskList();
+          render();
+        });
+
+        actions.appendChild(edit);
+        actions.appendChild(del);
+
+        item.appendChild(text);
+        item.appendChild(actions);
+
+        taskList.appendChild(item);
+      });
+    }
+
+    function addTask(){
+      const iso = state.selectedISO;
+      if(!iso) return;
+
+      const val = taskInput.value.trim();
+      if(!val) return;
+
+      const list = getTasks(iso);
+      list.unshift({ text: val, done: false });
+      setTasks(iso, list);
+
+      taskInput.value = "";
+      renderTaskList();
+      render();
+    }
+
+    // ✅ 백업: 내보내기
+    async function exportData(){
+      const all = loadAll();
+      const payload = JSON.stringify(all);
+
+      try{
+        if(navigator.clipboard && navigator.clipboard.writeText){
+          await navigator.clipboard.writeText(payload);
+          alert("백업 데이터가 클립보드에 복사됨 ✅\n(메모장/노션에 붙여넣기 해두면 됨)");
+          return;
+        }
+      }catch(e){}
+
+      // clipboard가 막혔을 때 fallback
+      prompt("아래 백업 데이터를 복사해서 보관해줘:", payload);
+    }
+
+    // ✅ 복구: 가져오기
+    function importData(){
+      const txt = prompt("백업 데이터를 붙여넣고 확인을 눌러줘:");
+      if(!txt) return;
+
+      try{
+        const parsed = JSON.parse(txt);
+
+        if(!parsed || typeof parsed !== "object" || Array.isArray(parsed)){
+          alert("형식이 올바르지 않음 ❌");
+          return;
+        }
+
+        // 간단 검증: 값이 배열 또는 문자열/객체 배열이면 OK
+        const safe = {};
+        for(const k of Object.keys(parsed)){
+          safe[k] = normalizeList(parsed[k]);
+        }
+
+        saveAll(safe);
+        alert("가져오기 완료 ✅");
+        renderTaskList();
+        render();
+      }catch(e){
+        alert("JSON 파싱 실패 ❌\n데이터가 깨졌거나 형식이 다름");
+      }
+    }
+
+    // ✅ 상단 버튼들
+    prevBtn.addEventListener("click", () => {
+      const d = new Date(state.viewDate);
+      d.setMonth(d.getMonth() - 1);
+      state.viewDate = d;
+      render();
+    });
+
+    nextBtn.addEventListener("click", () => {
+      const d = new Date(state.viewDate);
+      d.setMonth(d.getMonth() + 1);
+      state.viewDate = d;
+      render();
+    });
+
+    todayBtn.addEventListener("click", () => {
+      state.viewDate = new Date();
+      render();
+    });
+
+    closeBtn.addEventListener("click", closeModal);
+
+    modalBack.addEventListener("click", (e) => {
+      if(e.target === modalBack) closeModal();
+    });
+
+    taskInput.addEventListener("keydown", (e) => {
+      if(e.key === "Enter") addTask();
+      if(e.key === "Escape") closeModal();
+    });
+
+    addBtn.addEventListener("click", addTask);
+
+    // ✅ 완료 숨김 토글
+    toggleHideDoneBtn.addEventListener("click", () => {
+      state.hideDone = !state.hideDone;
+      updateHideDoneBtnUI();
+      state.editingIndex = null;
+      renderTaskList();
+    });
+
+    // ✅ 백업 버튼
+    exportBtn.addEventListener("click", exportData);
+    importBtn.addEventListener("click", importData);
+
+    render();
+  </script>
+</body>
+</html>
