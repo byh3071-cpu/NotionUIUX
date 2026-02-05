@@ -5,7 +5,7 @@
     { "source": "/embed/clock", "destination": "/embed/clock.html" },
     { "source": "/embed/calendar", "destination": "/embed/calendar.html" },
     { "source": "/embed/weather", "destination": "/embed/weather.html" },
-    { "source": "/embed/pomodoro", "destination": "/embed/pomodoro.html" },
+    { "source": "/embed/pomodoro", "destination": "/embed/pomodomo.html" },
     { "source": "/embed/todo", "destination": "/embed/todo.html" }
   ]
 }

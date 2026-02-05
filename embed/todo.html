@@ -238,13 +238,6 @@ function getPrevDayISO(iso) {
           return false;
         });
 
-                    console.log("[SYNC]", {
-                      inFlight,
-                      today,
-                      serverCount: serverTasks.length,
-                      zombieCount: zombies.length,
-                      locals: globalTasks.map(t => ({ id: t.id, synced: t.isSynced, date: t.date, text: t.text }))
-                    });
                 
                 // 3. 합체 및 렌더링
                 globalTasks = [...serverTasks, ...zombies];
