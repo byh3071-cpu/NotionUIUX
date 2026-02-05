@@ -135,6 +135,8 @@
       .modalBack{ position:absolute; inset:0; background: rgba(0,0,0,.55); display:none; align-items:center; justify-content:center; padding:10px; z-index:50; }
       .modalBack.show{ display:flex; }
       .modal{ width: 100%; max-width: 340px; height: 350px; background: #0e1016; border: 2px solid var(--line2); display:flex; flex-direction:column; overflow:hidden; }
+      .modalTaskList{ -ms-overflow-style:none; scrollbar-width:none; }
+      .modalTaskList::-webkit-scrollbar{ display:none; }
     </style>
   </head>
   
@@ -173,7 +175,7 @@
               <input type="text" id="modalTaskInput" placeholder="할 일 입력 후 Enter" style="flex:1; height:32px; border:2px solid var(--line2); background:#0b0c10; color:var(--text); padding:0 8px; font-size:10px; outline:none;" maxlength="60">
               <button id="modalAddBtn" style="width:60px; height:32px; border:2px solid var(--line2); background:#0e1016; color:var(--text); cursor:pointer; font-size:9px;">추가</button>
             </div>
-            <div id="taskList" style="padding:10px; overflow-y:auto; flex:1; font-size:10px; min-height:0;"></div>
+            <div id="taskList" class="modalTaskList" style="padding:10px; overflow-y:auto; flex:1; font-size:10px; min-height:0;"></div>
           </div>
         </div>
       </div>
