@@ -767,7 +767,15 @@
 
     function preventScrollOnFocus(el) {
         if (!el) return;
-        const handler = (e) => { e.preventDefault(); el.focus({ preventScroll: true }); };
+        const listEl = document.getElementById("list");
+        const handler = (e) => {
+            e.preventDefault();
+            const scrollTop = listEl ? listEl.scrollTop : 0;
+            const restore = () => { if (listEl) listEl.scrollTop = scrollTop; };
+            el.focus({ preventScroll: true });
+            requestAnimationFrame(restore);
+            [0, 50, 100, 200, 400, 600].forEach(ms => setTimeout(restore, ms));
+        };
         el.addEventListener("mousedown", handler);
         el.addEventListener("touchstart", handler, { passive: false });
     }
