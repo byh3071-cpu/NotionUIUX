@@ -15,7 +15,7 @@
         input, select { background: transparent; border: none; color: #ffffff; font-family: 'Noto Sans KR', sans-serif; font-size: 12px; font-weight: 700; padding: 0 12px; outline: none; }
         input::placeholder { font-family: 'Silkscreen'; color: var(--accent-color); opacity: 0.5; font-size: 11px; font-weight: 400; }
         .input-title { flex: 1; }
-        .input-datetime { width: 180px; min-width: 0; border-left: 1px solid var(--border-color); }
+        .input-datetime { width: 44px; min-width: 44px; border-left: 1px solid var(--border-color); flex-shrink: 0; }
         .btn-add { width: 40px; background: transparent; border: none; border-left: 1px solid var(--border-color); color: var(--accent-color); cursor: pointer; font-size: 18px; font-family: 'Silkscreen'; }
         .btn-add:hover { background: rgba(130, 170, 255, 0.2); color: #fff; }
         .schedule-list { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
@@ -46,11 +46,10 @@
         .section-header:first-child { margin-top: 0; }
 
         /* 커스텀 날짜·시간 통합 피커 */
-        .dt-picker-wrap { position: relative; flex: 1; min-width: 0; max-width: 200px; border-left: 1px solid var(--border-color); }
-        .dt-picker-trigger { width: 100%; height: 100%; display: flex; align-items: center; padding: 0 10px; cursor: pointer; font-size: 11px; color: var(--text-color); border: none; background: transparent; font-family: inherit; }
+        .dt-picker-wrap { position: relative; border-left: 1px solid var(--border-color); }
+        .dt-picker-trigger { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer; border: none; background: transparent; font-family: inherit; }
         .dt-picker-trigger:hover { background: rgba(130, 170, 255, 0.1); }
-        .dt-picker-trigger .date-part { color: var(--accent-color); margin-right: 6px; }
-        .dt-picker-trigger .time-part { opacity: 0.9; }
+        .dt-picker-trigger svg { width: 20px; height: 20px; color: var(--accent-color); }
         .dt-picker-drop { position: absolute; top: 100%; right: 0; left: auto; margin-top: 2px; background: #0e1016; border: 2px solid var(--border-color); box-shadow: 0 4px 20px rgba(0,0,0,.5); z-index: 100; min-width: 240px; padding: 8px; }
         .dt-picker-drop.hidden { display: none; }
         .dt-picker-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
@@ -97,9 +96,8 @@
             <input type="text" id="inputTitle" class="input-title" placeholder="> schedule..." autocomplete="off" title="Enter로 추가">
             <div class="input-datetime dt-picker-wrap" id="dt-picker-wrap">
             <input type="hidden" id="inputStart" />
-            <button type="button" class="dt-picker-trigger" id="dt-picker-trigger" tabindex="0" title="날짜·시작 시간">
-                <span class="date-part" id="dt-display-date">날짜</span>
-                <span class="time-part" id="dt-display-time">시간</span>
+            <button type="button" class="dt-picker-trigger" id="dt-picker-trigger" tabindex="0" title="날짜·시간 선택">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
             </button>
             <div class="dt-picker-drop hidden" id="dt-picker-drop">
                 <div class="dt-picker-header">
@@ -533,8 +531,6 @@
     // ——— 커스텀 날짜·시간 피커 ———
     const dtTrigger = document.getElementById("dt-picker-trigger");
     const dtDrop = document.getElementById("dt-picker-drop");
-    const dtDisplayDate = document.getElementById("dt-display-date");
-    const dtDisplayTime = document.getElementById("dt-display-time");
     const dtMonthLabel = document.getElementById("dt-month-label");
     const dtCalendarGrid = document.getElementById("dt-calendar-grid");
     const dtPrevMonth = document.getElementById("dt-prev-month");
@@ -568,22 +564,13 @@
         inputStart.value = dtLocal;
         const endHhmm = dtToTimeEnd();
         inputTimeEnd.value = endHhmm;
-        const [datePart, timePart] = dtLocal.split("T");
-        if (datePart) {
-            const [y, m, d] = datePart.split("-");
-            dtDisplayDate.textContent = `${y}. ${parseInt(m,10)}. ${parseInt(d,10)}.`;
-        }
+        const [_, timePart] = dtLocal.split("T");
         const [h, m] = (timePart || "00:00").split(":");
         const hh = parseInt(h, 10) || 0;
-        const prefix = hh < 12 ? "오전" : "오후";
-        dtAmpm.textContent = prefix;
+        dtAmpm.textContent = hh < 12 ? "오전" : "오후";
         const [he, me] = endHhmm.split(":");
         const hhe = parseInt(he, 10) || 0;
-        const prefixEnd = hhe < 12 ? "오전" : "오후";
-        dtAmpmEnd.textContent = prefixEnd;
-        const startStr = `${prefix} ${String(hh).padStart(2, "0")}:${String(m || "00").padStart(2, "0")}`;
-        const endStr = `${prefixEnd} ${String(hhe).padStart(2, "0")}:${String(me || "00").padStart(2, "0")}`;
-        dtDisplayTime.textContent = startStr === endStr ? startStr : `${startStr} ~ ${endStr}`;
+        dtAmpmEnd.textContent = hhe < 12 ? "오전" : "오후";
     }
     function dtRenderCalendar() {
         dtMonthLabel.textContent = `${viewYear}년 ${viewMonth + 1}월`;
