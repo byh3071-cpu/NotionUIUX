@@ -469,6 +469,7 @@
                     };
                     div.querySelector("#editEventHour")?.addEventListener("input", updateEditAmpm);
                     div.querySelector("#editEventHourEnd")?.addEventListener("input", updateEditAmpm);
+                    [div.querySelector("#editEventHour"), div.querySelector("#editEventMin"), div.querySelector("#editEventHourEnd"), div.querySelector("#editEventMinEnd")].forEach(preventScrollOnFocus);
                     setTimeout(() => {
                         const inp = document.getElementById("editEventInput");
                         if (inp) { inp.focus(); inp.select(); inp.onkeydown = (e) => { if (e.key==="Enter") saveEditEvent(); if (e.key==="Escape") cancelEditEvent(); }; }
@@ -764,6 +765,13 @@
     let viewYear = new Date().getFullYear();
     let viewMonth = new Date().getMonth();
 
+    function preventScrollOnFocus(el) {
+        if (!el) return;
+        const handler = (e) => { e.preventDefault(); el.focus({ preventScroll: true }); };
+        el.addEventListener("mousedown", handler);
+        el.addEventListener("touchstart", handler, { passive: false });
+    }
+
     function dtToDatetimeLocal() {
         const d = pickedDate || { y: new Date().getFullYear(), m: new Date().getMonth() + 1, d: new Date().getDate() };
         const h = Math.min(23, Math.max(0, parseInt(dtHour.value, 10) || 0));
@@ -853,6 +861,7 @@
     });
     dtHour.addEventListener("input", dtUpdateInputAndDisplay);
     dtMin.addEventListener("input", dtUpdateInputAndDisplay);
+    preventScrollOnFocus(dtHour); preventScrollOnFocus(dtMin); preventScrollOnFocus(dtHourEnd); preventScrollOnFocus(dtMinEnd);
     dtHour.addEventListener("change", () => { dtHour.value = Math.min(23, Math.max(0, parseInt(dtHour.value, 10) || 0)); dtUpdateInputAndDisplay(); });
     dtMin.addEventListener("change", () => { dtMin.value = Math.min(59, Math.max(0, parseInt(dtMin.value, 10) || 0)); dtUpdateInputAndDisplay(); });
     dtHourEnd.addEventListener("input", dtUpdateInputAndDisplay);
