@@ -78,15 +78,16 @@
         .edit-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box; }
         .edit-modal-overlay.hidden { display: none; }
         .edit-modal { background: #0e1016; border: 2px solid var(--border-color); width: 260px; max-width: 100%; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; }
-        .edit-modal-content { flex: 1; min-height: 0; padding: 8px 10px; overflow: hidden; }
+        .edit-modal-content { flex: 1; min-height: 0; padding: 8px 12px; overflow: hidden; display: flex; flex-direction: column; }
         .edit-modal-footer { flex-shrink: 0; padding: 8px 10px 10px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 8px; background: #0e1016; }
-        .edit-modal .edit-picker { padding: 6px; margin-top: 4px; }
-        .edit-modal .dt-picker-header { margin-bottom: 4px; }
-        .edit-modal .dt-picker-dow { margin-bottom: 2px; }
+        .edit-modal .edit-picker { padding: 8px 10px; margin-top: 4px; display: flex; flex-direction: column; }
+        .edit-modal .dt-picker-header { margin-bottom: 4px; width: 100%; }
+        .edit-modal .dt-picker-dow { margin-bottom: 2px; width: 100%; }
         .edit-modal .dt-picker-dow span { font-size: 7px; }
-        .edit-modal .dt-picker-grid { gap: 1px; }
+        .edit-modal .dt-picker-grid { gap: 1px; width: 100%; }
         .edit-modal .dt-picker-day { width: 20px; height: 20px; font-size: 9px; }
-        .edit-modal .dt-picker-time { margin-top: 6px; padding-top: 6px; gap: 4px; }
+        .edit-modal .dt-picker-time { margin-top: 6px; padding-top: 6px; gap: 4px; width: 100%; }
+        .edit-modal .dt-picker-time-row { display: flex; align-items: center; justify-content: center; gap: 6px; }
         .edit-modal .dt-picker-time input { width: 30px; padding: 2px 4px; font-size: 10px; }
         .edit-modal .dt-picker-nav-btn { width: 20px; height: 20px; font-size: 9px; }
         .edit-modal .dt-picker-month { font-size: 9px; min-width: 60px; }
