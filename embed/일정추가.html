@@ -16,7 +16,8 @@
         input::placeholder { font-family: 'Silkscreen'; color: var(--accent-color); opacity: 0.5; font-size: 11px; font-weight: 400; }
         .input-title { flex: 1; }
         .input-date { width: 110px; border-left: 1px solid var(--border-color); }
-        .input-time { width: 90px; border-left: 1px solid var(--border-color); }
+        .input-time { width: 70px; border-left: 1px solid var(--border-color); }
+        .input-time-end { width: 70px; border-left: 1px solid var(--border-color); }
         .btn-add { width: 40px; background: transparent; border: none; border-left: 1px solid var(--border-color); color: var(--accent-color); cursor: pointer; font-size: 18px; font-family: 'Silkscreen'; }
         .btn-add:hover { background: rgba(130, 170, 255, 0.2); color: #fff; }
         .schedule-list { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
@@ -51,7 +52,8 @@
         <div class="input-area">
             <input type="text" id="inputTitle" class="input-title" placeholder="> 일정 제목..." autocomplete="off" title="Enter로 추가">
             <input type="date" id="inputDate" class="input-date" title="날짜 선택">
-            <input type="time" id="inputTime" class="input-time" title="시간 선택 (선택)">
+            <input type="time" id="inputTimeStart" class="input-time" title="시작 시간 (24시간)" step="300">
+            <input type="time" id="inputTimeEnd" class="input-time-end" title="종료 시간 (24시간)" step="300">
             <button class="btn-add" onclick="addEvent()" title="일정 추가 (Enter)">+</button>
         </div>
         <div class="schedule-list" id="list"></div>
@@ -60,7 +62,8 @@
 <script>
     const inputTitle = document.getElementById("inputTitle");
     const inputDate = document.getElementById("inputDate");
-    const inputTime = document.getElementById("inputTime");
+    const inputTimeStart = document.getElementById("inputTimeStart");
+    const inputTimeEnd = document.getElementById("inputTimeEnd");
     const list = document.getElementById("list");
     const countDisplay = document.getElementById("event-count");
 
@@ -98,10 +101,36 @@
         return `${y}-${m}-${day}`;
     }
 
-    function formatTimeForDisplay(iso) {
+    /** 24시간 HH:mm → "오전 09:00" 또는 "오후 15:00" (오전 0~11시, 오후 12~23시) */
+    function formatTimeWithAmPm(hhmm) {
+        if (!hhmm) return "";
+        const [h, m] = hhmm.split(":").map(Number);
+        const hour = h ?? 0;
+        const prefix = hour < 12 ? "오전" : "오후";
+        return `${prefix} ${String(hour).padStart(2, "0")}:${String(m || 0).padStart(2, "0")}`;
+    }
+
+    /** ISO 문자열에서 HH:mm 추출 */
+    function extractHHmm(iso) {
         if (!iso) return "";
         const m = String(iso).match(/T(\d{2}:\d{2})/);
         return m ? m[1] : "";
+    }
+
+    /** 일정 시간 범위 표시: "오후 15:00~17:00" 또는 "오전 09:00~오후 15:00" (24시간 기준) */
+    function formatTimeRangeForDisplay(startISO, endISO) {
+        const startHhmm = extractHHmm(startISO);
+        const endHhmm = extractHHmm(endISO);
+        if (!startHhmm && !endHhmm) return "";
+        if (!endHhmm) return formatTimeWithAmPm(startHhmm);
+        const startH = parseInt(startHhmm.split(":")[0], 10);
+        const endH = parseInt(endHhmm.split(":")[0], 10);
+        const sameHalf = (startH < 12) === (endH < 12);
+        if (sameHalf) {
+            const prefix = startH < 12 ? "오전" : "오후";
+            return `${prefix} ${startHhmm}~${endHhmm}`;
+        }
+        return `${formatTimeWithAmPm(startHhmm)}~${formatTimeWithAmPm(endHhmm)}`;
     }
 
     function toISODateTime(dateStr, timeStr) {
@@ -193,7 +222,7 @@
             const div = document.createElement("div");
             div.className = `schedule-item ${String(ev.id || "").startsWith("temp-") || String(ev.id || "").startsWith("off-") ? "is-temp" : ""}`;
             const dateStr = String(ev.start || ev.date || "").slice(0,10) || today;
-            const timeStr = formatTimeForDisplay(ev.start);
+            const timeStr = formatTimeRangeForDisplay(ev.start, ev.end);
             const meta = timeStr ? `${dateStr} ${timeStr}` : dateStr;
             div.innerHTML = `
                 <div class="schedule-left">
@@ -230,9 +259,12 @@
         if (!title) return;
 
         const dateStr = inputDate.value || getTodayInput();
-        const timeStr = inputTime.value || "";
-        const startISO = toISODateTime(dateStr, timeStr || "00:00");
+        const timeStart = inputTimeStart.value || "";
+        const timeEnd = inputTimeEnd.value || "";
+        const startISO = toISODateTime(dateStr, timeStart || "00:00");
         if (!startISO) return;
+
+        const endISO = (timeStart || timeEnd) ? toISODateTime(dateStr, timeEnd || timeStart) : null;
 
         const today = getTodayISO();
         const newId = OFFLINE_MODE ? 'off-' + Date.now() : 'temp-' + Date.now();
@@ -240,7 +272,7 @@
             id: newId,
             title,
             start: startISO,
-            end: timeStr ? startISO : null,
+            end: endISO,
             date: dateStr,
             isSynced: OFFLINE_MODE,
             pending: !OFFLINE_MODE
@@ -258,7 +290,8 @@
         saveLocalEvents();
         inputTitle.value = "";
         inputDate.value = getTodayInput();
-        inputTime.value = "";
+        inputTimeStart.value = "";
+        inputTimeEnd.value = "";
         renderList();
 
         if (OFFLINE_MODE) {
@@ -271,7 +304,7 @@
             const res = await fetch('/api/notion', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'createEvent', title, start: startISO, end: timeStr ? startISO : null })
+                body: JSON.stringify({ action: 'createEvent', title, start: startISO, end: endISO })
             });
 
             if (!res.ok) {
