@@ -74,6 +74,10 @@
         .dt-picker-time input { width: 36px; padding: 4px 6px; font-size: 11px; color: var(--text-color); background: #0b0c10; border: 1px solid var(--border-color); }
         .dt-picker-now { margin-left: auto; font-size: 9px; color: var(--accent-color); cursor: pointer; }
         .dt-picker-now:hover { text-decoration: underline; }
+        /* 편집 모달 - 스크롤 영향 없음 */
+        .edit-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
+        .edit-modal-overlay.hidden { display: none; }
+        .edit-modal { background: #0e1016; border: 2px solid var(--border-color); max-width: 280px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 12px; }
     </style>
 </head>
 <body>
@@ -137,6 +141,9 @@
             <button class="btn-add" onclick="addEvent()" title="schedule (Enter)">+</button>
         </div>
         <div class="schedule-list" id="list"></div>
+    </div>
+    <div class="edit-modal-overlay hidden" id="editModalOverlay">
+        <div class="edit-modal" id="editModal" onclick="event.stopPropagation()"></div>
     </div>
 
 <script>
@@ -404,80 +411,6 @@
             evs.forEach(ev => {
                 const evDateStr = String(ev.start || ev.date || "").slice(0,10) || today;
                 const isPast = evDateStr < today;
-                const isEditing = editingEventId === ev.id;
-                if (isEditing) {
-                    const dateVal = evDateStr || today;
-                    const startHhmm = extractHHmm(ev.start) || "00:00";
-                    const endHhmm = extractHHmm(ev.end) || startHhmm;
-                    const [sh, sm] = editTimeOverride ? [editTimeOverride.h, editTimeOverride.m] : startHhmm.split(":").map(n => parseInt(n, 10) || 0);
-                    const [eh, em] = editTimeOverride ? [editTimeOverride.he, editTimeOverride.me] : endHhmm.split(":").map(n => parseInt(n, 10) || 0);
-                    if (editTimeOverride) editTimeOverride = null;
-                    const gridHtml = getEditCalendarGridHTML();
-                    const div = document.createElement("div");
-                    div.className = `schedule-item is-editing ${isPast ? "is-past" : ""}`;
-                    div.innerHTML = `
-                        <div class="schedule-left">
-                            <div class="schedule-marker"></div>
-                            <input type="text" id="editEventInput" value="${esc(ev.title || "")}" maxlength="80" style="flex:1; background:#0b0c10; border:1px solid var(--border-color); color:var(--text-color); padding:6px 8px; font-size:12px; outline:none;">
-                        </div>
-                        <div class="edit-picker">
-                            <div class="dt-picker-header">
-                                <div class="dt-picker-nav">
-                                    <button type="button" class="dt-picker-nav-btn" onclick="editPrevMonth(); return false;">‹</button>
-                                    <span class="dt-picker-month">${editViewYear}년 ${editViewMonth + 1}월</span>
-                                    <button type="button" class="dt-picker-nav-btn" onclick="editNextMonth(); return false;">›</button>
-                                </div>
-                                <span class="dt-picker-now" onclick="editNow(); return false;">지금</span>
-                            </div>
-                            <div class="dt-picker-dow">
-                                <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
-                            </div>
-                            <div class="dt-picker-grid" id="editCalendarGrid">${gridHtml}</div>
-                            <div class="dt-picker-time">
-                                <div class="dt-picker-time-row">
-                                    <label>시작 시간</label>
-                                    <input type="number" id="editEventHour" min="0" max="23" value="${sh}" />
-                                    <span>:</span>
-                                    <input type="number" id="editEventMin" min="0" max="59" value="${sm}" />
-                                    <span style="font-size: 9px; opacity: 0.8;" id="editEventAmpm">${sh < 12 ? "오전" : "오후"}</span>
-                                </div>
-                                <div class="dt-picker-time-row">
-                                    <label>종료 시간</label>
-                                    <input type="number" id="editEventHourEnd" min="0" max="23" value="${eh}" />
-                                    <span>:</span>
-                                    <input type="number" id="editEventMinEnd" min="0" max="59" value="${em}" />
-                                    <span style="font-size: 9px; opacity: 0.8;" id="editEventAmpmEnd">${eh < 12 ? "오전" : "오후"}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="schedule-item-actions" style="justify-content:flex-end;">
-                            <button type="button" class="btn-action btn-edit" title="저장" onclick="event.stopPropagation(); saveEditEvent(); return false;">✔</button>
-                            <button type="button" class="btn-action btn-delete" title="취소" onclick="event.stopPropagation(); cancelEditEvent(); return false;">↩</button>
-                        </div>
-                    `;
-                    list.appendChild(div);
-                    div.querySelector("#editCalendarGrid").querySelectorAll(".dt-picker-day").forEach(btn => {
-                        btn.addEventListener("click", () => {
-                            editPickedDate = { y: +btn.dataset.y, m: +(btn.dataset.m) + 1, d: +btn.dataset.d };
-                            renderList();
-                        });
-                    });
-                    const updateEditAmpm = () => {
-                        const a = document.getElementById("editEventAmpm"); const ae = document.getElementById("editEventAmpmEnd");
-                        const h = parseInt(document.getElementById("editEventHour")?.value, 10) || 0;
-                        const he = parseInt(document.getElementById("editEventHourEnd")?.value, 10) || 0;
-                        if (a) a.textContent = h < 12 ? "오전" : "오후";
-                        if (ae) ae.textContent = he < 12 ? "오전" : "오후";
-                    };
-                    div.querySelector("#editEventHour")?.addEventListener("input", updateEditAmpm);
-                    div.querySelector("#editEventHourEnd")?.addEventListener("input", updateEditAmpm);
-                    [div.querySelector("#editEventHour"), div.querySelector("#editEventMin"), div.querySelector("#editEventHourEnd"), div.querySelector("#editEventMinEnd")].forEach(preventScrollOnFocus);
-                    setTimeout(() => {
-                        const inp = document.getElementById("editEventInput");
-                        if (inp) { inp.focus(); inp.select(); inp.onkeydown = (e) => { if (e.key==="Enter") saveEditEvent(); if (e.key==="Escape") cancelEditEvent(); }; }
-                    }, 0);
-                    return;
-                }
                 const div = document.createElement("div");
                 div.className = `schedule-item ${String(ev.id || "").startsWith("temp-") || String(ev.id || "").startsWith("off-") ? "is-temp" : ""} ${isPast ? "is-past" : ""}`;
                 const timeStr = formatTimeRangeForDisplay(ev.start, ev.end);
@@ -617,15 +550,105 @@
             editViewMonth = (m || new Date().getMonth() + 1) - 1;
             editPickedDate = { y: editViewYear, m: editViewMonth + 1, d: d || new Date().getDate() };
         }
+        openEditModal(ev);
         renderList();
+    }
+    function openEditModal(ev) {
+        const modal = document.getElementById("editModal");
+        const overlay = document.getElementById("editModalOverlay");
+        if (!modal || !overlay || !ev) return;
+        const esc = (s) => String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
+        const startHhmm = extractHHmm(ev.start) || "00:00";
+        const endHhmm = extractHHmm(ev.end) || startHhmm;
+        const [sh, sm] = editTimeOverride ? [editTimeOverride.h, editTimeOverride.m] : startHhmm.split(":").map(n => parseInt(n, 10) || 0);
+        const [eh, em] = editTimeOverride ? [editTimeOverride.he, editTimeOverride.me] : endHhmm.split(":").map(n => parseInt(n, 10) || 0);
+        if (editTimeOverride) editTimeOverride = null;
+        const gridHtml = getEditCalendarGridHTML();
+        modal.innerHTML = `
+            <div style="margin-bottom:10px;">
+                <input type="text" id="editEventInput" value="${esc(ev.title || "")}" maxlength="80" style="width:100%; background:#0b0c10; border:1px solid var(--border-color); color:var(--text-color); padding:8px 10px; font-size:12px; outline:none;">
+            </div>
+            <div class="edit-picker">
+                <div class="dt-picker-header">
+                    <div class="dt-picker-nav">
+                        <button type="button" class="dt-picker-nav-btn" onclick="editPrevMonth(); redrawEditModal(); return false;">‹</button>
+                        <span class="dt-picker-month">${editViewYear}년 ${editViewMonth + 1}월</span>
+                        <button type="button" class="dt-picker-nav-btn" onclick="editNextMonth(); redrawEditModal(); return false;">›</button>
+                    </div>
+                    <span class="dt-picker-now" onclick="editNow(); redrawEditModal(); return false;">지금</span>
+                </div>
+                <div class="dt-picker-dow">
+                    <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
+                </div>
+                <div class="dt-picker-grid" id="editCalendarGrid">${gridHtml}</div>
+                <div class="dt-picker-time">
+                    <div class="dt-picker-time-row">
+                        <label>시작 시간</label>
+                        <input type="number" id="editEventHour" min="0" max="23" value="${sh}" />
+                        <span>:</span>
+                        <input type="number" id="editEventMin" min="0" max="59" value="${sm}" />
+                        <span style="font-size: 9px; opacity: 0.8;" id="editEventAmpm">${sh < 12 ? "오전" : "오후"}</span>
+                    </div>
+                    <div class="dt-picker-time-row">
+                        <label>종료 시간</label>
+                        <input type="number" id="editEventHourEnd" min="0" max="23" value="${eh}" />
+                        <span>:</span>
+                        <input type="number" id="editEventMinEnd" min="0" max="59" value="${em}" />
+                        <span style="font-size: 9px; opacity: 0.8;" id="editEventAmpmEnd">${eh < 12 ? "오전" : "오후"}</span>
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
+                <button type="button" class="btn-action btn-delete" onclick="cancelEditEvent(); return false;">취소</button>
+                <button type="button" class="btn-action btn-edit" onclick="saveEditEvent(); return false;">저장</button>
+            </div>
+        `;
+        modal.querySelector("#editCalendarGrid").querySelectorAll(".dt-picker-day").forEach(btn => {
+            btn.addEventListener("click", () => {
+                editPickedDate = { y: +btn.dataset.y, m: +(btn.dataset.m) + 1, d: +btn.dataset.d };
+                redrawEditModal();
+            });
+        });
+        const updateEditAmpm = () => {
+            const a = document.getElementById("editEventAmpm"); const ae = document.getElementById("editEventAmpmEnd");
+            const h = parseInt(document.getElementById("editEventHour")?.value, 10) || 0;
+            const he = parseInt(document.getElementById("editEventHourEnd")?.value, 10) || 0;
+            if (a) a.textContent = h < 12 ? "오전" : "오후";
+            if (ae) ae.textContent = he < 12 ? "오전" : "오후";
+        };
+        modal.querySelector("#editEventHour")?.addEventListener("input", updateEditAmpm);
+        modal.querySelector("#editEventHourEnd")?.addEventListener("input", updateEditAmpm);
+        modal.querySelector("#editEventInput")?.addEventListener("keydown", (e) => { if (e.key==="Enter") saveEditEvent(); if (e.key==="Escape") cancelEditEvent(); });
+        overlay.classList.remove("hidden");
+        overlay.onclick = (e) => { if (e.target === overlay) cancelEditEvent(); };
+        setTimeout(() => modal.querySelector("#editEventInput")?.focus(), 50);
+    }
+    function redrawEditModal() {
+        const ev = globalEvents.find(e => e.id === editingEventId);
+        if (!ev) return;
+        const inp = document.getElementById("editEventInput");
+        const h = document.getElementById("editEventHour"); const m = document.getElementById("editEventMin");
+        const he = document.getElementById("editEventHourEnd"); const me = document.getElementById("editEventMinEnd");
+        if (inp) ev.title = inp.value;
+        if (h != null && m != null) {
+            const pd = editPickedDate || { y: new Date().getFullYear(), m: new Date().getMonth() + 1, d: new Date().getDate() };
+            const dateStr = `${pd.y}-${String(pd.m).padStart(2,"0")}-${String(pd.d).padStart(2,"0")}`;
+            ev.start = toISODateTime(dateStr, `${String(parseInt(h.value,10)||0).padStart(2,"0")}:${String(parseInt(m.value,10)||0).padStart(2,"0")}`);
+        }
+        if (he != null && me != null) {
+            const pd = editPickedDate || { y: new Date().getFullYear(), m: new Date().getMonth() + 1, d: new Date().getDate() };
+            const dateStr = `${pd.y}-${String(pd.m).padStart(2,"0")}-${String(pd.d).padStart(2,"0")}`;
+            ev.end = toISODateTime(dateStr, `${String(parseInt(he.value,10)||0).padStart(2,"0")}:${String(parseInt(me.value,10)||0).padStart(2,"0")}`);
+        }
+        openEditModal(ev);
     }
     function editPrevMonth() {
         editViewMonth--; if (editViewMonth < 0) { editViewMonth = 11; editViewYear--; }
-        renderList();
+        redrawEditModal();
     }
     function editNextMonth() {
         editViewMonth++; if (editViewMonth > 11) { editViewMonth = 0; editViewYear++; }
-        renderList();
+        redrawEditModal();
     }
     function editNow() {
         const n = new Date();
@@ -635,9 +658,10 @@
         const endH = Math.min(23, n.getHours() + Math.floor(endMin / 60));
         const endM = endH >= 23 ? 59 : endMin % 60;
         editTimeOverride = { h: n.getHours(), m: n.getMinutes(), he: endH, me: endM };
-        renderList();
+        redrawEditModal();
     }
     function cancelEditEvent() {
+        document.getElementById("editModalOverlay")?.classList.add("hidden");
         editingEventId = null;
         editTimeOverride = null;
         renderList();
@@ -667,6 +691,7 @@
         ev.end = endHhmm ? newEndISO : null;
         ev.date = dateStr;
         if (OFFLINE_MODE) {
+            document.getElementById("editModalOverlay")?.classList.add("hidden");
             saveLocalEvents();
             editingEventId = null;
             renderList();
@@ -683,6 +708,7 @@
             (pendingMap[dateStr] ||= []).unshift(ev);
             savePendingEventsMap(pendingMap);
             globalEvents.sort((a, b) => String(a.start || "").localeCompare(String(b.start || "")));
+            document.getElementById("editModalOverlay")?.classList.add("hidden");
             editingEventId = null;
             saveLocalEvents();
             renderList();
@@ -706,6 +732,7 @@
             }
         } catch (e) { console.error(e); setSyncStatus("네트워크 오류"); }
         finally { inFlight--; }
+        document.getElementById("editModalOverlay")?.classList.add("hidden");
         editingEventId = null;
         editTimeOverride = null;
         renderList();
