@@ -84,8 +84,9 @@
     };
 
     const PENDING_EVENTS_KEY = "missionlog_pendingEvents_v1";
-    function loadPendingEvents(){ try{ return JSON.parse(localStorage.getItem(PENDING_EVENTS_KEY)) || []; }catch(_){ return []; } }
-    function savePendingEvents(arr){ localStorage.setItem(PENDING_EVENTS_KEY, JSON.stringify(arr)); }
+    function loadPendingEventsMap(){ try{ const o = JSON.parse(localStorage.getItem(PENDING_EVENTS_KEY) || "{}"); return (o && typeof o === "object") ? o : {}; }catch(_){ return {}; } }
+    function savePendingEventsMap(obj){ localStorage.setItem(PENDING_EVENTS_KEY, JSON.stringify(obj)); }
+    function getAllPendingEvents(){ const m = loadPendingEventsMap(); return Object.values(m).flat().filter(Boolean); }
 
     const LOCAL_EVENTS_KEY = "missionlog_localEvents_v1";
 
@@ -191,13 +192,22 @@
                 end: e.end || ""
             }));
 
-            const pending = loadPendingEvents();
-            const pendingFiltered = pending.filter(p => !serverEvents.some(s =>
-                (p.id && s.id && p.id === s.id) ||
-                (String(p.start || "").slice(0,16) === String(s.start || "").slice(0,16) && (p.title || "") === (s.title || ""))
-            ));
-            savePendingEvents(pendingFiltered);
-
+            const pendingMap = loadPendingEventsMap();
+            const serverByISO = {};
+            serverEvents.forEach(e => {
+                const iso = String(e.start || "").slice(0, 10);
+                if (iso) (serverByISO[iso] ||= []).push(e);
+            });
+            for (const iso of Object.keys(pendingMap)) {
+                const arr = Array.isArray(pendingMap[iso]) ? pendingMap[iso] : [];
+                pendingMap[iso] = arr.filter(p => !(serverByISO[iso] || []).some(s =>
+                    (p.id && s.id && p.id === s.id) ||
+                    (String(p.start || "").slice(0,16) === String(s.start || "").slice(0,16) && (p.title || "") === (s.title || ""))
+                ));
+                if (pendingMap[iso].length === 0) delete pendingMap[iso];
+            }
+            savePendingEventsMap(pendingMap);
+            const pendingFiltered = getAllPendingEvents();
             globalEvents = [...serverEvents, ...pendingFiltered].sort((a, b) => String(a.start || "").localeCompare(String(b.start || "")));
             saveLocalEvents();
             setSyncStatus("완료");
@@ -281,9 +291,9 @@
         globalEvents.sort((a, b) => String(a.start || "").localeCompare(String(b.start || "")));
 
         if (!OFFLINE_MODE) {
-            const pending = loadPendingEvents();
-            pending.push(newEvent);
-            savePendingEvents(pending);
+            const pendingMap = loadPendingEventsMap();
+            (pendingMap[dateStr] ||= []).unshift(newEvent);
+            savePendingEventsMap(pendingMap);
         }
 
         bc.postMessage({ type: "EVENT_ADDED", event: newEvent });
@@ -323,10 +333,12 @@
                 target.id = data.id;
                 target.isSynced = true;
                 target.pending = true;
-                const pending = loadPendingEvents();
-                const idx = pending.findIndex(p => p.id === newId);
-                if (idx >= 0) pending[idx] = { ...pending[idx], id: data.id };
-                savePendingEvents(pending);
+                const pendingMap = loadPendingEventsMap();
+                for (const iso of Object.keys(pendingMap)) {
+                    const idx = (pendingMap[iso] || []).findIndex(p => p.id === newId);
+                    if (idx >= 0) { pendingMap[iso][idx] = { ...pendingMap[iso][idx], id: data.id }; break; }
+                }
+                savePendingEventsMap(pendingMap);
                 saveLocalEvents();
                 renderList();
                 bc.postMessage({ type: "EVENTS_UPDATED" });
@@ -343,8 +355,12 @@
         if (!target) return;
 
         globalEvents = globalEvents.filter(e => e.id !== id);
-        const pending = loadPendingEvents().filter(p => p.id !== id);
-        savePendingEvents(pending);
+        const pendingMap = loadPendingEventsMap();
+        for (const iso of Object.keys(pendingMap)) {
+            pendingMap[iso] = (pendingMap[iso] || []).filter(p => p.id !== id);
+            if (pendingMap[iso].length === 0) delete pendingMap[iso];
+        }
+        savePendingEventsMap(pendingMap);
         saveLocalEvents();
         renderList();
         bc.postMessage({ type: "EVENTS_UPDATED" });
