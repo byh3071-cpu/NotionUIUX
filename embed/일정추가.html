@@ -38,6 +38,14 @@
         .btn-delete:hover { color: #ff5370; border-color: #ff5370; }
         .schedule-item-actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
         .schedule-item.is-temp { opacity: 0.7; border-style: dashed; }
+        .schedule-item.is-past { opacity: 0.6; }
+        .schedule-item.is-past .text-content { color: #888; }
+        .filter-bar { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-bottom: 1px solid var(--border-color); background: rgba(59, 66, 97, 0.15); flex-shrink: 0; }
+        .filter-chip { padding: 4px 8px; font-size: 9px; border: 1px solid var(--border-color); background: transparent; color: var(--text-color); cursor: pointer; font-family: 'Silkscreen'; }
+        .filter-chip:hover { border-color: var(--accent-color); }
+        .filter-chip.active { border-color: var(--accent-color); color: var(--accent-color); background: rgba(130, 170, 255, 0.15); }
+        .section-header { font-size: 10px; color: var(--accent-color); opacity: 0.9; padding: 6px 10px 4px; border-bottom: 1px dashed var(--border-color); margin-top: 8px; }
+        .section-header:first-child { margin-top: 0; }
     </style>
 </head>
 <body>
@@ -48,6 +56,16 @@
                 <span id="event-count">LOADING...</span>
             </span>
             <span id="syncStatus" style="font-size:8px; opacity:0.8;" title="동기화 상태">—</span>
+        </div>
+        <div class="filter-bar">
+            <button class="filter-chip active" data-filter="today">오늘</button>
+            <button class="filter-chip" data-filter="7day">7일</button>
+            <button class="filter-chip" data-filter="30day">한달</button>
+            <button class="filter-chip" data-filter="all">전체</button>
+            <label style="margin-left:auto; font-size:9px; cursor:pointer; display:flex; align-items:center; gap:4px;">
+                <input type="checkbox" id="showPast" style="width:12px; height:12px; accent-color:var(--accent-color);">
+                지난 일정
+            </label>
         </div>
         <div class="input-area">
             <input type="text" id="inputTitle" class="input-title" placeholder="> 일정 제목..." autocomplete="off" title="Enter로 추가">
@@ -65,6 +83,20 @@
     const inputTimeStart = document.getElementById("inputTimeStart");
     const inputTimeEnd = document.getElementById("inputTimeEnd");
     const list = document.getElementById("list");
+    const showPastCheck = document.getElementById("showPast");
+
+    let viewFilter = "today";
+
+    function getDateOffset(iso, days) {
+        const datePart = String(iso || "").slice(0, 10);
+        const parts = datePart.split("-");
+        if (parts.length < 3) return getTodayISO();
+        const [y, m, d] = parts.map(Number);
+        const d2 = new Date(y, m - 1, d);
+        if (isNaN(d2.getTime())) return getTodayISO();
+        d2.setDate(d2.getDate() + days);
+        return d2.toLocaleDateString("sv-SE", { timeZone: "Asia/Seoul" });
+    }
     const countDisplay = document.getElementById("event-count");
 
     const OFFLINE_MODE = window.location.search.includes('offline=1');
@@ -124,8 +156,8 @@
         const endHhmm = extractHHmm(endISO);
         if (!startHhmm && !endHhmm) return "";
         if (!endHhmm) return formatTimeWithAmPm(startHhmm);
-        const startH = parseInt(startHhmm.split(":")[0], 10);
-        const endH = parseInt(endHhmm.split(":")[0], 10);
+        const startH = parseInt(startHhmm.split(":")[0], 10) || 0;
+        const endH = parseInt(endHhmm.split(":")[0], 10) || 0;
         const sameHalf = (startH < 12) === (endH < 12);
         if (sameHalf) {
             const prefix = startH < 12 ? "오전" : "오후";
@@ -184,7 +216,7 @@
                 body: JSON.stringify({ action: 'fetch', from, to })
             });
             const data = await res.json();
-            if (!res.ok || !data?.success) { setSyncStatus("실패"); return; }
+            if (!res.ok || !data?.success) { setSyncStatus("실패"); renderList(); return; }
 
             const serverEvents = (data.events || []).map(e => ({
                 ...e,
@@ -215,41 +247,80 @@
         } catch (err) {
             console.error(err);
             setSyncStatus("실패");
+            renderList();
         }
     }
 
     function renderList() {
         list.innerHTML = "";
         const esc = (s) => String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
-        const escId = (id) => String(id || "").replace(/'/g, "\\'");
+        const escId = (id) => String(id || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
 
         const today = getTodayISO();
-        const displayEvents = globalEvents
-            .filter(e => String(e.start || e.date || "").slice(0,10) >= today)
-            .slice(0, 50);
+        const showPast = showPastCheck ? showPastCheck.checked : false;
 
+        let filtered = globalEvents.filter(e => {
+            const dateStr = String(e.start || e.date || "").slice(0, 10);
+            if (!dateStr) return false;
+            const isPast = dateStr < today;
+            if (!showPast && isPast) return false;
+            if (viewFilter === "today") return dateStr === today;
+            if (viewFilter === "7day") return dateStr >= today && dateStr <= getDateOffset(today, 7);
+            if (viewFilter === "30day") return dateStr >= today && dateStr <= getDateOffset(today, 30);
+            return true;
+        }).sort((a, b) => String(a.start || "").localeCompare(String(b.start || "")));
+
+        const displayEvents = filtered.slice(0, 80);
+
+        const groupByDate = {};
         displayEvents.forEach(ev => {
-            const div = document.createElement("div");
-            div.className = `schedule-item ${String(ev.id || "").startsWith("temp-") || String(ev.id || "").startsWith("off-") ? "is-temp" : ""}`;
-            const dateStr = String(ev.start || ev.date || "").slice(0,10) || today;
-            const timeStr = formatTimeRangeForDisplay(ev.start, ev.end);
-            const meta = timeStr ? `${dateStr} ${timeStr}` : dateStr;
-            div.innerHTML = `
-                <div class="schedule-left">
-                    <div class="schedule-marker"></div>
-                    <div>
-                        <span class="text-content">${esc(ev.title || "일정")}</span>
-                        <div class="text-meta">${meta}</div>
-                    </div>
-                </div>
-                <div class="schedule-item-actions">
-                    <button type="button" class="btn-action btn-delete" title="삭제" onclick="event.stopPropagation(); deleteEvent('${escId(ev.id)}'); return false;">X</button>
-                </div>
-            `;
-            list.appendChild(div);
+            const ds = String(ev.start || ev.date || "").slice(0, 10) || today;
+            (groupByDate[ds] ||= []).push(ev);
         });
 
-        countDisplay.innerText = `${displayEvents.length} SCHEDULED`;
+        const labels = { [today]: "오늘" };
+        const tomorrow = getDateOffset(today, 1);
+        labels[tomorrow] = "내일";
+
+        const sortedDates = Object.keys(groupByDate).sort();
+        sortedDates.forEach(dateStr => {
+            const evs = groupByDate[dateStr];
+            const isPastDate = dateStr < today;
+            const label = labels[dateStr] || dateStr;
+            if (isPastDate && sortedDates.indexOf(dateStr) === sortedDates.findIndex(d => d < today)) {
+                const pastHeader = document.createElement("div");
+                pastHeader.className = "section-header";
+                pastHeader.textContent = "지난 일정";
+                list.appendChild(pastHeader);
+            }
+            const header = document.createElement("div");
+            header.className = "section-header";
+            header.textContent = label;
+            list.appendChild(header);
+            evs.forEach(ev => {
+                const evDateStr = String(ev.start || ev.date || "").slice(0,10) || today;
+                const isPast = evDateStr < today;
+                const div = document.createElement("div");
+                div.className = `schedule-item ${String(ev.id || "").startsWith("temp-") || String(ev.id || "").startsWith("off-") ? "is-temp" : ""} ${isPast ? "is-past" : ""}`;
+                const timeStr = formatTimeRangeForDisplay(ev.start, ev.end);
+                const meta = timeStr ? `${evDateStr} ${timeStr}` : evDateStr;
+                div.innerHTML = `
+                    <div class="schedule-left">
+                        <div class="schedule-marker"></div>
+                        <div>
+                            <span class="text-content">${esc(ev.title || "일정")}</span>
+                            <div class="text-meta">${meta}</div>
+                        </div>
+                    </div>
+                    <div class="schedule-item-actions">
+                        <button type="button" class="btn-action btn-delete" title="삭제" onclick="event.stopPropagation(); deleteEvent('${escId(ev.id)}'); return false;">X</button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        });
+
+        if (countDisplay) countDisplay.innerText = `${displayEvents.length} SCHEDULED`;
 
         if (displayEvents.length === 0) {
             const empty = document.createElement("div");
@@ -319,12 +390,16 @@
 
             if (!res.ok) {
                 console.error("CREATE EVENT HTTP error:", res.status);
+                setSyncStatus("생성 실패");
+                renderList();
                 return;
             }
 
             const data = await res.json().catch(() => null);
             if (!data?.success || !data?.id) {
                 console.error("CREATE EVENT payload error:", data);
+                setSyncStatus("생성 실패");
+                renderList();
                 return;
             }
 
@@ -345,6 +420,8 @@
             }
         } catch (e) {
             console.error(e);
+            setSyncStatus("네트워크 오류");
+            renderList();
         } finally {
             inFlight--;
         }
@@ -352,8 +429,6 @@
 
     async function deleteEvent(id) {
         const target = globalEvents.find(e => e.id === id);
-        if (!target) return;
-
         globalEvents = globalEvents.filter(e => e.id !== id);
         const pendingMap = loadPendingEventsMap();
         for (const iso of Object.keys(pendingMap)) {
@@ -366,6 +441,7 @@
         bc.postMessage({ type: "EVENTS_UPDATED" });
 
         if (OFFLINE_MODE) return;
+        if (!target) return;
         if (!String(id).startsWith('temp-') && !String(id).startsWith('off-')) {
             try {
                 await fetch('/api/notion', {
@@ -378,6 +454,15 @@
     }
 
     inputTitle.addEventListener("keypress", (e) => { if (e.key === "Enter") addEvent(); });
+
+    document.querySelectorAll(".filter-chip").forEach(btn => {
+        btn.addEventListener("click", () => {
+            viewFilter = btn.dataset.filter;
+            document.querySelectorAll(".filter-chip").forEach(b => b.classList.toggle("active", b === btn));
+            renderList();
+        });
+    });
+    if (showPastCheck) showPastCheck.addEventListener("change", renderList);
 
     if (OFFLINE_MODE) document.getElementById("offlineBadge").style.display = "inline";
     inputDate.value = getTodayInput();

@@ -359,8 +359,8 @@ function prunePendingEventsByServer(serverEventsByISO){
       const serverArr = Array.isArray(serverEventsByISO[iso]) ? serverEventsByISO[iso] : [];
 
       pending[iso] = arr.filter(p => !serverArr.some(s =>
-        (p.id && s.id && p.id === s.id) ||
-        (String(p.start).slice(0,16) === String(s.start).slice(0,16) && (p.title || "") === (s.title || ""))
+        (p?.id && s?.id && p.id === s.id) ||
+        (String(p?.start || "").slice(0,16) === String(s?.start || "").slice(0,16) && (p?.title || "") === (s?.title || ""))
       ));
       if (pending[iso].length === 0) delete pending[iso];
     }
