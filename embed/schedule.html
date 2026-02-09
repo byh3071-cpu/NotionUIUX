@@ -15,9 +15,7 @@
         input, select { background: transparent; border: none; color: #ffffff; font-family: 'Noto Sans KR', sans-serif; font-size: 12px; font-weight: 700; padding: 0 12px; outline: none; }
         input::placeholder { font-family: 'Silkscreen'; color: var(--accent-color); opacity: 0.5; font-size: 11px; font-weight: 400; }
         .input-title { flex: 1; }
-        .input-date { width: 110px; border-left: 1px solid var(--border-color); }
-        .input-time { width: 70px; border-left: 1px solid var(--border-color); }
-        .input-time-end { width: 70px; border-left: 1px solid var(--border-color); }
+        .input-datetime { width: 180px; min-width: 0; border-left: 1px solid var(--border-color); }
         .btn-add { width: 40px; background: transparent; border: none; border-left: 1px solid var(--border-color); color: var(--accent-color); cursor: pointer; font-size: 18px; font-family: 'Silkscreen'; }
         .btn-add:hover { background: rgba(130, 170, 255, 0.2); color: #fff; }
         .schedule-list { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
@@ -46,6 +44,34 @@
         .filter-chip.active { border-color: var(--accent-color); color: var(--accent-color); background: rgba(130, 170, 255, 0.15); }
         .section-header { font-size: 10px; color: var(--accent-color); opacity: 0.9; padding: 6px 10px 4px; border-bottom: 1px dashed var(--border-color); margin-top: 8px; }
         .section-header:first-child { margin-top: 0; }
+
+        /* 커스텀 날짜·시간 통합 피커 */
+        .dt-picker-wrap { position: relative; flex: 1; min-width: 0; max-width: 200px; border-left: 1px solid var(--border-color); }
+        .dt-picker-trigger { width: 100%; height: 100%; display: flex; align-items: center; padding: 0 10px; cursor: pointer; font-size: 11px; color: var(--text-color); border: none; background: transparent; font-family: inherit; }
+        .dt-picker-trigger:hover { background: rgba(130, 170, 255, 0.1); }
+        .dt-picker-trigger .date-part { color: var(--accent-color); margin-right: 6px; }
+        .dt-picker-trigger .time-part { opacity: 0.9; }
+        .dt-picker-drop { position: absolute; top: 100%; right: 0; left: auto; margin-top: 2px; background: #0e1016; border: 2px solid var(--border-color); box-shadow: 0 4px 20px rgba(0,0,0,.5); z-index: 100; min-width: 240px; padding: 8px; }
+        .dt-picker-drop.hidden { display: none; }
+        .dt-picker-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+        .dt-picker-nav { display: flex; gap: 4px; align-items: center; }
+        .dt-picker-nav-btn { width: 24px; height: 24px; border: 1px solid var(--border-color); background: #0b0c10; color: var(--text-color); cursor: pointer; font-size: 10px; display: flex; align-items: center; justify-content: center; }
+        .dt-picker-nav-btn:hover { border-color: var(--accent-color); }
+        .dt-picker-month { font-size: 10px; color: var(--text-color); min-width: 70px; text-align: center; }
+        .dt-picker-dow { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 4px; }
+        .dt-picker-dow span { font-size: 8px; color: var(--accent-color); text-align: center; opacity: 0.8; }
+        .dt-picker-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+        .dt-picker-day { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; border: 1px solid transparent; background: transparent; color: var(--text-color); }
+        .dt-picker-day:hover { border-color: var(--accent-color); background: rgba(130, 170, 255, 0.15); }
+        .dt-picker-day.other { opacity: 0.4; }
+        .dt-picker-day.today { border-color: var(--accent-color); font-weight: 700; }
+        .dt-picker-day.selected { background: var(--accent-color); color: #0b0c10; }
+        .dt-picker-time { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border-color); }
+        .dt-picker-time-row { display: flex; align-items: center; gap: 6px; }
+        .dt-picker-time label { font-size: 9px; color: var(--accent-color); min-width: 52px; }
+        .dt-picker-time input { width: 36px; padding: 4px 6px; font-size: 11px; color: var(--text-color); background: #0b0c10; border: 1px solid var(--border-color); }
+        .dt-picker-now { margin-left: auto; font-size: 9px; color: var(--accent-color); cursor: pointer; }
+        .dt-picker-now:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -69,9 +95,44 @@
         </div>
         <div class="input-area">
             <input type="text" id="inputTitle" class="input-title" placeholder="> schedule..." autocomplete="off" title="Enter로 추가">
-            <input type="date" id="inputDate" class="input-date" title="날짜 선택">
-            <input type="time" id="inputTimeStart" class="input-time" title="시작 시간 (24시간)" step="300">
-            <input type="time" id="inputTimeEnd" class="input-time-end" title="종료 시간 (24시간)" step="300">
+            <div class="input-datetime dt-picker-wrap" id="dt-picker-wrap">
+            <input type="hidden" id="inputStart" />
+            <button type="button" class="dt-picker-trigger" id="dt-picker-trigger" tabindex="0" title="날짜·시작 시간">
+                <span class="date-part" id="dt-display-date">날짜</span>
+                <span class="time-part" id="dt-display-time">시간</span>
+            </button>
+            <div class="dt-picker-drop hidden" id="dt-picker-drop">
+                <div class="dt-picker-header">
+                    <div class="dt-picker-nav">
+                        <button type="button" class="dt-picker-nav-btn" id="dt-prev-month" title="이전 달">‹</button>
+                        <span class="dt-picker-month" id="dt-month-label">2026년 2월</span>
+                        <button type="button" class="dt-picker-nav-btn" id="dt-next-month" title="다음 달">›</button>
+                    </div>
+                    <span class="dt-picker-now" id="dt-now">지금</span>
+                </div>
+                <div class="dt-picker-dow">
+                    <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
+                </div>
+                <div class="dt-picker-grid" id="dt-calendar-grid"></div>
+                <div class="dt-picker-time">
+                    <div class="dt-picker-time-row">
+                        <label>시작 시간</label>
+                        <input type="number" id="dt-hour" min="0" max="23" value="9" />
+                        <span>:</span>
+                        <input type="number" id="dt-min" min="0" max="59" value="0" />
+                        <span style="font-size: 9px; opacity: 0.8;" id="dt-ampm">오전</span>
+                    </div>
+                    <div class="dt-picker-time-row">
+                        <label>종료 시간</label>
+                        <input type="number" id="dt-hour-end" min="0" max="23" value="10" />
+                        <span>:</span>
+                        <input type="number" id="dt-min-end" min="0" max="59" value="0" />
+                        <span style="font-size: 9px; opacity: 0.8;" id="dt-ampm-end">오전</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+            <input type="hidden" id="inputTimeEnd" />
             <button class="btn-add" onclick="addEvent()" title="schedule (Enter)">+</button>
         </div>
         <div class="schedule-list" id="list"></div>
@@ -79,8 +140,7 @@
 
 <script>
     const inputTitle = document.getElementById("inputTitle");
-    const inputDate = document.getElementById("inputDate");
-    const inputTimeStart = document.getElementById("inputTimeStart");
+    const inputStart = document.getElementById("inputStart");
     const inputTimeEnd = document.getElementById("inputTimeEnd");
     const list = document.getElementById("list");
     const showPastCheck = document.getElementById("showPast");
@@ -126,12 +186,18 @@
         return new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' });
     }
 
-    function getTodayInput() {
+    function getTodayDatetimeLocal() {
         const d = new Date();
         const y = d.getFullYear();
         const m = String(d.getMonth() + 1).padStart(2, '0');
         const day = String(d.getDate()).padStart(2, '0');
-        return `${y}-${m}-${day}`;
+        const h = String(d.getHours()).padStart(2, '0');
+        const min = String(d.getMinutes()).padStart(2, '0');
+        return `${y}-${m}-${day}T${h}:${min}`;
+    }
+    function datetimeLocalToISO(dtLocal) {
+        if (!dtLocal) return null;
+        return dtLocal + ":00+09:00";
     }
 
     /** 24시간 HH:mm → "오전 09:00" 또는 "오후 15:00" (오전 0~11시, 오후 12~23시) */
@@ -339,13 +405,13 @@
         const title = inputTitle.value.trim();
         if (!title) return;
 
-        const dateStr = inputDate.value || getTodayInput();
-        const timeStart = inputTimeStart.value || "";
+        const dtStart = inputStart.value || getTodayDatetimeLocal();
         const timeEnd = inputTimeEnd.value || "";
-        const startISO = toISODateTime(dateStr, timeStart || "00:00");
+        const startISO = datetimeLocalToISO(dtStart);
         if (!startISO) return;
 
-        const endISO = (timeStart || timeEnd) ? toISODateTime(dateStr, timeEnd || timeStart) : null;
+        const dateStr = dtStart.slice(0, 10);
+        const endISO = timeEnd ? toISODateTime(dateStr, timeEnd) : null;
 
         const today = getTodayISO();
         const newId = OFFLINE_MODE ? 'off-' + Date.now() : 'temp-' + Date.now();
@@ -370,9 +436,8 @@
         bc.postMessage({ type: "EVENT_ADDED", event: newEvent });
         saveLocalEvents();
         inputTitle.value = "";
-        inputDate.value = getTodayInput();
-        inputTimeStart.value = "";
         inputTimeEnd.value = "";
+        if (typeof dtResetToNow === "function") dtResetToNow();
         renderList();
 
         if (OFFLINE_MODE) {
@@ -465,7 +530,158 @@
     if (showPastCheck) showPastCheck.addEventListener("change", renderList);
 
     if (OFFLINE_MODE) document.getElementById("offlineBadge").style.display = "inline";
-    inputDate.value = getTodayInput();
+    // ——— 커스텀 날짜·시간 피커 ———
+    const dtTrigger = document.getElementById("dt-picker-trigger");
+    const dtDrop = document.getElementById("dt-picker-drop");
+    const dtDisplayDate = document.getElementById("dt-display-date");
+    const dtDisplayTime = document.getElementById("dt-display-time");
+    const dtMonthLabel = document.getElementById("dt-month-label");
+    const dtCalendarGrid = document.getElementById("dt-calendar-grid");
+    const dtPrevMonth = document.getElementById("dt-prev-month");
+    const dtNextMonth = document.getElementById("dt-next-month");
+    const dtHour = document.getElementById("dt-hour");
+    const dtMin = document.getElementById("dt-min");
+    const dtAmpm = document.getElementById("dt-ampm");
+    const dtHourEnd = document.getElementById("dt-hour-end");
+    const dtMinEnd = document.getElementById("dt-min-end");
+    const dtAmpmEnd = document.getElementById("dt-ampm-end");
+    const dtNow = document.getElementById("dt-now");
+
+    let pickedDate = null; // { y, m, d } — 선택된 날짜
+    let viewYear = new Date().getFullYear();
+    let viewMonth = new Date().getMonth();
+
+    function dtToDatetimeLocal() {
+        const d = pickedDate || { y: new Date().getFullYear(), m: new Date().getMonth() + 1, d: new Date().getDate() };
+        const h = Math.min(23, Math.max(0, parseInt(dtHour.value, 10) || 0));
+        const min = Math.min(59, Math.max(0, parseInt(dtMin.value, 10) || 0));
+        const ys = String(d.y); const ms = String(d.m).padStart(2, "0"); const ds = String(d.d).padStart(2, "0");
+        return `${ys}-${ms}-${ds}T${String(h).padStart(2,"0")}:${String(min).padStart(2,"0")}`;
+    }
+    function dtToTimeEnd() {
+        const he = Math.min(23, Math.max(0, parseInt(dtHourEnd.value, 10) || 0));
+        const me = Math.min(59, Math.max(0, parseInt(dtMinEnd.value, 10) || 0));
+        return `${String(he).padStart(2,"0")}:${String(me).padStart(2,"0")}`;
+    }
+    function dtUpdateInputAndDisplay() {
+        const dtLocal = dtToDatetimeLocal();
+        inputStart.value = dtLocal;
+        const endHhmm = dtToTimeEnd();
+        inputTimeEnd.value = endHhmm;
+        const [datePart, timePart] = dtLocal.split("T");
+        if (datePart) {
+            const [y, m, d] = datePart.split("-");
+            dtDisplayDate.textContent = `${y}. ${parseInt(m,10)}. ${parseInt(d,10)}.`;
+        }
+        const [h, m] = (timePart || "00:00").split(":");
+        const hh = parseInt(h, 10) || 0;
+        const prefix = hh < 12 ? "오전" : "오후";
+        dtAmpm.textContent = prefix;
+        const [he, me] = endHhmm.split(":");
+        const hhe = parseInt(he, 10) || 0;
+        const prefixEnd = hhe < 12 ? "오전" : "오후";
+        dtAmpmEnd.textContent = prefixEnd;
+        const startStr = `${prefix} ${String(hh).padStart(2, "0")}:${String(m || "00").padStart(2, "0")}`;
+        const endStr = `${prefixEnd} ${String(hhe).padStart(2, "0")}:${String(me || "00").padStart(2, "0")}`;
+        dtDisplayTime.textContent = startStr === endStr ? startStr : `${startStr} ~ ${endStr}`;
+    }
+    function dtRenderCalendar() {
+        dtMonthLabel.textContent = `${viewYear}년 ${viewMonth + 1}월`;
+        const first = new Date(viewYear, viewMonth, 1);
+        const last = new Date(viewYear, viewMonth + 1, 0);
+        const startDow = first.getDay();
+        const daysInMonth = last.getDate();
+        const today = new Date();
+        const todayY = today.getFullYear(), todayM = today.getMonth(), todayD = today.getDate();
+
+        let html = "";
+        const prevMonth = viewMonth === 0 ? 11 : viewMonth - 1;
+        const prevYear = viewMonth === 0 ? viewYear - 1 : viewYear;
+        const prevLast = new Date(prevYear, prevMonth + 1, 0).getDate();
+        for (let i = 0; i < startDow; i++) {
+            const d = prevLast - startDow + i + 1;
+            html += `<button type="button" class="dt-picker-day other" data-y="${prevYear}" data-m="${prevMonth}" data-d="${d}">${d}</button>`;
+        }
+        for (let d = 1; d <= daysInMonth; d++) {
+            let cls = "dt-picker-day";
+            if (viewYear === todayY && viewMonth === todayM && d === todayD) cls += " today";
+            if (pickedDate && pickedDate.y === viewYear && pickedDate.m === viewMonth + 1 && pickedDate.d === d) cls += " selected";
+            html += `<button type="button" class="${cls}" data-y="${viewYear}" data-m="${viewMonth}" data-d="${d}">${d}</button>`;
+        }
+        const nextMonth = viewMonth === 11 ? 0 : viewMonth + 1;
+        const nextYear = viewMonth === 11 ? viewYear + 1 : viewYear;
+        const remaining = 42 - (startDow + daysInMonth);
+        for (let d = 1; d <= Math.min(remaining, 14); d++) {
+            html += `<button type="button" class="dt-picker-day other" data-y="${nextYear}" data-m="${nextMonth}" data-d="${d}">${d}</button>`;
+        }
+        dtCalendarGrid.innerHTML = html;
+        dtCalendarGrid.querySelectorAll(".dt-picker-day").forEach(btn => {
+            btn.addEventListener("click", () => {
+                pickedDate = { y: +btn.dataset.y, m: +(btn.dataset.m) + 1, d: +btn.dataset.d };
+                dtUpdateInputAndDisplay();
+                dtRenderCalendar();
+            });
+        });
+    }
+    dtTrigger.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const isHidden = dtDrop.classList.contains("hidden");
+        dtDrop.classList.toggle("hidden", !isHidden);
+        if (isHidden) dtRenderCalendar();
+    });
+    document.addEventListener("click", (e) => {
+        if (!dtDrop.contains(e.target) && !dtTrigger.contains(e.target)) dtDrop.classList.add("hidden");
+    });
+    dtPrevMonth.addEventListener("click", () => { viewMonth--; if (viewMonth < 0) { viewMonth = 11; viewYear--; } dtRenderCalendar(); });
+    dtNextMonth.addEventListener("click", () => { viewMonth++; if (viewMonth > 11) { viewMonth = 0; viewYear++; } dtRenderCalendar(); });
+    dtNow.addEventListener("click", () => {
+        const n = new Date();
+        viewYear = n.getFullYear(); viewMonth = n.getMonth();
+        pickedDate = { y: viewYear, m: viewMonth + 1, d: n.getDate() };
+        dtHour.value = n.getHours(); dtMin.value = n.getMinutes();
+        const endMin = n.getMinutes() + 60;
+        let endH = Math.min(23, n.getHours() + Math.floor(endMin / 60));
+        let endM = endH >= 23 ? 59 : endMin % 60;
+        dtHourEnd.value = endH; dtMinEnd.value = endM;
+        dtUpdateInputAndDisplay();
+        dtRenderCalendar();
+        dtDrop.classList.add("hidden");
+    });
+    dtHour.addEventListener("input", dtUpdateInputAndDisplay);
+    dtMin.addEventListener("input", dtUpdateInputAndDisplay);
+    dtHour.addEventListener("change", () => { dtHour.value = Math.min(23, Math.max(0, parseInt(dtHour.value, 10) || 0)); dtUpdateInputAndDisplay(); });
+    dtMin.addEventListener("change", () => { dtMin.value = Math.min(59, Math.max(0, parseInt(dtMin.value, 10) || 0)); dtUpdateInputAndDisplay(); });
+    dtHourEnd.addEventListener("input", dtUpdateInputAndDisplay);
+    dtMinEnd.addEventListener("input", dtUpdateInputAndDisplay);
+    dtHourEnd.addEventListener("change", () => { dtHourEnd.value = Math.min(23, Math.max(0, parseInt(dtHourEnd.value, 10) || 0)); dtUpdateInputAndDisplay(); });
+    dtMinEnd.addEventListener("change", () => { dtMinEnd.value = Math.min(59, Math.max(0, parseInt(dtMinEnd.value, 10) || 0)); dtUpdateInputAndDisplay(); });
+
+    function dtResetToNow() {
+        const n = new Date();
+        viewYear = n.getFullYear(); viewMonth = n.getMonth();
+        pickedDate = { y: viewYear, m: viewMonth + 1, d: n.getDate() };
+        dtHour.value = n.getHours(); dtMin.value = n.getMinutes();
+        const endMin = n.getMinutes() + 60;
+        let endH = Math.min(23, n.getHours() + Math.floor(endMin / 60));
+        let endM = endH >= 23 ? 59 : endMin % 60;
+        dtHourEnd.value = endH; dtMinEnd.value = endM;
+        dtUpdateInputAndDisplay();
+        dtRenderCalendar();
+    }
+
+    if (!pickedDate) {
+        const n = new Date();
+        pickedDate = { y: n.getFullYear(), m: n.getMonth() + 1, d: n.getDate() };
+        dtHour.value = n.getHours();
+        dtMin.value = n.getMinutes();
+        const endMin = n.getMinutes() + 60;
+        let endH = Math.min(23, n.getHours() + Math.floor(endMin / 60));
+        let endM = endH >= 23 ? 59 : endMin % 60;
+        dtHourEnd.value = endH; dtMinEnd.value = endM;
+    }
+    dtUpdateInputAndDisplay();
+    dtRenderCalendar();
+
     loadLocalEvents();
     renderList();
     syncFromNotion();
