@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>일정 추가</title>
+    <link href="https://fonts.googleapis.com/css2?family=Silkscreen&family=Noto+Sans+KR:wght@700&display=swap" rel="stylesheet">
+    <style>
+        /* todo.html과 동일한 디자인 */
+        :root { --bg-color: #0f1115; --border-color: #3b4261; --accent-color: #82aaff; --text-color: #dbe6f5; --dim-color: #1e222a; }
+        body { margin: 0; padding: 0; background-color: var(--bg-color); font-family: 'Silkscreen', cursive; width: 100vw; height: 100vh; overflow: hidden; color: var(--text-color); }
+        .schedule-container { width: 100%; height: 100%; border: 2px solid var(--border-color); box-sizing: border-box; display: flex; flex-direction: column; }
+        .header-bar { height: 32px; flex-shrink: 0; border-bottom: 1px solid var(--border-color); background: rgba(59, 66, 97, 0.2); display: flex; align-items: center; justify-content: space-between; padding: 0 12px; font-size: 11px; color: var(--accent-color); }
+        .header-left { display: flex; align-items: center; gap: 8px; }
+        .input-area { height: 40px; flex-shrink: 0; border-bottom: 2px solid var(--border-color); display: flex; background: rgba(130, 170, 255, 0.05); }
+        input, select { background: transparent; border: none; color: #ffffff; font-family: 'Noto Sans KR', sans-serif; font-size: 12px; font-weight: 700; padding: 0 12px; outline: none; }
+        input::placeholder { font-family: 'Silkscreen'; color: var(--accent-color); opacity: 0.5; font-size: 11px; font-weight: 400; }
+        .input-title { flex: 1; }
+        .input-date { width: 110px; border-left: 1px solid var(--border-color); }
+        .input-time { width: 90px; border-left: 1px solid var(--border-color); }
+        .btn-add { width: 40px; background: transparent; border: none; border-left: 1px solid var(--border-color); color: var(--accent-color); cursor: pointer; font-size: 18px; font-family: 'Silkscreen'; }
+        .btn-add:hover { background: rgba(130, 170, 255, 0.2); color: #fff; }
+        .schedule-list { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+        .schedule-list::-webkit-scrollbar { width: 4px; }
+        .schedule-list::-webkit-scrollbar-track { background: var(--bg-color); }
+        .schedule-list::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 2px; }
+        .schedule-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border: 1px solid var(--border-color); background: rgba(30, 34, 42, 0.4); transition: all 0.2s; }
+        .schedule-item:hover { border-color: var(--accent-color); background: rgba(30, 34, 42, 0.8); transform: translateX(2px); }
+        .schedule-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+        .schedule-marker { width: 12px; height: 12px; border: 2px solid var(--accent-color); flex-shrink: 0; background: rgba(130, 170, 255, 0.2); }
+        .text-content { font-family: 'Noto Sans KR', sans-serif; font-size: 12px; font-weight: 700; color: #ffffff; line-height: 1.2; letter-spacing: -0.3px; padding-top: 2px; word-break: break-word; }
+        .text-meta { font-size: 10px; color: var(--accent-color); opacity: 0.8; margin-top: 2px; }
+        .btn-action { color: #4c566a; cursor: pointer; padding: 4px 6px; opacity: 0.8; font-family: 'Silkscreen'; font-size: 10px; background: transparent; border: 1px solid var(--border-color); min-width: 24px; display: flex; align-items: center; justify-content: center; }
+        .btn-action:hover { opacity: 1; }
+        .btn-edit { color: #82aaff; }
+        .btn-edit:hover { border-color: var(--accent-color); background: rgba(130, 170, 255, 0.15); }
+        .btn-delete { color: #4c566a; }
+        .btn-delete:hover { color: #ff5370; border-color: #ff5370; }
+        .schedule-item-actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+        .schedule-item.is-temp { opacity: 0.7; border-style: dashed; }
+    </style>
+</head>
+<body>
+    <div class="schedule-container">
+        <div class="header-bar">
+            <span class="header-left">
+                <span>일정 추가<span id="offlineBadge" style="display:none; margin-left:6px; font-size:9px; color:#ffa94d;">[테스트]</span></span>
+                <span id="event-count">LOADING...</span>
+            </span>
+            <span id="syncStatus" style="font-size:8px; opacity:0.8;" title="동기화 상태">—</span>
+        </div>
+        <div class="input-area">
+            <input type="text" id="inputTitle" class="input-title" placeholder="> 일정 제목..." autocomplete="off" title="Enter로 추가">
+            <input type="date" id="inputDate" class="input-date" title="날짜 선택">
+            <input type="time" id="inputTime" class="input-time" title="시간 선택 (선택)">
+            <button class="btn-add" onclick="addEvent()" title="일정 추가 (Enter)">+</button>
+        </div>
+        <div class="schedule-list" id="list"></div>
+    </div>
+
+<script>
+    const inputTitle = document.getElementById("inputTitle");
+    const inputDate = document.getElementById("inputDate");
+    const inputTime = document.getElementById("inputTime");
+    const list = document.getElementById("list");
+    const countDisplay = document.getElementById("event-count");
+
+    const OFFLINE_MODE = window.location.search.includes('offline=1');
+    const OFFLINE_EVENTS_KEY = "missionlog_offline_events_v1";
+    function loadOfflineEvents(){ try{ return JSON.parse(localStorage.getItem(OFFLINE_EVENTS_KEY)) || []; }catch(_){ return []; } }
+    function saveOfflineEvents(arr){ localStorage.setItem(OFFLINE_EVENTS_KEY, JSON.stringify(arr)); }
+
+    let globalEvents = [];
+    let inFlight = 0;
+
+    const bc = new BroadcastChannel("missionlog_bus_v1");
+    let _bcTimer = null;
+    bc.onmessage = (ev) => {
+        if (ev?.data?.type !== "EVENTS_UPDATED" && ev?.data?.type !== "TASKS_UPDATED") return;
+        clearTimeout(_bcTimer);
+        _bcTimer = setTimeout(syncFromNotion, 150);
+    };
+
+    const PENDING_EVENTS_KEY = "missionlog_pendingEvents_v1";
+    function loadPendingEvents(){ try{ return JSON.parse(localStorage.getItem(PENDING_EVENTS_KEY)) || []; }catch(_){ return []; } }
+    function savePendingEvents(arr){ localStorage.setItem(PENDING_EVENTS_KEY, JSON.stringify(arr)); }
+
+    const LOCAL_EVENTS_KEY = "missionlog_localEvents_v1";
+
+    function getTodayISO() {
+        return new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' });
+    }
+
+    function getTodayInput() {
+        const d = new Date();
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+    }
+
+    function formatTimeForDisplay(iso) {
+        if (!iso) return "";
+        const m = String(iso).match(/T(\d{2}:\d{2})/);
+        return m ? m[1] : "";
+    }
+
+    function toISODateTime(dateStr, timeStr) {
+        if (!dateStr) return null;
+        const base = dateStr + "T" + (timeStr || "00:00") + ":00";
+        return base + "+09:00";
+    }
+
+    const syncStatusEl = document.getElementById("syncStatus");
+    function setSyncStatus(txt) { if (syncStatusEl) syncStatusEl.textContent = txt; }
+
+    function loadLocalEvents() {
+        try {
+            const arr = JSON.parse(localStorage.getItem(LOCAL_EVENTS_KEY) || "[]");
+            if (Array.isArray(arr)) globalEvents = arr;
+        } catch(_) {}
+    }
+
+    function saveLocalEvents() {
+        try {
+            if (OFFLINE_MODE) {
+                saveOfflineEvents(globalEvents);
+                return;
+            }
+            localStorage.setItem(LOCAL_EVENTS_KEY, JSON.stringify(globalEvents));
+        } catch(_) {}
+    }
+
+    async function syncFromNotion() {
+        if (inFlight > 0) return;
+        if (OFFLINE_MODE) {
+            setSyncStatus("테스트");
+            globalEvents = loadOfflineEvents();
+            saveLocalEvents();
+            renderList();
+            return;
+        }
+
+        try {
+            setSyncStatus("동기화중");
+            const d = new Date();
+            d.setMonth(d.getMonth() - 1);
+            const from = d.toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' });
+            d.setMonth(d.getMonth() + 3);
+            const to = d.toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' });
+
+            const res = await fetch('/api/notion', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'fetch', from, to })
+            });
+            const data = await res.json();
+            if (!res.ok || !data?.success) { setSyncStatus("실패"); return; }
+
+            const serverEvents = (data.events || []).map(e => ({
+                ...e,
+                start: e.start || "",
+                end: e.end || ""
+            }));
+
+            const pending = loadPendingEvents();
+            const pendingFiltered = pending.filter(p => !serverEvents.some(s =>
+                (p.id && s.id && p.id === s.id) ||
+                (String(p.start || "").slice(0,16) === String(s.start || "").slice(0,16) && (p.title || "") === (s.title || ""))
+            ));
+            savePendingEvents(pendingFiltered);
+
+            globalEvents = [...serverEvents, ...pendingFiltered].sort((a, b) => String(a.start || "").localeCompare(String(b.start || "")));
+            saveLocalEvents();
+            setSyncStatus("완료");
+            renderList();
+        } catch (err) {
+            console.error(err);
+            setSyncStatus("실패");
+        }
+    }
+
+    function renderList() {
+        list.innerHTML = "";
+        const esc = (s) => String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
+        const escId = (id) => String(id || "").replace(/'/g, "\\'");
+
+        const today = getTodayISO();
+        const displayEvents = globalEvents
+            .filter(e => String(e.start || e.date || "").slice(0,10) >= today)
+            .slice(0, 50);
+
+        displayEvents.forEach(ev => {
+            const div = document.createElement("div");
+            div.className = `schedule-item ${String(ev.id || "").startsWith("temp-") || String(ev.id || "").startsWith("off-") ? "is-temp" : ""}`;
+            const dateStr = String(ev.start || ev.date || "").slice(0,10) || today;
+            const timeStr = formatTimeForDisplay(ev.start);
+            const meta = timeStr ? `${dateStr} ${timeStr}` : dateStr;
+            div.innerHTML = `
+                <div class="schedule-left">
+                    <div class="schedule-marker"></div>
+                    <div>
+                        <span class="text-content">${esc(ev.title || "일정")}</span>
+                        <div class="text-meta">${meta}</div>
+                    </div>
+                </div>
+                <div class="schedule-item-actions">
+                    <button type="button" class="btn-action btn-delete" title="삭제" onclick="event.stopPropagation(); deleteEvent('${escId(ev.id)}'); return false;">X</button>
+                </div>
+            `;
+            list.appendChild(div);
+        });
+
+        countDisplay.innerText = `${displayEvents.length} SCHEDULED`;
+
+        if (displayEvents.length === 0) {
+            const empty = document.createElement("div");
+            empty.style.padding = "16px";
+            empty.style.color = "var(--accent-color)";
+            empty.style.opacity = "0.7";
+            empty.style.fontSize = "11px";
+            empty.style.textAlign = "center";
+            empty.textContent = "등록된 일정이 없습니다.\n위에서 추가해보세요.";
+            empty.style.whiteSpace = "pre";
+            list.appendChild(empty);
+        }
+    }
+
+    async function addEvent() {
+        const title = inputTitle.value.trim();
+        if (!title) return;
+
+        const dateStr = inputDate.value || getTodayInput();
+        const timeStr = inputTime.value || "";
+        const startISO = toISODateTime(dateStr, timeStr || "00:00");
+        if (!startISO) return;
+
+        const today = getTodayISO();
+        const newId = OFFLINE_MODE ? 'off-' + Date.now() : 'temp-' + Date.now();
+        const newEvent = {
+            id: newId,
+            title,
+            start: startISO,
+            end: timeStr ? startISO : null,
+            date: dateStr,
+            isSynced: OFFLINE_MODE,
+            pending: !OFFLINE_MODE
+        };
+        globalEvents.push(newEvent);
+        globalEvents.sort((a, b) => String(a.start || "").localeCompare(String(b.start || "")));
+
+        if (!OFFLINE_MODE) {
+            const pending = loadPendingEvents();
+            pending.push(newEvent);
+            savePendingEvents(pending);
+        }
+
+        bc.postMessage({ type: "EVENT_ADDED", event: newEvent });
+        saveLocalEvents();
+        inputTitle.value = "";
+        inputDate.value = getTodayInput();
+        inputTime.value = "";
+        renderList();
+
+        if (OFFLINE_MODE) {
+            bc.postMessage({ type: "EVENTS_UPDATED" });
+            return;
+        }
+
+        inFlight++;
+        try {
+            const res = await fetch('/api/notion', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'createEvent', title, start: startISO, end: timeStr ? startISO : null })
+            });
+
+            if (!res.ok) {
+                console.error("CREATE EVENT HTTP error:", res.status);
+                return;
+            }
+
+            const data = await res.json().catch(() => null);
+            if (!data?.success || !data?.id) {
+                console.error("CREATE EVENT payload error:", data);
+                return;
+            }
+
+            const target = globalEvents.find(e => e.id === newId);
+            if (target) {
+                target.id = data.id;
+                target.isSynced = true;
+                target.pending = true;
+                const pending = loadPendingEvents();
+                const idx = pending.findIndex(p => p.id === newId);
+                if (idx >= 0) pending[idx] = { ...pending[idx], id: data.id };
+                savePendingEvents(pending);
+                saveLocalEvents();
+                renderList();
+                bc.postMessage({ type: "EVENTS_UPDATED" });
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            inFlight--;
+        }
+    }
+
+    async function deleteEvent(id) {
+        const target = globalEvents.find(e => e.id === id);
+        if (!target) return;
+
+        globalEvents = globalEvents.filter(e => e.id !== id);
+        const pending = loadPendingEvents().filter(p => p.id !== id);
+        savePendingEvents(pending);
+        saveLocalEvents();
+        renderList();
+        bc.postMessage({ type: "EVENTS_UPDATED" });
+
+        if (OFFLINE_MODE) return;
+        if (!String(id).startsWith('temp-') && !String(id).startsWith('off-')) {
+            try {
+                await fetch('/api/notion', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'deleteEvent', pageId: id })
+                });
+            } catch (e) { console.error("DELETE EVENT error:", e); }
+        }
+    }
+
+    inputTitle.addEventListener("keypress", (e) => { if (e.key === "Enter") addEvent(); });
+
+    if (OFFLINE_MODE) document.getElementById("offlineBadge").style.display = "inline";
+    inputDate.value = getTodayInput();
+    loadLocalEvents();
+    renderList();
+    syncFromNotion();
+    setInterval(syncFromNotion, 5000);
+</script>
+</body>
+</html>

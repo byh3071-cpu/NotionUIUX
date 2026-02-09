@@ -5,7 +5,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
-  const { action, text, pageId, done, date, newDate, range, from, to } = req.body;
+  const { action, text, pageId, done, date, newDate, range, from, to, title, start, end } = req.body;
 
   const NOTION_KEY = process.env.NOTION_KEY;
   const NOTION_DB_ID = process.env.NOTION_DB_ID;
@@ -155,6 +155,37 @@ if (NOTION_EVENTS_DB_ID) {
       return res.status(200).json({ success: true, id: data.id });
     }
 
+    // ✅ 일정(Event) 생성
+    if (action === 'createEvent') {
+      if (!NOTION_EVENTS_DB_ID) {
+        return res.status(500).json({ error: 'NOTION_EVENTS_DB_ID is not configured' });
+      }
+      const safeTitle = String(title || '').trim() || '일정';
+      const safeStart = start || kstToday + 'T00:00:00+09:00';
+      const safeEnd = end || null;
+
+      const dateProp = { start: safeStart };
+      if (safeEnd) dateProp.end = safeEnd;
+
+      const titlePropName = process.env.NOTION_EVENTS_TITLE_PROP || '제목';
+      const response = await fetch('https://api.notion.com/v1/pages', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          parent: { database_id: NOTION_EVENTS_DB_ID },
+          properties: {
+            [titlePropName]: { title: [{ text: { content: safeTitle } }] },
+            '진행할 날짜': { date: dateProp },
+          },
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Create Event Failed');
+
+      return res.status(200).json({ success: true, id: data.id });
+    }
+
     // ✅ 완료 토글 + 날짜 변경(미루기) + 텍스트 수정
     if (action === 'update' && pageId) {
       const props = {};
@@ -180,7 +211,7 @@ if (NOTION_EVENTS_DB_ID) {
     }
 
     // ✅ 삭제(archive)
-    if (action === 'delete' && pageId) {
+    if ((action === 'delete' || action === 'deleteEvent') && pageId) {
       const response = await fetch(`https://api.notion.com/v1/pages/${pageId}`, {
         method: 'PATCH',
         headers,
