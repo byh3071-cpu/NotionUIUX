@@ -210,6 +210,37 @@ if (NOTION_EVENTS_DB_ID) {
       return res.status(200).json({ success: true });
     }
 
+    // ✅ 일정 수정 (제목, 날짜, 시간)
+    if (action === 'updateEvent' && pageId && NOTION_EVENTS_DB_ID) {
+      const props = {};
+      const titlePropName = process.env.NOTION_EVENTS_TITLE_PROP || '제목';
+      const safeTitle = title !== undefined ? String(title).trim() : '';
+      if (safeTitle) props[titlePropName] = { title: [{ text: { content: safeTitle } }] };
+      if (start || end) {
+        const toFullISO = (s) => {
+          if (!s) return null;
+          s = String(s).trim();
+          if (/[+Z]/.test(s)) return s;
+          if (s.includes('T')) return s.padEnd(19, ':00').slice(0, 19) + '+09:00';
+          return s + 'T00:00:00+09:00';
+        };
+        let startISO = toFullISO(start);
+        let endISO = toFullISO(end);
+        if (!endISO && startISO) endISO = startISO;
+        if (!startISO && endISO) startISO = endISO;
+        if (startISO && endISO) props['진행할 날짜'] = { date: { start: startISO, end: endISO } };
+      }
+      if (Object.keys(props).length === 0) return res.status(400).json({ error: 'updateEvent requires title, start, or end' });
+      const response = await fetch(`https://api.notion.com/v1/pages/${pageId}`, {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify({ properties: props }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.message || 'Update Event Failed');
+      return res.status(200).json({ success: true });
+    }
+
     // ✅ 삭제(archive)
     if ((action === 'delete' || action === 'deleteEvent') && pageId) {
       const response = await fetch(`https://api.notion.com/v1/pages/${pageId}`, {

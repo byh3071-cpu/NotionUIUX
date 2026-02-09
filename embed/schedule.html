@@ -23,6 +23,9 @@
         .schedule-list::-webkit-scrollbar-track { background: var(--bg-color); }
         .schedule-list::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 2px; }
         .schedule-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border: 1px solid var(--border-color); background: rgba(30, 34, 42, 0.4); transition: all 0.2s; }
+        .schedule-item.is-editing { flex-direction: column; align-items: stretch; gap: 10px; }
+        .schedule-item.is-editing .schedule-left { flex-direction: column; align-items: stretch; }
+        .edit-picker { background: #0e1016; border: 1px solid var(--border-color); padding: 10px; margin-top: 4px; }
         .schedule-item:hover { border-color: var(--accent-color); background: rgba(30, 34, 42, 0.8); transform: translateX(2px); }
         .schedule-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
         .schedule-marker { width: 12px; height: 12px; border: 2px solid var(--accent-color); flex-shrink: 0; background: rgba(130, 170, 255, 0.2); }
@@ -144,6 +147,41 @@
     const showPastCheck = document.getElementById("showPast");
 
     let viewFilter = "today";
+    let editingEventId = null;
+    let editViewYear = new Date().getFullYear();
+    let editViewMonth = new Date().getMonth();
+    let editPickedDate = null; // { y, m, d }
+    let editTimeOverride = null; // { h, m, he, me } when "지금" clicked
+
+    function getEditCalendarGridHTML() {
+        const first = new Date(editViewYear, editViewMonth, 1);
+        const last = new Date(editViewYear, editViewMonth + 1, 0);
+        const startDow = first.getDay();
+        const daysInMonth = last.getDate();
+        const today = new Date();
+        const todayY = today.getFullYear(), todayM = today.getMonth(), todayD = today.getDate();
+        let html = "";
+        const prevMonth = editViewMonth === 0 ? 11 : editViewMonth - 1;
+        const prevYear = editViewMonth === 0 ? editViewYear - 1 : editViewYear;
+        const prevLast = new Date(prevYear, prevMonth + 1, 0).getDate();
+        for (let i = 0; i < startDow; i++) {
+            const d = prevLast - startDow + i + 1;
+            html += `<button type="button" class="dt-picker-day other" data-y="${prevYear}" data-m="${prevMonth}" data-d="${d}">${d}</button>`;
+        }
+        for (let d = 1; d <= daysInMonth; d++) {
+            let cls = "dt-picker-day";
+            if (editViewYear === todayY && editViewMonth === todayM && d === todayD) cls += " today";
+            if (editPickedDate && editPickedDate.y === editViewYear && editPickedDate.m === editViewMonth + 1 && editPickedDate.d === d) cls += " selected";
+            html += `<button type="button" class="${cls}" data-y="${editViewYear}" data-m="${editViewMonth}" data-d="${d}">${d}</button>`;
+        }
+        const nextMonth = editViewMonth === 11 ? 0 : editViewMonth + 1;
+        const nextYear = editViewMonth === 11 ? editViewYear + 1 : editViewYear;
+        const remaining = 42 - (startDow + daysInMonth);
+        for (let d = 1; d <= Math.min(remaining, 14); d++) {
+            html += `<button type="button" class="dt-picker-day other" data-y="${nextYear}" data-m="${nextMonth}" data-d="${d}">${d}</button>`;
+        }
+        return html;
+    }
 
     function getDateOffset(iso, days) {
         const datePart = String(iso || "").slice(0, 10);
@@ -364,6 +402,79 @@
             evs.forEach(ev => {
                 const evDateStr = String(ev.start || ev.date || "").slice(0,10) || today;
                 const isPast = evDateStr < today;
+                const isEditing = editingEventId === ev.id;
+                if (isEditing) {
+                    const dateVal = evDateStr || today;
+                    const startHhmm = extractHHmm(ev.start) || "00:00";
+                    const endHhmm = extractHHmm(ev.end) || startHhmm;
+                    const [sh, sm] = editTimeOverride ? [editTimeOverride.h, editTimeOverride.m] : startHhmm.split(":").map(n => parseInt(n, 10) || 0);
+                    const [eh, em] = editTimeOverride ? [editTimeOverride.he, editTimeOverride.me] : endHhmm.split(":").map(n => parseInt(n, 10) || 0);
+                    if (editTimeOverride) editTimeOverride = null;
+                    const gridHtml = getEditCalendarGridHTML();
+                    const div = document.createElement("div");
+                    div.className = `schedule-item is-editing ${isPast ? "is-past" : ""}`;
+                    div.innerHTML = `
+                        <div class="schedule-left">
+                            <div class="schedule-marker"></div>
+                            <input type="text" id="editEventInput" value="${esc(ev.title || "")}" maxlength="80" style="flex:1; background:#0b0c10; border:1px solid var(--border-color); color:var(--text-color); padding:6px 8px; font-size:12px; outline:none;">
+                        </div>
+                        <div class="edit-picker">
+                            <div class="dt-picker-header">
+                                <div class="dt-picker-nav">
+                                    <button type="button" class="dt-picker-nav-btn" onclick="editPrevMonth(); return false;">‹</button>
+                                    <span class="dt-picker-month">${editViewYear}년 ${editViewMonth + 1}월</span>
+                                    <button type="button" class="dt-picker-nav-btn" onclick="editNextMonth(); return false;">›</button>
+                                </div>
+                                <span class="dt-picker-now" onclick="editNow(); return false;">지금</span>
+                            </div>
+                            <div class="dt-picker-dow">
+                                <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
+                            </div>
+                            <div class="dt-picker-grid" id="editCalendarGrid">${gridHtml}</div>
+                            <div class="dt-picker-time">
+                                <div class="dt-picker-time-row">
+                                    <label>시작 시간</label>
+                                    <input type="number" id="editEventHour" min="0" max="23" value="${sh}" />
+                                    <span>:</span>
+                                    <input type="number" id="editEventMin" min="0" max="59" value="${sm}" />
+                                    <span style="font-size: 9px; opacity: 0.8;" id="editEventAmpm">${sh < 12 ? "오전" : "오후"}</span>
+                                </div>
+                                <div class="dt-picker-time-row">
+                                    <label>종료 시간</label>
+                                    <input type="number" id="editEventHourEnd" min="0" max="23" value="${eh}" />
+                                    <span>:</span>
+                                    <input type="number" id="editEventMinEnd" min="0" max="59" value="${em}" />
+                                    <span style="font-size: 9px; opacity: 0.8;" id="editEventAmpmEnd">${eh < 12 ? "오전" : "오후"}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="schedule-item-actions" style="justify-content:flex-end;">
+                            <button type="button" class="btn-action btn-edit" title="저장" onclick="event.stopPropagation(); saveEditEvent(); return false;">✔</button>
+                            <button type="button" class="btn-action btn-delete" title="취소" onclick="event.stopPropagation(); cancelEditEvent(); return false;">↩</button>
+                        </div>
+                    `;
+                    list.appendChild(div);
+                    div.querySelector("#editCalendarGrid").querySelectorAll(".dt-picker-day").forEach(btn => {
+                        btn.addEventListener("click", () => {
+                            editPickedDate = { y: +btn.dataset.y, m: +(btn.dataset.m) + 1, d: +btn.dataset.d };
+                            renderList();
+                        });
+                    });
+                    const updateEditAmpm = () => {
+                        const a = document.getElementById("editEventAmpm"); const ae = document.getElementById("editEventAmpmEnd");
+                        const h = parseInt(document.getElementById("editEventHour")?.value, 10) || 0;
+                        const he = parseInt(document.getElementById("editEventHourEnd")?.value, 10) || 0;
+                        if (a) a.textContent = h < 12 ? "오전" : "오후";
+                        if (ae) ae.textContent = he < 12 ? "오전" : "오후";
+                    };
+                    div.querySelector("#editEventHour")?.addEventListener("input", updateEditAmpm);
+                    div.querySelector("#editEventHourEnd")?.addEventListener("input", updateEditAmpm);
+                    setTimeout(() => {
+                        const inp = document.getElementById("editEventInput");
+                        if (inp) { inp.focus(); inp.select(); inp.onkeydown = (e) => { if (e.key==="Enter") saveEditEvent(); if (e.key==="Escape") cancelEditEvent(); }; }
+                    }, 0);
+                    return;
+                }
                 const div = document.createElement("div");
                 div.className = `schedule-item ${String(ev.id || "").startsWith("temp-") || String(ev.id || "").startsWith("off-") ? "is-temp" : ""} ${isPast ? "is-past" : ""}`;
                 const timeStr = formatTimeRangeForDisplay(ev.start, ev.end);
@@ -377,6 +488,7 @@
                         </div>
                     </div>
                     <div class="schedule-item-actions">
+                        <button type="button" class="btn-action btn-edit" title="수정" onclick="event.stopPropagation(); startEditEvent('${escId(ev.id)}'); return false;">✎</button>
                         <button type="button" class="btn-action btn-delete" title="삭제" onclick="event.stopPropagation(); deleteEvent('${escId(ev.id)}'); return false;">X</button>
                     </div>
                 `;
@@ -488,6 +600,111 @@
         } finally {
             inFlight--;
         }
+    }
+
+    function startEditEvent(id) {
+        editingEventId = id;
+        editTimeOverride = null;
+        const ev = globalEvents.find(e => e.id === id);
+        if (ev) {
+            const ds = String(ev.start || ev.date || "").slice(0, 10);
+            const [y, m, d] = ds ? ds.split("-").map(Number) : [new Date().getFullYear(), new Date().getMonth() + 1, new Date().getDate()];
+            editViewYear = y || new Date().getFullYear();
+            editViewMonth = (m || new Date().getMonth() + 1) - 1;
+            editPickedDate = { y: editViewYear, m: editViewMonth + 1, d: d || new Date().getDate() };
+        }
+        renderList();
+    }
+    function editPrevMonth() {
+        editViewMonth--; if (editViewMonth < 0) { editViewMonth = 11; editViewYear--; }
+        renderList();
+    }
+    function editNextMonth() {
+        editViewMonth++; if (editViewMonth > 11) { editViewMonth = 0; editViewYear++; }
+        renderList();
+    }
+    function editNow() {
+        const n = new Date();
+        editViewYear = n.getFullYear(); editViewMonth = n.getMonth();
+        editPickedDate = { y: editViewYear, m: editViewMonth + 1, d: n.getDate() };
+        const endMin = n.getMinutes() + 60;
+        const endH = Math.min(23, n.getHours() + Math.floor(endMin / 60));
+        const endM = endH >= 23 ? 59 : endMin % 60;
+        editTimeOverride = { h: n.getHours(), m: n.getMinutes(), he: endH, me: endM };
+        renderList();
+    }
+    function cancelEditEvent() {
+        editingEventId = null;
+        editTimeOverride = null;
+        renderList();
+    }
+    async function saveEditEvent() {
+        const inp = document.getElementById("editEventInput");
+        const hourInp = document.getElementById("editEventHour");
+        const minInp = document.getElementById("editEventMin");
+        const hourEndInp = document.getElementById("editEventHourEnd");
+        const minEndInp = document.getElementById("editEventMinEnd");
+        const newTitle = inp ? inp.value.trim() : "";
+        if (!newTitle || !editingEventId) { cancelEditEvent(); return; }
+        const ev = globalEvents.find(e => e.id === editingEventId);
+        if (!ev) { cancelEditEvent(); return; }
+        const pd = editPickedDate || { y: new Date().getFullYear(), m: new Date().getMonth() + 1, d: new Date().getDate() };
+        const dateStr = `${pd.y}-${String(pd.m).padStart(2,"0")}-${String(pd.d).padStart(2,"0")}`;
+        const h = Math.min(23, Math.max(0, parseInt(hourInp?.value, 10) || 0));
+        const m = Math.min(59, Math.max(0, parseInt(minInp?.value, 10) || 0));
+        const he = Math.min(23, Math.max(0, parseInt(hourEndInp?.value, 10) || 0));
+        const me = Math.min(59, Math.max(0, parseInt(minEndInp?.value, 10) || 0));
+        const startHhmm = `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
+        const endHhmm = `${String(he).padStart(2,"0")}:${String(me).padStart(2,"0")}`;
+        const newStartISO = toISODateTime(dateStr, startHhmm);
+        const newEndISO = endHhmm ? toISODateTime(dateStr, endHhmm) : newStartISO;
+        ev.title = newTitle;
+        ev.start = newStartISO;
+        ev.end = endHhmm ? newEndISO : null;
+        ev.date = dateStr;
+        if (OFFLINE_MODE) {
+            saveLocalEvents();
+            editingEventId = null;
+            renderList();
+            bc.postMessage({ type: "EVENTS_UPDATED" });
+            return;
+        }
+        if (String(editingEventId).startsWith("temp-") || String(editingEventId).startsWith("off-")) {
+            const pendingMap = loadPendingEventsMap();
+            const oldDateStr = String(ev.start || ev.date || "").slice(0, 10);
+            if (oldDateStr && pendingMap[oldDateStr]) {
+                pendingMap[oldDateStr] = pendingMap[oldDateStr].filter(p => p.id !== editingEventId);
+                if (pendingMap[oldDateStr].length === 0) delete pendingMap[oldDateStr];
+            }
+            (pendingMap[dateStr] ||= []).unshift(ev);
+            savePendingEventsMap(pendingMap);
+            globalEvents.sort((a, b) => String(a.start || "").localeCompare(String(b.start || "")));
+            editingEventId = null;
+            saveLocalEvents();
+            renderList();
+            bc.postMessage({ type: "EVENTS_UPDATED" });
+            return;
+        }
+        inFlight++;
+        try {
+            const res = await fetch("/api/notion", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: "updateEvent", pageId: editingEventId, title: newTitle, start: newStartISO, end: endHhmm ? newEndISO : newStartISO })
+            });
+            const data = await res.json().catch(() => null);
+            if (data?.success) {
+                globalEvents.sort((a, b) => String(a.start || "").localeCompare(String(b.start || "")));
+                saveLocalEvents();
+                bc.postMessage({ type: "EVENTS_UPDATED" });
+            } else {
+                setSyncStatus("수정 실패");
+            }
+        } catch (e) { console.error(e); setSyncStatus("네트워크 오류"); }
+        finally { inFlight--; }
+        editingEventId = null;
+        editTimeOverride = null;
+        renderList();
     }
 
     async function deleteEvent(id) {
