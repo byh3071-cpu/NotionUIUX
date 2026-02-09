@@ -52,10 +52,6 @@
       .day.sat:not(.disabled) { border-color: rgba(143,182,255,.40); }
       .day.sat:not(.disabled) .num { color: var(--sat); }
   
-      .day.hasDone:not(.disabled){
-        border-color: rgba(255,111,177,.75);
-        box-shadow: inset 0 0 0 2px rgba(255,111,177,.18);
-      }
       .eventMark{
         position:absolute;
         right:4px;
@@ -84,12 +80,14 @@
         background: var(--accent-color);
         color: var(--bg-color); display:flex;
         align-items:flex-end;
-        font-size:10px;
+        font-size:11px;
         line-height: 1; 
         font-weight: 900; 
-        letter-spacing: -0.4px; 
+        letter-spacing: -0.3px; 
         padding:0 0 2px 3px;
-        text-shadow: 0 1px 0 rgba(0,0,0,.55);
+        text-shadow: 0 1px 2px rgba(0,0,0,.8);
+        -webkit-font-smoothing: antialiased;
+        font-family: 'Noto Sans KR', sans-serif;
         z-index:1;
       }
       .heartMarker{
@@ -116,12 +114,14 @@
         display:flex;
         align-items:flex-end;
         justify-content:flex-end;
-        font-size:10px;
+        font-size:11px;
         line-height: 1;
         font-weight: 900;
-        letter-spacing: -0.4px;
+        letter-spacing: -0.3px;
         padding:0 3px 2px 0;
-        text-shadow: 0 1px 0 rgba(0,0,0,.55);
+        text-shadow: 0 1px 2px rgba(0,0,0,.8);
+        -webkit-font-smoothing: antialiased;
+        font-family: 'Noto Sans KR', sans-serif;
         z-index:1;
       }
   
