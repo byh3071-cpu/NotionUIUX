@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>일정 추가</title>
+    <title>schedule</title>
     <link href="https://fonts.googleapis.com/css2?family=Silkscreen&family=Noto+Sans+KR:wght@700&display=swap" rel="stylesheet">
     <style>
         /* todo.html과 동일한 디자인 */
@@ -52,7 +52,7 @@
     <div class="schedule-container">
         <div class="header-bar">
             <span class="header-left">
-                <span>일정 추가<span id="offlineBadge" style="display:none; margin-left:6px; font-size:9px; color:#ffa94d;">[테스트]</span></span>
+                <span>schedule<span id="offlineBadge" style="display:none; margin-left:6px; font-size:9px; color:#ffa94d;">[테스트]</span></span>
                 <span id="event-count">LOADING...</span>
             </span>
             <span id="syncStatus" style="font-size:8px; opacity:0.8;" title="동기화 상태">—</span>
@@ -68,11 +68,11 @@
             </label>
         </div>
         <div class="input-area">
-            <input type="text" id="inputTitle" class="input-title" placeholder="> 일정 제목..." autocomplete="off" title="Enter로 추가">
+            <input type="text" id="inputTitle" class="input-title" placeholder="> schedule..." autocomplete="off" title="Enter로 추가">
             <input type="date" id="inputDate" class="input-date" title="날짜 선택">
             <input type="time" id="inputTimeStart" class="input-time" title="시작 시간 (24시간)" step="300">
             <input type="time" id="inputTimeEnd" class="input-time-end" title="종료 시간 (24시간)" step="300">
-            <button class="btn-add" onclick="addEvent()" title="일정 추가 (Enter)">+</button>
+            <button class="btn-add" onclick="addEvent()" title="schedule (Enter)">+</button>
         </div>
         <div class="schedule-list" id="list"></div>
     </div>
@@ -308,7 +308,7 @@
                     <div class="schedule-left">
                         <div class="schedule-marker"></div>
                         <div>
-                            <span class="text-content">${esc(ev.title || "일정")}</span>
+                            <span class="text-content">${esc(ev.title || "schedule")}</span>
                             <div class="text-meta">${meta}</div>
                         </div>
                     </div>
@@ -329,7 +329,7 @@
             empty.style.opacity = "0.7";
             empty.style.fontSize = "11px";
             empty.style.textAlign = "center";
-            empty.textContent = "등록된 일정이 없습니다.\n위에서 추가해보세요.";
+            empty.textContent = "No schedule yet.\nAdd one above.";
             empty.style.whiteSpace = "pre";
             list.appendChild(empty);
         }
