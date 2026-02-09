@@ -74,10 +74,22 @@
         .dt-picker-time input { width: 36px; padding: 4px 6px; font-size: 11px; color: var(--text-color); background: #0b0c10; border: 1px solid var(--border-color); }
         .dt-picker-now { margin-left: auto; font-size: 9px; color: var(--accent-color); cursor: pointer; }
         .dt-picker-now:hover { text-decoration: underline; }
-        /* 편집 모달 - 스크롤 영향 없음 */
-        .edit-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
+        /* 편집 모달 - 스크롤 없이 한 화면에 */
+        .edit-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box; }
         .edit-modal-overlay.hidden { display: none; }
-        .edit-modal { background: #0e1016; border: 2px solid var(--border-color); max-width: 280px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 12px; }
+        .edit-modal { background: #0e1016; border: 2px solid var(--border-color); width: 260px; max-width: 100%; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; }
+        .edit-modal-content { flex: 1; min-height: 0; padding: 8px 10px; overflow: hidden; }
+        .edit-modal-footer { flex-shrink: 0; padding: 8px 10px 10px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 8px; background: #0e1016; }
+        .edit-modal .edit-picker { padding: 6px; margin-top: 4px; }
+        .edit-modal .dt-picker-header { margin-bottom: 4px; }
+        .edit-modal .dt-picker-dow { margin-bottom: 2px; }
+        .edit-modal .dt-picker-dow span { font-size: 7px; }
+        .edit-modal .dt-picker-grid { gap: 1px; }
+        .edit-modal .dt-picker-day { width: 20px; height: 20px; font-size: 9px; }
+        .edit-modal .dt-picker-time { margin-top: 6px; padding-top: 6px; gap: 4px; }
+        .edit-modal .dt-picker-time input { width: 30px; padding: 2px 4px; font-size: 10px; }
+        .edit-modal .dt-picker-nav-btn { width: 20px; height: 20px; font-size: 9px; }
+        .edit-modal .dt-picker-month { font-size: 9px; min-width: 60px; }
     </style>
 </head>
 <body>
@@ -565,40 +577,42 @@
         if (editTimeOverride) editTimeOverride = null;
         const gridHtml = getEditCalendarGridHTML();
         modal.innerHTML = `
-            <div style="margin-bottom:10px;">
-                <input type="text" id="editEventInput" value="${esc(ev.title || "")}" maxlength="80" style="width:100%; background:#0b0c10; border:1px solid var(--border-color); color:var(--text-color); padding:8px 10px; font-size:12px; outline:none;">
+            <div class="edit-modal-content">
+                <div style="margin-bottom:6px;">
+                    <input type="text" id="editEventInput" value="${esc(ev.title || "")}" maxlength="80" style="width:100%; background:#0b0c10; border:1px solid var(--border-color); color:var(--text-color); padding:6px 8px; font-size:11px; outline:none;">
+                </div>
+                <div class="edit-picker">
+                    <div class="dt-picker-header">
+                        <div class="dt-picker-nav">
+                            <button type="button" class="dt-picker-nav-btn" onclick="editPrevMonth(); redrawEditModal(); return false;">‹</button>
+                            <span class="dt-picker-month">${editViewYear}년 ${editViewMonth + 1}월</span>
+                            <button type="button" class="dt-picker-nav-btn" onclick="editNextMonth(); redrawEditModal(); return false;">›</button>
+                        </div>
+                        <span class="dt-picker-now" onclick="editNow(); redrawEditModal(); return false;">지금</span>
+                    </div>
+                    <div class="dt-picker-dow">
+                        <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
+                    </div>
+                    <div class="dt-picker-grid" id="editCalendarGrid">${gridHtml}</div>
+                    <div class="dt-picker-time">
+                        <div class="dt-picker-time-row">
+                            <label>시작 시간</label>
+                            <input type="number" id="editEventHour" min="0" max="23" value="${sh}" />
+                            <span>:</span>
+                            <input type="number" id="editEventMin" min="0" max="59" value="${sm}" />
+                            <span style="font-size: 9px; opacity: 0.8;" id="editEventAmpm">${sh < 12 ? "오전" : "오후"}</span>
+                        </div>
+                        <div class="dt-picker-time-row">
+                            <label>종료 시간</label>
+                            <input type="number" id="editEventHourEnd" min="0" max="23" value="${eh}" />
+                            <span>:</span>
+                            <input type="number" id="editEventMinEnd" min="0" max="59" value="${em}" />
+                            <span style="font-size: 9px; opacity: 0.8;" id="editEventAmpmEnd">${eh < 12 ? "오전" : "오후"}</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="edit-picker">
-                <div class="dt-picker-header">
-                    <div class="dt-picker-nav">
-                        <button type="button" class="dt-picker-nav-btn" onclick="editPrevMonth(); redrawEditModal(); return false;">‹</button>
-                        <span class="dt-picker-month">${editViewYear}년 ${editViewMonth + 1}월</span>
-                        <button type="button" class="dt-picker-nav-btn" onclick="editNextMonth(); redrawEditModal(); return false;">›</button>
-                    </div>
-                    <span class="dt-picker-now" onclick="editNow(); redrawEditModal(); return false;">지금</span>
-                </div>
-                <div class="dt-picker-dow">
-                    <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
-                </div>
-                <div class="dt-picker-grid" id="editCalendarGrid">${gridHtml}</div>
-                <div class="dt-picker-time">
-                    <div class="dt-picker-time-row">
-                        <label>시작 시간</label>
-                        <input type="number" id="editEventHour" min="0" max="23" value="${sh}" />
-                        <span>:</span>
-                        <input type="number" id="editEventMin" min="0" max="59" value="${sm}" />
-                        <span style="font-size: 9px; opacity: 0.8;" id="editEventAmpm">${sh < 12 ? "오전" : "오후"}</span>
-                    </div>
-                    <div class="dt-picker-time-row">
-                        <label>종료 시간</label>
-                        <input type="number" id="editEventHourEnd" min="0" max="23" value="${eh}" />
-                        <span>:</span>
-                        <input type="number" id="editEventMinEnd" min="0" max="59" value="${em}" />
-                        <span style="font-size: 9px; opacity: 0.8;" id="editEventAmpmEnd">${eh < 12 ? "오전" : "오후"}</span>
-                    </div>
-                </div>
-            </div>
-            <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
+            <div class="edit-modal-footer">
                 <button type="button" class="btn-action btn-delete" onclick="cancelEditEvent(); return false;">취소</button>
                 <button type="button" class="btn-action btn-edit" onclick="saveEditEvent(); return false;">저장</button>
             </div>
