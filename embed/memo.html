@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Memo Pad</title>
+    <link href="https://fonts.googleapis.com/css2?family=Silkscreen&family=Noto+Sans+KR:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg-color: #0f1115; --border-color: #3b4261; --accent-color: #82aaff; --text-color: #dbe6f5; --dim-color: #1e222a; }
+        body { margin: 0; padding: 0; background-color: var(--bg-color); font-family: 'Silkscreen', cursive; width: 100vw; height: 100vh; overflow: hidden; color: var(--text-color); }
+        .memo-container { width: 100%; height: 100%; border: 2px solid var(--border-color); box-sizing: border-box; display: flex; flex-direction: column; }
+        .header-bar { height: 32px; flex-shrink: 0; border-bottom: 1px solid var(--border-color); background: rgba(59, 66, 97, 0.2); display: flex; align-items: center; justify-content: space-between; padding: 0 12px; font-size: 11px; color: var(--accent-color); }
+        .header-left { display: flex; align-items: center; gap: 8px; }
+        .input-area { min-height: 40px; flex-shrink: 0; border-bottom: 2px solid var(--border-color); display: flex; background: rgba(130, 170, 255, 0.05); padding: 4px 0; }
+        .memo-input { flex: 1; background: transparent; border: none; color: #ffffff; font-family: 'Noto Sans KR', sans-serif; font-size: 12px; font-weight: 700; padding: 0 12px; outline: none; resize: none; min-height: 32px; max-height: 200px; line-height: 1.4; }
+        .memo-input::placeholder { font-family: 'Silkscreen'; color: var(--accent-color); opacity: 0.5; font-size: 11px; font-weight: 400; }
+        .btn-add { width: 40px; background: transparent; border: none; border-left: 1px solid var(--border-color); color: var(--accent-color); cursor: pointer; font-size: 18px; font-family: 'Silkscreen'; }
+        .btn-add:hover { background: rgba(130, 170, 255, 0.2); color: #fff; }
+        .memo-list { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+        .memo-list::-webkit-scrollbar { width: 4px; }
+        .memo-list::-webkit-scrollbar-track { background: var(--bg-color); }
+        .memo-list::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 2px; }
+        .memo-item { display: flex; align-items: flex-start; justify-content: space-between; padding: 8px 10px; border: 1px solid var(--border-color); background: rgba(30, 34, 42, 0.4); transition: all 0.2s; }
+        .memo-item:hover { border-color: var(--accent-color); background: rgba(30, 34, 42, 0.8); transform: translateX(2px); }
+        .memo-content { flex: 1; min-width: 0; cursor: pointer; }
+        .memo-text { font-family: 'Noto Sans KR', sans-serif; font-size: 12px; font-weight: 700; color: #ffffff; line-height: 1.4; letter-spacing: -0.3px; word-break: break-word; white-space: pre-wrap; }
+        .memo-time { font-size: 9px; color: var(--accent-color); opacity: 0.6; margin-top: 4px; }
+        .memo-item-actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+        .btn-action { color: #4c566a; cursor: pointer; padding: 4px 6px; opacity: 0.8; font-family: 'Silkscreen'; font-size: 10px; background: transparent; border: 1px solid var(--border-color); min-width: 24px; display: flex; align-items: center; justify-content: center; }
+        .btn-action:hover { opacity: 1; }
+        .btn-edit { color: #82aaff; }
+        .btn-edit:hover { border-color: var(--accent-color); background: rgba(130, 170, 255, 0.15); }
+        .btn-delete { color: #4c566a; }
+        .btn-delete:hover { color: #ff5370; border-color: #ff5370; }
+        .memo-item.is-editing { flex-direction: column; align-items: stretch; gap: 8px; }
+        .memo-item.is-editing .memo-content { cursor: default; }
+        .edit-input { width: 100%; background: #0b0c10; border: 1px solid var(--border-color); color: var(--text-color); padding: 6px 8px; font-family: 'Noto Sans KR', sans-serif; font-size: 12px; font-weight: 700; outline: none; resize: none; min-height: 60px; }
+    </style>
+</head>
+<body>
+    <div class="memo-container">
+        <div class="header-bar">
+            <span class="header-left">
+                <span>MEMO PAD</span>
+                <span id="memo-count">0</span>
+            </span>
+        </div>
+        <div class="input-area">
+            <textarea id="input" class="memo-input" placeholder="> 메모를 입력하세요..." autocomplete="off" title="Ctrl+Enter로 추가"></textarea>
+            <button class="btn-add" onclick="addMemo()" title="메모 추가 (Ctrl+Enter)">+</button>
+        </div>
+        <div class="memo-list" id="list"></div>
+    </div>
+
+<script>
+    const input = document.getElementById("input");
+    const list = document.getElementById("list");
+    const countDisplay = document.getElementById("memo-count");
+    
+    const MEMO_KEY = "memo_pad_v1";
+    let memos = [];
+    let editingId = null;
+    
+    function loadMemos() {
+        try {
+            const stored = localStorage.getItem(MEMO_KEY);
+            memos = stored ? JSON.parse(stored) : [];
+        } catch (e) {
+            memos = [];
+        }
+        renderList();
+    }
+    
+    function saveMemos() {
+        try {
+            localStorage.setItem(MEMO_KEY, JSON.stringify(memos));
+        } catch (e) {
+            console.error("Failed to save memos:", e);
+        }
+    }
+    
+    function formatTime(timestamp) {
+        const d = new Date(timestamp);
+        const now = new Date();
+        const diff = now - d;
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(diff / 3600000);
+        const days = Math.floor(diff / 86400000);
+        
+        if (minutes < 1) return "방금 전";
+        if (minutes < 60) return `${minutes}분 전`;
+        if (hours < 24) return `${hours}시간 전`;
+        if (days < 7) return `${days}일 전`;
+        
+        // 7일 이상이면 날짜와 시간 표시
+        const month = d.getMonth() + 1;
+        const day = d.getDate();
+        const hour = d.getHours();
+        const minute = d.getMinutes();
+        const ampm = hour < 12 ? "오전" : "오후";
+        const displayHour = hour === 0 ? 12 : (hour > 12 ? hour - 12 : hour);
+        
+        return `${month}/${day} ${ampm} ${displayHour}:${String(minute).padStart(2, '0')}`;
+    }
+    
+    function renderList() {
+        if (!list) return;
+        list.innerHTML = "";
+        
+        if (memos.length === 0) {
+            const empty = document.createElement("div");
+            empty.style.padding = "16px";
+            empty.style.color = "var(--accent-color)";
+            empty.style.opacity = "0.7";
+            empty.style.fontSize = "11px";
+            empty.style.textAlign = "center";
+            empty.textContent = "메모가 없습니다.\n위에서 추가해보세요.";
+            empty.style.whiteSpace = "pre";
+            list.appendChild(empty);
+        } else {
+            memos.forEach(memo => {
+                const item = document.createElement("div");
+                item.className = "memo-item";
+                item.dataset.id = memo.id;
+                
+                if (editingId === memo.id) {
+                    item.classList.add("is-editing");
+                    const editInput = document.createElement("textarea");
+                    editInput.className = "edit-input";
+                    editInput.value = memo.text;
+                    editInput.maxLength = 500;
+                    editInput.addEventListener("keydown", (e) => {
+                        if (e.key === "Escape") {
+                            editingId = null;
+                            renderList();
+                        } else if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                            saveEdit(memo.id, editInput.value.trim());
+                        }
+                    });
+                    editInput.addEventListener("blur", () => {
+                        saveEdit(memo.id, editInput.value.trim());
+                    });
+                    
+                    const btnSave = document.createElement("button");
+                    btnSave.className = "btn-action btn-edit";
+                    btnSave.textContent = "저장";
+                    btnSave.onclick = () => saveEdit(memo.id, editInput.value.trim());
+                    
+                    const btnCancel = document.createElement("button");
+                    btnCancel.className = "btn-action btn-delete";
+                    btnCancel.textContent = "취소";
+                    btnCancel.onclick = () => {
+                        editingId = null;
+                        renderList();
+                    };
+                    
+                    const actions = document.createElement("div");
+                    actions.className = "memo-item-actions";
+                    actions.appendChild(btnSave);
+                    actions.appendChild(btnCancel);
+                    
+                    item.appendChild(editInput);
+                    item.appendChild(actions);
+                } else {
+                    const content = document.createElement("div");
+                    content.className = "memo-content";
+                    content.onclick = () => {
+                        editingId = memo.id;
+                        renderList();
+                        setTimeout(() => {
+                            const editInput = item.querySelector(".edit-input");
+                            if (editInput) editInput.focus();
+                        }, 10);
+                    };
+                    
+                    const text = document.createElement("div");
+                    text.className = "memo-text";
+                    text.textContent = memo.text;
+                    
+                    const time = document.createElement("div");
+                    time.className = "memo-time";
+                    time.textContent = formatTime(memo.timestamp);
+                    
+                    content.appendChild(text);
+                    content.appendChild(time);
+                    
+                    const actions = document.createElement("div");
+                    actions.className = "memo-item-actions";
+                    
+                    const btnEdit = document.createElement("button");
+                    btnEdit.className = "btn-action btn-edit";
+                    btnEdit.textContent = "✎";
+                    btnEdit.title = "수정";
+                    btnEdit.onclick = (e) => {
+                        e.stopPropagation();
+                        editingId = memo.id;
+                        renderList();
+                        setTimeout(() => {
+                            const editInput = list.querySelector(".edit-input");
+                            if (editInput) editInput.focus();
+                        }, 10);
+                    };
+                    
+                    const btnDelete = document.createElement("button");
+                    btnDelete.className = "btn-action btn-delete";
+                    btnDelete.textContent = "X";
+                    btnDelete.title = "삭제";
+                    btnDelete.onclick = (e) => {
+                        e.stopPropagation();
+                        if (confirm("메모를 삭제하시겠습니까?")) {
+                            deleteMemo(memo.id);
+                        }
+                    };
+                    
+                    actions.appendChild(btnEdit);
+                    actions.appendChild(btnDelete);
+                    
+                    item.appendChild(content);
+                    item.appendChild(actions);
+                }
+                
+                list.appendChild(item);
+            });
+        }
+        
+        if (countDisplay) {
+            countDisplay.textContent = memos.length;
+        }
+    }
+    
+    function addMemo() {
+        const text = input.value.trim();
+        if (!text) return;
+        
+        const newMemo = {
+            id: Date.now().toString(),
+            text: text,
+            timestamp: Date.now()
+        };
+        
+        memos.unshift(newMemo);
+        saveMemos();
+        input.value = "";
+        renderList();
+    }
+    
+    function saveEdit(id, newText) {
+        if (!newText) {
+            deleteMemo(id);
+            return;
+        }
+        
+        const memo = memos.find(m => m.id === id);
+        if (memo) {
+            memo.text = newText;
+            memo.timestamp = Date.now();
+            saveMemos();
+        }
+        editingId = null;
+        renderList();
+    }
+    
+    function deleteMemo(id) {
+        memos = memos.filter(m => m.id !== id);
+        saveMemos();
+        renderList();
+    }
+    
+    input.addEventListener("keydown", (e) => {
+        // Ctrl+Enter 또는 Cmd+Enter로 메모 추가
+        if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+            e.preventDefault();
+            addMemo();
+        }
+        // Shift+Enter와 일반 Enter는 줄바꿈 (기본 동작)
+    });
+    
+    // textarea 자동 높이 조절
+    input.addEventListener("input", function() {
+        this.style.height = "auto";
+        this.style.height = Math.min(this.scrollHeight, 200) + "px";
+    });
+    
+    loadMemos();
+</script>
+</body>
+</html>
