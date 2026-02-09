@@ -296,6 +296,7 @@
 
     async function syncFromNotion() {
         if (inFlight > 0) return;
+        if (editingEventId) return;
         if (OFFLINE_MODE) {
             setSyncStatus("테스트");
             globalEvents = loadOfflineEvents();
@@ -354,6 +355,7 @@
     }
 
     function renderList() {
+        const savedScroll = list.scrollTop;
         list.innerHTML = "";
         const esc = (s) => String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
         const escId = (id) => String(id || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
@@ -510,6 +512,7 @@
             empty.style.whiteSpace = "pre";
             list.appendChild(empty);
         }
+        requestAnimationFrame(() => { list.scrollTop = savedScroll; });
     }
 
     async function addEvent() {
