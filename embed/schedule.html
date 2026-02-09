@@ -145,7 +145,10 @@
                         <span style="font-size: 9px; opacity: 0.8;" id="dt-ampm">오전</span>
                     </div>
                     <div class="dt-picker-time-row">
-                        <label>종료 시간</label>
+                        <label style="display: flex; align-items: center; gap: 6px;">
+                            <input type="checkbox" id="dt-use-end-time" checked style="width: 12px; height: 12px; accent-color: var(--accent-color); cursor: pointer;" />
+                            종료 시간
+                        </label>
                         <input type="number" id="dt-hour-end" min="0" max="23" value="10" />
                         <span>:</span>
                         <input type="number" id="dt-min-end" min="0" max="59" value="0" />
@@ -576,6 +579,7 @@
         if (!modal || !overlay || !ev) return;
         const esc = (s) => String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
         const startHhmm = extractHHmm(ev.start) || "00:00";
+        const hasEndTime = !!ev.end;
         const endHhmm = extractHHmm(ev.end) || startHhmm;
         const [sh, sm] = editTimeOverride ? [editTimeOverride.h, editTimeOverride.m] : startHhmm.split(":").map(n => parseInt(n, 10) || 0);
         const [eh, em] = editTimeOverride ? [editTimeOverride.he, editTimeOverride.me] : endHhmm.split(":").map(n => parseInt(n, 10) || 0);
@@ -608,11 +612,14 @@
                             <span style="font-size: 9px; opacity: 0.8;" id="editEventAmpm">${sh < 12 ? "오전" : "오후"}</span>
                         </div>
                         <div class="dt-picker-time-row">
-                            <label>종료 시간</label>
+                            <label style="display: flex; align-items: center; gap: 6px;">
+                                <input type="checkbox" id="editUseEndTime" ${hasEndTime ? "checked" : ""} style="width: 12px; height: 12px; accent-color: var(--accent-color); cursor: pointer;" />
+                                종료 시간
+                            </label>
                             <input type="number" id="editEventHourEnd" min="0" max="23" value="${eh}" />
                             <span>:</span>
                             <input type="number" id="editEventMinEnd" min="0" max="59" value="${em}" />
-                            <span style="font-size: 9px; opacity: 0.8;" id="editEventAmpmEnd">${eh < 12 ? "오전" : "오후"}</span>
+                            <span style="font-size: 9px; opacity: 0.8;" id="editEventAmpmEnd">${hasEndTime ? (eh < 12 ? "오전" : "오후") : ""}</span>
                         </div>
                     </div>
                 </div>
@@ -630,13 +637,25 @@
         });
         const updateEditAmpm = () => {
             const a = document.getElementById("editEventAmpm"); const ae = document.getElementById("editEventAmpmEnd");
+            const useEndTime = document.getElementById("editUseEndTime")?.checked !== false;
             const h = parseInt(document.getElementById("editEventHour")?.value, 10) || 0;
             const he = parseInt(document.getElementById("editEventHourEnd")?.value, 10) || 0;
             if (a) a.textContent = h < 12 ? "오전" : "오후";
-            if (ae) ae.textContent = he < 12 ? "오전" : "오후";
+            if (ae) ae.textContent = useEndTime ? (he < 12 ? "오전" : "오후") : "";
+            const hourEndEl = document.getElementById("editEventHourEnd");
+            const minEndEl = document.getElementById("editEventMinEnd");
+            if (hourEndEl && minEndEl) {
+                const disabled = !useEndTime;
+                hourEndEl.disabled = disabled;
+                minEndEl.disabled = disabled;
+                hourEndEl.style.opacity = disabled ? "0.5" : "1";
+                minEndEl.style.opacity = disabled ? "0.5" : "1";
+            }
         };
         modal.querySelector("#editEventHour")?.addEventListener("input", updateEditAmpm);
         modal.querySelector("#editEventHourEnd")?.addEventListener("input", updateEditAmpm);
+        modal.querySelector("#editUseEndTime")?.addEventListener("change", updateEditAmpm);
+        updateEditAmpm(); // 초기 상태 설정
         modal.querySelector("#editEventInput")?.addEventListener("keydown", (e) => { if (e.key==="Enter") saveEditEvent(); if (e.key==="Escape") cancelEditEvent(); });
         overlay.classList.remove("hidden");
         overlay.onclick = (e) => { if (e.target === overlay) cancelEditEvent(); };
@@ -654,10 +673,13 @@
             const dateStr = `${pd.y}-${String(pd.m).padStart(2,"0")}-${String(pd.d).padStart(2,"0")}`;
             ev.start = toISODateTime(dateStr, `${String(parseInt(h.value,10)||0).padStart(2,"0")}:${String(parseInt(m.value,10)||0).padStart(2,"0")}`);
         }
-        if (he != null && me != null) {
+        const useEndTime = document.getElementById("editUseEndTime")?.checked !== false;
+        if (useEndTime && he != null && me != null) {
             const pd = editPickedDate || { y: new Date().getFullYear(), m: new Date().getMonth() + 1, d: new Date().getDate() };
             const dateStr = `${pd.y}-${String(pd.m).padStart(2,"0")}-${String(pd.d).padStart(2,"0")}`;
             ev.end = toISODateTime(dateStr, `${String(parseInt(he.value,10)||0).padStart(2,"0")}:${String(parseInt(me.value,10)||0).padStart(2,"0")}`);
+        } else {
+            ev.end = null;
         }
         openEditModal(ev);
     }
@@ -699,15 +721,19 @@
         const dateStr = `${pd.y}-${String(pd.m).padStart(2,"0")}-${String(pd.d).padStart(2,"0")}`;
         const h = Math.min(23, Math.max(0, parseInt(hourInp?.value, 10) || 0));
         const m = Math.min(59, Math.max(0, parseInt(minInp?.value, 10) || 0));
-        const he = Math.min(23, Math.max(0, parseInt(hourEndInp?.value, 10) || 0));
-        const me = Math.min(59, Math.max(0, parseInt(minEndInp?.value, 10) || 0));
+        const useEndTime = document.getElementById("editUseEndTime")?.checked !== false;
         const startHhmm = `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
-        const endHhmm = `${String(he).padStart(2,"0")}:${String(me).padStart(2,"0")}`;
         const newStartISO = toISODateTime(dateStr, startHhmm);
-        const newEndISO = endHhmm ? toISODateTime(dateStr, endHhmm) : newStartISO;
         ev.title = newTitle;
         ev.start = newStartISO;
-        ev.end = endHhmm ? newEndISO : null;
+        if (useEndTime && hourEndInp && minEndInp) {
+            const he = Math.min(23, Math.max(0, parseInt(hourEndInp.value, 10) || 0));
+            const me = Math.min(59, Math.max(0, parseInt(minEndInp.value, 10) || 0));
+            const endHhmm = `${String(he).padStart(2,"0")}:${String(me).padStart(2,"0")}`;
+            ev.end = toISODateTime(dateStr, endHhmm);
+        } else {
+            ev.end = null;
+        }
         ev.date = dateStr;
         if (OFFLINE_MODE) {
             document.getElementById("editModalOverlay")?.classList.add("hidden");
@@ -739,7 +765,7 @@
             const res = await fetch("/api/notion", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ action: "updateEvent", pageId: editingEventId, title: newTitle, start: newStartISO, end: endHhmm ? newEndISO : newStartISO })
+                body: JSON.stringify({ action: "updateEvent", pageId: editingEventId, title: newTitle, start: newStartISO, end: ev.end })
             });
             const data = await res.json().catch(() => null);
             if (data?.success) {
@@ -830,6 +856,7 @@
     }
 
     function dtToDatetimeLocal() {
+        if (!dtHour || !dtMin) return getTodayDatetimeLocal();
         const d = pickedDate || { y: new Date().getFullYear(), m: new Date().getMonth() + 1, d: new Date().getDate() };
         const h = Math.min(23, Math.max(0, parseInt(dtHour.value, 10) || 0));
         const min = Math.min(59, Math.max(0, parseInt(dtMin.value, 10) || 0));
@@ -837,24 +864,46 @@
         return `${ys}-${ms}-${ds}T${String(h).padStart(2,"0")}:${String(min).padStart(2,"0")}`;
     }
     function dtToTimeEnd() {
+        if (!dtHourEnd || !dtMinEnd) return "00:00";
         const he = Math.min(23, Math.max(0, parseInt(dtHourEnd.value, 10) || 0));
         const me = Math.min(59, Math.max(0, parseInt(dtMinEnd.value, 10) || 0));
         return `${String(he).padStart(2,"0")}:${String(me).padStart(2,"0")}`;
     }
     function dtUpdateInputAndDisplay() {
+        if (!dtHour || !dtMin || !inputStart || !inputTimeEnd) return;
         const dtLocal = dtToDatetimeLocal();
         inputStart.value = dtLocal;
-        const endHhmm = dtToTimeEnd();
-        inputTimeEnd.value = endHhmm;
+        const useEndTime = document.getElementById("dt-use-end-time")?.checked !== false;
+        if (useEndTime && dtHourEnd && dtMinEnd) {
+            const endHhmm = dtToTimeEnd();
+            inputTimeEnd.value = endHhmm;
+        } else {
+            inputTimeEnd.value = "";
+        }
         const [_, timePart] = dtLocal.split("T");
         const [h, m] = (timePart || "00:00").split(":");
         const hh = parseInt(h, 10) || 0;
-        dtAmpm.textContent = hh < 12 ? "오전" : "오후";
-        const [he, me] = endHhmm.split(":");
-        const hhe = parseInt(he, 10) || 0;
-        dtAmpmEnd.textContent = hhe < 12 ? "오전" : "오후";
+        if (dtAmpm) dtAmpm.textContent = hh < 12 ? "오전" : "오후";
+        if (useEndTime && inputTimeEnd.value && dtAmpmEnd) {
+            const [he, me] = inputTimeEnd.value.split(":");
+            const hhe = parseInt(he, 10) || 0;
+            dtAmpmEnd.textContent = hhe < 12 ? "오전" : "오후";
+        } else {
+            if (dtAmpmEnd) dtAmpmEnd.textContent = "";
+        }
+        const dtUseEndTime = document.getElementById("dt-use-end-time");
+        const dtHourEndEl = document.getElementById("dt-hour-end");
+        const dtMinEndEl = document.getElementById("dt-min-end");
+        if (dtUseEndTime && dtHourEndEl && dtMinEndEl) {
+            const disabled = !dtUseEndTime.checked;
+            dtHourEndEl.disabled = disabled;
+            dtMinEndEl.disabled = disabled;
+            dtHourEndEl.style.opacity = disabled ? "0.5" : "1";
+            dtMinEndEl.style.opacity = disabled ? "0.5" : "1";
+        }
     }
     function dtRenderCalendar() {
+        if (!dtMonthLabel || !dtCalendarGrid) return;
         dtMonthLabel.textContent = `${viewYear}년 ${viewMonth + 1}월`;
         const first = new Date(viewYear, viewMonth, 1);
         const last = new Date(viewYear, viewMonth + 1, 0);
@@ -885,48 +934,80 @@
         }
         dtCalendarGrid.innerHTML = html;
         dtCalendarGrid.querySelectorAll(".dt-picker-day").forEach(btn => {
-            btn.addEventListener("click", () => {
+            btn.addEventListener("click", (e) => {
+                e.stopPropagation(); // 드롭다운이 닫히지 않도록 이벤트 버블링 방지
                 pickedDate = { y: +btn.dataset.y, m: +(btn.dataset.m) + 1, d: +btn.dataset.d };
                 dtUpdateInputAndDisplay();
                 dtRenderCalendar();
             });
         });
     }
-    dtTrigger.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const isHidden = dtDrop.classList.contains("hidden");
-        dtDrop.classList.toggle("hidden", !isHidden);
-        if (isHidden) dtRenderCalendar();
-    });
-    document.addEventListener("click", (e) => {
-        if (!dtDrop.contains(e.target) && !dtTrigger.contains(e.target)) dtDrop.classList.add("hidden");
-    });
-    dtPrevMonth.addEventListener("click", () => { viewMonth--; if (viewMonth < 0) { viewMonth = 11; viewYear--; } dtRenderCalendar(); });
-    dtNextMonth.addEventListener("click", () => { viewMonth++; if (viewMonth > 11) { viewMonth = 0; viewYear++; } dtRenderCalendar(); });
-    dtNow.addEventListener("click", () => {
-        const n = new Date();
-        viewYear = n.getFullYear(); viewMonth = n.getMonth();
-        pickedDate = { y: viewYear, m: viewMonth + 1, d: n.getDate() };
-        dtHour.value = n.getHours(); dtMin.value = n.getMinutes();
-        const endMin = n.getMinutes() + 60;
-        let endH = Math.min(23, n.getHours() + Math.floor(endMin / 60));
-        let endM = endH >= 23 ? 59 : endMin % 60;
-        dtHourEnd.value = endH; dtMinEnd.value = endM;
-        dtUpdateInputAndDisplay();
-        dtRenderCalendar();
-        dtDrop.classList.add("hidden");
-    });
-    dtHour.addEventListener("input", dtUpdateInputAndDisplay);
-    dtMin.addEventListener("input", dtUpdateInputAndDisplay);
-    preventScrollOnFocus(dtHour); preventScrollOnFocus(dtMin); preventScrollOnFocus(dtHourEnd); preventScrollOnFocus(dtMinEnd);
-    dtHour.addEventListener("change", () => { dtHour.value = Math.min(23, Math.max(0, parseInt(dtHour.value, 10) || 0)); dtUpdateInputAndDisplay(); });
-    dtMin.addEventListener("change", () => { dtMin.value = Math.min(59, Math.max(0, parseInt(dtMin.value, 10) || 0)); dtUpdateInputAndDisplay(); });
-    dtHourEnd.addEventListener("input", dtUpdateInputAndDisplay);
-    dtMinEnd.addEventListener("input", dtUpdateInputAndDisplay);
-    dtHourEnd.addEventListener("change", () => { dtHourEnd.value = Math.min(23, Math.max(0, parseInt(dtHourEnd.value, 10) || 0)); dtUpdateInputAndDisplay(); });
-    dtMinEnd.addEventListener("change", () => { dtMinEnd.value = Math.min(59, Math.max(0, parseInt(dtMinEnd.value, 10) || 0)); dtUpdateInputAndDisplay(); });
+    if (dtTrigger && dtDrop) {
+        dtTrigger.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const isHidden = dtDrop.classList.contains("hidden");
+            dtDrop.classList.toggle("hidden", !isHidden);
+            if (isHidden) dtRenderCalendar();
+        });
+        // 드롭다운 내부 클릭 시 닫히지 않도록
+        dtDrop.addEventListener("click", (e) => {
+            e.stopPropagation();
+        });
+        document.addEventListener("click", (e) => {
+            if (dtDrop && dtTrigger && !dtDrop.contains(e.target) && !dtTrigger.contains(e.target)) dtDrop.classList.add("hidden");
+        });
+    }
+    if (dtPrevMonth) {
+        dtPrevMonth.addEventListener("click", (e) => { e.stopPropagation(); viewMonth--; if (viewMonth < 0) { viewMonth = 11; viewYear--; } dtRenderCalendar(); });
+    }
+    if (dtNextMonth) {
+        dtNextMonth.addEventListener("click", (e) => { e.stopPropagation(); viewMonth++; if (viewMonth > 11) { viewMonth = 0; viewYear++; } dtRenderCalendar(); });
+    }
+    if (dtNow && dtHour && dtMin && dtHourEnd && dtMinEnd && dtDrop) {
+        dtNow.addEventListener("click", () => {
+            const n = new Date();
+            viewYear = n.getFullYear(); viewMonth = n.getMonth();
+            pickedDate = { y: viewYear, m: viewMonth + 1, d: n.getDate() };
+            dtHour.value = n.getHours(); dtMin.value = n.getMinutes();
+            const endMin = n.getMinutes() + 60;
+            let endH = Math.min(23, n.getHours() + Math.floor(endMin / 60));
+            let endM = endH >= 23 ? 59 : endMin % 60;
+            dtHourEnd.value = endH; dtMinEnd.value = endM;
+            dtUpdateInputAndDisplay();
+            dtRenderCalendar();
+            dtDrop.classList.add("hidden");
+        });
+    }
+    if (dtHour) {
+        dtHour.addEventListener("input", dtUpdateInputAndDisplay);
+        dtHour.addEventListener("change", () => { dtHour.value = Math.min(23, Math.max(0, parseInt(dtHour.value, 10) || 0)); dtUpdateInputAndDisplay(); });
+        preventScrollOnFocus(dtHour);
+    }
+    if (dtMin) {
+        dtMin.addEventListener("input", dtUpdateInputAndDisplay);
+        dtMin.addEventListener("change", () => { dtMin.value = Math.min(59, Math.max(0, parseInt(dtMin.value, 10) || 0)); dtUpdateInputAndDisplay(); });
+        preventScrollOnFocus(dtMin);
+    }
+    if (dtHourEnd) {
+        dtHourEnd.addEventListener("input", dtUpdateInputAndDisplay);
+        dtHourEnd.addEventListener("change", () => { dtHourEnd.value = Math.min(23, Math.max(0, parseInt(dtHourEnd.value, 10) || 0)); dtUpdateInputAndDisplay(); });
+        preventScrollOnFocus(dtHourEnd);
+    }
+    if (dtMinEnd) {
+        dtMinEnd.addEventListener("input", dtUpdateInputAndDisplay);
+        dtMinEnd.addEventListener("change", () => { dtMinEnd.value = Math.min(59, Math.max(0, parseInt(dtMinEnd.value, 10) || 0)); dtUpdateInputAndDisplay(); });
+        preventScrollOnFocus(dtMinEnd);
+    }
+    const dtUseEndTime = document.getElementById("dt-use-end-time");
+    if (dtUseEndTime) {
+        dtUseEndTime.addEventListener("change", () => {
+            dtUpdateInputAndDisplay();
+        });
+        if (dtHour && dtMin) dtUpdateInputAndDisplay(); // 초기 상태 설정
+    }
 
     function dtResetToNow() {
+        if (!dtHour || !dtMin || !dtHourEnd || !dtMinEnd) return;
         const n = new Date();
         viewYear = n.getFullYear(); viewMonth = n.getMonth();
         pickedDate = { y: viewYear, m: viewMonth + 1, d: n.getDate() };
@@ -939,7 +1020,7 @@
         dtRenderCalendar();
     }
 
-    if (!pickedDate) {
+    if (!pickedDate && dtHour && dtMin && dtHourEnd && dtMinEnd) {
         const n = new Date();
         pickedDate = { y: n.getFullYear(), m: n.getMonth() + 1, d: n.getDate() };
         dtHour.value = n.getHours();
@@ -949,8 +1030,10 @@
         let endM = endH >= 23 ? 59 : endMin % 60;
         dtHourEnd.value = endH; dtMinEnd.value = endM;
     }
-    dtUpdateInputAndDisplay();
-    dtRenderCalendar();
+    if (dtHour && dtMin) {
+        dtUpdateInputAndDisplay();
+        dtRenderCalendar();
+    }
 
     loadLocalEvents();
     renderList();
