@@ -5,51 +5,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Notion Pixel Calendar</title>
   
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Silkscreen&family=Noto+Sans+KR:wght@700&display=swap" rel="stylesheet">
   
     <style>
+      /* todo/schedule과 동일한 디자인 */
       :root{
-        --panel:#111319; --panel2:#0f1117; --line:#2a2f3a; --line2:#3a4150;
-        --text:#e9eef7; --muted:#a7b0c2; --accent:#7cc7ff; --today:#ffe08a;
-        --danger:#ff6b6b; --sun:#ff8f8f; --sat:#8fb6ff;
+        --bg-color: #0f1115; --border-color: #3b4261; --accent-color: #82aaff; --text-color: #dbe6f5; --dim-color: #1e222a;
+        --today:#ffe08a; --sun:#ff8f8f; --sat:#8fb6ff; --pink: #ff6fb1;
         --w: 360px; --h: 460px; --cell: 46px; --gap: 4px;
         --bottomBarH: 46px;
-        --pink: #ff6fb1;
       }
   
       *{ box-sizing:border-box; }
       html,body{
         margin:0; padding:0; width:100%; height:100%;
-        background: var(--panel); color:var(--text);
-        font-family: ui-monospace, Menlo, Monaco, Consolas, "Press Start 2P", monospace;
-        -webkit-font-smoothing: antialiased; overflow:hidden;
+        background: var(--bg-color); color: var(--text-color);
+        font-family: 'Silkscreen', cursive;
+        overflow:hidden;
       }
   
       .stage{ width:100%; height:100%; display:flex; justify-content:center; align-items:center; }
-      .wrap{ width:var(--w); height:var(--h); background:var(--panel); border:2px solid var(--line2); overflow:hidden; position:relative; }
+      .wrap{ width:var(--w); height:var(--h); background:var(--bg-color); border:2px solid var(--border-color); overflow:hidden; position:relative; }
   
-      .topbar{ display:flex; align-items:center; justify-content:space-between; padding:8px; border-bottom:2px solid var(--line2); background:linear-gradient(180deg, var(--panel2), var(--panel)); gap:6px; }
+      .topbar{ display:flex; align-items:center; justify-content:space-between; padding:8px; border-bottom:1px solid var(--border-color); background: rgba(59, 66, 97, 0.2); gap:6px; }
       .leftBtns, .rightBtns{ display:flex; gap:6px; align-items:center; }
-      .btn{ height:32px; padding:0 10px; background:#0e1016; color:var(--text); border:2px solid var(--line2); cursor:pointer; font-size:10px; display:flex; align-items:center; justify-content:center; }
-      .btn:hover{ border-color:var(--accent); }
+      .btn{ height:32px; padding:0 10px; background: transparent; color: var(--text-color); border:1px solid var(--border-color); cursor:pointer; font-size:10px; font-family: 'Silkscreen'; display:flex; align-items:center; justify-content:center; }
+      .btn:hover{ border-color: var(--accent-color); background: rgba(130, 170, 255, 0.15); }
       .monthTitle{ flex:1; text-align:center; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   
-      .dow{ display:grid; grid-template-columns: repeat(7, 1fr); gap: var(--gap); padding:8px 8px 6px; border-bottom:2px solid var(--line2); background:#0e1016; }
-      .dow div{ text-align:center; font-size:9px; color:var(--muted); padding:6px 0; border:2px solid var(--line); background:#0b0c10; }
-      .dow .sunHead{ color:var(--sun); border-color:rgba(255,143,143,.45); }
-      .dow .satHead{ color:var(--sat); border-color:rgba(143,182,255,.45); }
+      .dow{ display:grid; grid-template-columns: repeat(7, 1fr); gap: var(--gap); padding:8px 8px 6px; border-bottom:2px solid var(--border-color); background: rgba(59, 66, 97, 0.15); }
+      .dow div{ text-align:center; font-size:9px; color: var(--accent-color); opacity: 0.8; padding:6px 0; border:1px solid var(--border-color); background: rgba(30, 34, 42, 0.4); }
+      .dow .sunHead{ color: var(--sun); border-color: rgba(255,143,143,.45); }
+      .dow .satHead{ color: var(--sat); border-color: rgba(143,182,255,.45); }
   
       .grid{ padding:8px; display:grid; grid-template-columns: repeat(7, 1fr); gap: var(--gap); }
   
-      .day{ height: var(--cell); border:2px solid rgba(233,238,247,.22); background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); position:relative; cursor:pointer; display:flex; padding:6px; }
-      .day.disabled{ opacity: 0.5; cursor:default; background: rgba(0,0,0,.25); border-color: rgba(233,238,247,.08); }
-      .day.disabled .num{ color: rgba(167,176,194,.35); }
+      .day{ height: var(--cell); border:1px solid var(--border-color); background: rgba(30, 34, 42, 0.4); position:relative; cursor:pointer; display:flex; padding:6px; }
+      .day.disabled{ opacity: 0.5; cursor:default; background: rgba(0,0,0,.25); border-color: rgba(59, 66, 97, 0.5); }
+      .day.disabled .num{ color: #888; }
       .day.today{ border-color: var(--today) !important; box-shadow: inset 0 0 0 2px rgba(255,224,138,.3); }
       .day.today .num{ color: var(--today); font-weight: 900; }
   
-      .num{ font-size:10px; color: var(--text); }
+      .num{ font-size:10px; color: var(--text-color); }
       .day.sun:not(.disabled) { border-color: rgba(255,143,143,.40); }
       .day.sun:not(.disabled) .num { color: var(--sun); }
       .day.sat:not(.disabled) { border-color: rgba(143,182,255,.40); }
@@ -59,7 +56,7 @@
         border-color: rgba(255,111,177,.75);
         box-shadow: inset 0 0 0 2px rgba(255,111,177,.18);
       }
-          .eventMark{
+      .eventMark{
         position:absolute;
         right:4px;
         top:3px;
@@ -68,11 +65,9 @@
         display:flex;
         align-items:center;
         justify-content:center;
-      
         font-size:10px;
         line-height:1;
         font-weight:900;
-      
         color: var(--pink);
         opacity:.95;
         text-shadow: 0 1px 0 rgba(0,0,0,.65);
@@ -86,8 +81,8 @@
         width:18px;
         height:18px;
         clip-path: polygon(0 0, 0 100%, 100% 100%);
-        background: var(--accent);
-        color:#0b0c10; display:flex;
+        background: var(--accent-color);
+        color: var(--bg-color); display:flex;
         align-items:flex-end;
         font-size:10px;
         line-height: 1; 
@@ -117,7 +112,7 @@
         width:18px; height:18px;
         clip-path: polygon(100% 0, 0 100%, 100% 100%);
         background: var(--today);
-        color:#0b0c10;
+        color: var(--bg-color);
         display:flex;
         align-items:flex-end;
         justify-content:flex-end;
@@ -130,11 +125,11 @@
         z-index:1;
       }
   
-      .bottomBar{ position:absolute; left:0; right:0; bottom:0; height: var(--bottomBarH); padding:8px; border-top:2px solid var(--line2); background:#0e1016; display:flex; align-items:center; justify-content:space-between; }
+      .bottomBar{ position:absolute; left:0; right:0; bottom:0; height: var(--bottomBarH); padding:8px; border-top:2px solid var(--border-color); background: rgba(59, 66, 97, 0.2); display:flex; align-items:center; justify-content:space-between; }
       
       .modalBack{ position:absolute; inset:0; background: rgba(0,0,0,.55); display:none; align-items:center; justify-content:center; padding:10px; z-index:50; }
       .modalBack.show{ display:flex; }
-      .modal{ width: 100%; max-width: 340px; height: 350px; background: #0e1016; border: 2px solid var(--line2); display:flex; flex-direction:column; overflow:hidden; }
+      .modal{ width: 100%; max-width: 340px; height: 350px; background: #0e1016; border: 2px solid var(--border-color); display:flex; flex-direction:column; overflow:hidden; }
       .modalTaskList{ -ms-overflow-style:none; scrollbar-width:none; }
       .modalTaskList::-webkit-scrollbar{ display:none; }
     </style>
@@ -161,19 +156,19 @@
         <div class="grid" id="grid"></div>
   
         <div class="bottomBar">
-          <span id="syncStatus" style="font-size:9px; color:var(--muted);">동기화 대기</span>
+          <span id="syncStatus" style="font-size:9px; color:var(--accent-color); opacity:0.8;">동기화 대기</span>
           <button class="btn" id="themeBtn">DARK</button>
         </div>
   
         <div class="modalBack" id="modalBack">
           <div class="modal">
-            <div class="modalHeader" style="padding:10px; display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--line2); background:#0b0c10; gap:8px;">
-              <span id="modalTitle" style="font-size:10px;">퀘스트 목록</span>
+            <div class="modalHeader" style="padding:10px; display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--border-color); background:#0b0c10; gap:8px;">
+              <span id="modalTitle" style="font-size:10px; color:var(--accent-color);">퀘스트 목록</span>
               <span id="closeBtn" style="cursor:pointer; font-size:12px; padding:4px;" title="닫기 (Esc)">X</span>
             </div>
-            <div class="modalAddRow" style="padding:8px; border-bottom:1px solid var(--line2); display:flex; gap:6px;">
-              <input type="text" id="modalTaskInput" placeholder="할 일 입력 후 Enter" style="flex:1; height:32px; border:2px solid var(--line2); background:#0b0c10; color:var(--text); padding:0 8px; font-size:10px; outline:none;" maxlength="60">
-              <button id="modalAddBtn" style="width:60px; height:32px; border:2px solid var(--line2); background:#0e1016; color:var(--text); cursor:pointer; font-size:9px;">추가</button>
+            <div class="modalAddRow" style="padding:8px; border-bottom:1px solid var(--border-color); display:flex; gap:6px;">
+              <input type="text" id="modalTaskInput" placeholder="할 일 입력 후 Enter" style="flex:1; height:32px; border:1px solid var(--border-color); background:#0b0c10; color:var(--text-color); padding:0 8px; font-size:10px; font-family:'Noto Sans KR'; outline:none;" maxlength="60">
+              <button id="modalAddBtn" style="width:60px; height:32px; border:1px solid var(--border-color); background:transparent; color:var(--accent-color); cursor:pointer; font-size:9px; font-family:'Silkscreen';">추가</button>
             </div>
             <div id="taskList" class="modalTaskList" style="padding:10px; overflow-y:auto; flex:1; font-size:10px; min-height:0;"></div>
           </div>
@@ -637,7 +632,7 @@ function prunePendingEventsByServer(serverEventsByISO){
   // ✅ 일정도 없고, 퀘스트도 없을 때
   if (events.length === 0 && tasks.length === 0) {
     const empty = document.createElement("div");
-    empty.style.color = "var(--muted)";
+    empty.style.color = "var(--accent-color)";
     empty.style.fontSize = "10px";
     empty.textContent = "등록된 할 일이 없습니다. 위에서 추가해보세요.";
     list.appendChild(empty);
@@ -655,7 +650,7 @@ function prunePendingEventsByServer(serverEventsByISO){
     div.style.cursor = "pointer";
     div.style.border = "1px solid transparent";
     div.style.borderRadius = "0";
-    div.addEventListener("mouseenter", () => { div.style.borderColor = "var(--accent)"; div.style.background = "rgba(124,199,255,.08)"; });
+    div.addEventListener("mouseenter", () => { div.style.borderColor = "var(--accent-color)"; div.style.background = "rgba(130,170,255,0.15)"; });
     div.addEventListener("mouseleave", () => { div.style.borderColor = "transparent"; div.style.background = "transparent"; });
     const icon = isDone(t?.done) ? "✅" : (t._pending ? "⏳" : "⬜");
     const span = document.createElement("span");
