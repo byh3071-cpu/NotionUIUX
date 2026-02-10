@@ -12,6 +12,9 @@
       :root{
         --bg-color: #0f1115; --border-color: #3b4261; --accent-color: #82aaff; --text-color: #dbe6f5; --dim-color: #1e222a;
         --today:#ffe08a; --sun:#ff8f8f; --sat:#8fb6ff; --pink: #ff6fb1;
+        /* 총 할 일: 진한 블루 / 완료 한 일: 진한 그린 */
+        --badge-todo: #3a5080;
+        --badge-done: #456b52;
         --w: 360px; --h: 460px; --cell: 46px; --gap: 4px;
         --bottomBarH: 46px;
       }
@@ -77,8 +80,9 @@
         width:18px;
         height:18px;
         clip-path: polygon(0 0, 0 100%, 100% 100%);
-        background: var(--accent-color);
-        color: var(--bg-color); display:flex;
+        background: var(--badge-todo);
+        color: var(--text-color);
+        display:flex;
         align-items:flex-end;
         font-size:8px;
         line-height: 1; 
@@ -109,7 +113,7 @@
         right:0; bottom:0;
         width:18px; height:18px;
         clip-path: polygon(100% 0, 0 100%, 100% 100%);
-        background: var(--today);
+        background: var(--badge-done);
         color: var(--bg-color);
         display:flex;
         align-items:flex-end;

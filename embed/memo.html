@@ -32,9 +32,10 @@
         .btn-edit:hover { border-color: var(--accent-color); background: rgba(130, 170, 255, 0.15); }
         .btn-delete { color: #4c566a; }
         .btn-delete:hover { color: #ff5370; border-color: #ff5370; }
-        .memo-item.is-editing { flex-direction: column; align-items: stretch; gap: 8px; }
+        .memo-item.is-editing { flex-direction: column; align-items: stretch; gap: 8px; min-width: 0; }
         .memo-item.is-editing .memo-content { cursor: default; }
-        .edit-input { width: 100%; background: #0b0c10; border: 1px solid var(--border-color); color: var(--text-color); padding: 6px 8px; font-family: 'Noto Sans KR', sans-serif; font-size: 12px; font-weight: 700; outline: none; resize: none; min-height: 60px; }
+        .memo-item.is-editing .edit-input { box-sizing: border-box; width: 100%; max-width: 100%; min-width: 0; background: #0b0c10; border: 1px solid var(--border-color); color: var(--text-color); padding: 6px 8px; font-family: 'Noto Sans KR', sans-serif; font-size: 12px; font-weight: 700; outline: none; resize: none; min-height: 60px; display: block; }
+        .memo-item.is-editing .memo-item-actions { justify-content: flex-end; margin-top: 2px; }
     </style>
 </head>
 <body>
@@ -203,13 +204,14 @@
                     
                     const btnDelete = document.createElement("button");
                     btnDelete.className = "btn-action btn-delete";
+                    btnDelete.type = "button";
                     btnDelete.textContent = "X";
                     btnDelete.title = "삭제";
+                    const memoIdToDelete = memo.id;
                     btnDelete.onclick = (e) => {
                         e.stopPropagation();
-                        if (confirm("메모를 삭제하시겠습니까?")) {
-                            deleteMemo(memo.id);
-                        }
+                        e.preventDefault();
+                        deleteMemo(memoIdToDelete);
                     };
                     
                     actions.appendChild(btnEdit);
@@ -261,7 +263,8 @@
     }
     
     function deleteMemo(id) {
-        memos = memos.filter(m => m.id !== id);
+        const idStr = String(id);
+        memos = memos.filter(m => String(m.id) !== idStr);
         saveMemos();
         renderList();
     }
