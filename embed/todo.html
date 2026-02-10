@@ -45,6 +45,8 @@
         .mission-item.is-temp .mission-left { cursor: default; }
         .carryover-header { font-size: 10px; color: var(--accent-color); opacity: 0.85; padding: 6px 10px 4px; border-bottom: 1px dashed var(--border-color); margin-bottom: 4px; }
         .carryover-header::before { content: "⏪ "; }
+        .today-header { font-size: 10px; color: var(--accent-color); opacity: 0.85; padding: 6px 10px 4px; border-bottom: 1px dashed var(--border-color); margin-bottom: 4px; }
+        .today-header::before { content: "📋 "; }
 
         /* ✅ 되돌리기 토스트 */
         .undo-toast { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); background: var(--dim-color); border: 2px solid var(--accent-color); padding: 8px 14px; font-size: 11px; color: var(--text-color); display: flex; align-items: center; gap: 10px; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,.4); }
@@ -337,15 +339,25 @@ function getPrevDayISO(iso) {
             list.appendChild(div);
           }
 
+          // 1) 오늘 할 일: 맨 위, 최근 추가순(최신이 위)
+          const todaySorted = [...globalTasks].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+          if (todaySorted.length > 0) {
+            const todayHeader = document.createElement("div");
+            todayHeader.className = "today-header";
+            todayHeader.textContent = "오늘 할 일";
+            list.appendChild(todayHeader);
+            todaySorted.forEach((task) => renderTaskItem(task, false));
+          }
+
+          // 2) 미뤄진 할 일: 아래, 미룬 날짜순(원래 날짜 오래된 것일수록 아래)
           if (carryOverTasks.length > 0) {
             const header = document.createElement("div");
             header.className = "carryover-header";
             header.textContent = "어제 미완료";
             list.appendChild(header);
-            carryOverTasks.forEach((task) => renderTaskItem(task, true));
+            const carrySorted = [...carryOverTasks].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+            carrySorted.forEach((task) => renderTaskItem(task, true));
           }
-
-          globalTasks.forEach((task) => renderTaskItem(task, false));
 
           const active = globalTasks.filter(t => !t.done).length + carryOverTasks.filter(t => !t.done).length;
           countDisplay.innerText = `${active} ACTIVE`;

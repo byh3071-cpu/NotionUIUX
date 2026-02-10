@@ -72,6 +72,13 @@
         .dt-picker-time-row { display: flex; align-items: center; gap: 6px; }
         .dt-picker-time label { font-size: 9px; color: var(--accent-color); min-width: 52px; }
         .dt-picker-time input { width: 36px; padding: 4px 6px; font-size: 11px; color: var(--text-color); background: #0b0c10; border: 1px solid var(--border-color); }
+        /* 시/분 숫자 입력에서 위·아래 화살표 제거, 타이핑만 가능 */
+        .dt-picker-time input[type="number"]::-webkit-inner-spin-button,
+        .dt-picker-time input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        .dt-picker-time input[type="number"] { -moz-appearance: textfield; appearance: none; }
+        .edit-modal .dt-picker-time input[type="number"]::-webkit-inner-spin-button,
+        .edit-modal .dt-picker-time input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        .edit-modal .dt-picker-time input[type="number"] { -moz-appearance: textfield; appearance: none; }
         .dt-picker-now { margin-left: auto; font-size: 9px; color: var(--accent-color); cursor: pointer; }
         .dt-picker-now:hover { text-decoration: underline; }
         /* 편집 모달 - 스크롤 없이 한 화면에 */
