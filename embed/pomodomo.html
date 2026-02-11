@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Pixel Pomodoro Fixed</title>
+    <title>Pixel Pomodoro Readable</title>
     <link href="https://fonts.googleapis.com/css2?family=Silkscreen&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -38,18 +38,26 @@
             position: relative;
         }
 
-        /* 헤더: 이제 설정 버튼 없음 */
+        /* --- 헤더 수정됨 --- */
         .header-bar {
-            height: 24px;
+            height: 30px; /* 높이 약간 증가 */
             border-bottom: 2px solid var(--border-color);
-            background: rgba(59, 66, 97, 0.2);
+            background: var(--off-color); /* 배경을 약간 밝게 */
             display: flex;
             align-items: center;
-            justify-content: center; /* 중앙 정렬 */
-            font-size: 10px;
-            color: var(--off-color); /* 눈에 덜 띄게 처리 */
+            justify-content: center;
+            font-size: 12px; /* 폰트 크기 증가 */
+            color: var(--accent-color); /* 가독성 좋은 포인트 컬러 */
+            text-shadow: 0 0 5px rgba(130, 170, 255, 0.5); /* 네온 글로우 효과 */
             flex-shrink: 0;
-            letter-spacing: 2px;
+            letter-spacing: 3px; /* 자간 넓힘 */
+            font-weight: bold;
+        }
+        
+        /* 휴식 모드일 때 헤더 색상도 변경 */
+        .break-mode .header-bar {
+            color: var(--break-color);
+            text-shadow: 0 0 5px rgba(195, 232, 141, 0.5);
         }
 
         /* 메인 영역 */
@@ -83,7 +91,6 @@
             transition: color 0.3s, text-shadow 0.3s;
         }
 
-        /* 휴식 모드 스타일 */
         .break-mode .timer-display {
             color: var(--break-color);
             text-shadow: 0 0 10px rgba(195, 232, 141, 0.3);
@@ -92,6 +99,7 @@
             background: var(--break-color); 
             box-shadow: 0 0 5px var(--break-color);
         }
+        /* 휴식 모드일 때 설정 아이콘 색상 변경 */
         .break-mode .settings-icon svg {
             fill: var(--break-color);
         }
@@ -107,7 +115,7 @@
             width: 200px;
             max-width: 90%;
             height: 12px;
-            margin-bottom: 25px; /* 아래 설정 버튼과 간격 확보 */
+            margin-bottom: 25px;
         }
         .block {
             flex: 1;
@@ -129,7 +137,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 10px; /* 터치 영역 확보 */
+            padding: 10px;
         }
         .settings-icon:hover {
             opacity: 1;
@@ -139,7 +147,8 @@
             width: 24px;
             height: 24px;
             fill: var(--accent-color);
-            shape-rendering: crispEdges; /* 픽셀 아트 느낌 유지 */
+            shape-rendering: crispEdges;
+            transition: fill 0.3s;
         }
 
         /* 컨트롤 버튼 */
@@ -166,7 +175,7 @@
         }
         button:active { background: rgba(130, 170, 255, 0.2); }
 
-        /* 설정 오버레이 (모달) */
+        /* 설정 오버레이 */
         #settings-modal {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
