@@ -9,18 +9,21 @@
             --bg-color: #0f1115;       /* 배경색 */
             --border-color: #3b4261;   /* 테두리 색 */
             --accent-color: #82aaff;   /* 포인트 색 (블루) */
+            --break-color: #c3e88d;    /* 휴식 색 (그린) */
             --text-color: #dbe6f5;     /* 텍스트 색 */
             --off-color: #1a1e29;      /* 꺼진 블록 색 */
+            --overlay-bg: rgba(15, 17, 21, 0.95);
         }
 
         body {
             margin: 0; padding: 0;
-            background-color: var(--bg-color); /* 흰 여백 방지 */
+            background-color: var(--bg-color);
             font-family: 'Silkscreen', cursive;
             height: 100vh;
             width: 100vw;
-            overflow: hidden; /* 스크롤바 방지 */
+            overflow: hidden;
             color: var(--text-color);
+            user-select: none;
         }
 
         .timer-container {
@@ -28,10 +31,11 @@
             height: 100%;
             background: var(--bg-color);
             border: 2px solid var(--border-color);
-            box-sizing: border-box; /* 테두리 포함해서 크기 계산 */
+            box-sizing: border-box;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            position: relative;
         }
 
         /* 헤더 */
@@ -45,39 +49,57 @@
             padding: 0 12px;
             font-size: 11px;
             color: var(--accent-color);
-            flex-shrink: 0; /* 크기 줄어들지 않게 고정 */
+            flex-shrink: 0;
         }
 
-        /* 메인 영역 (가운데 정렬) */
+        .btn-icon {
+            cursor: pointer;
+            padding: 4px;
+        }
+        .btn-icon:hover { color: #fff; }
+
+        /* 메인 영역 */
         .content {
             padding: 0 15px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            flex: 1; /* 남은 공간 모두 차지 */
+            flex: 1;
         }
 
         .timer-display {
-            font-size: 18vw; /* 화면 크기에 비례해서 글자 커짐 */
-            max-font-size: 60px; /* 너무 커지지 않게 제한 */
+            font-size: 18vw;
+            max-font-size: 60px; /* PC화면 제한 */
             color: var(--accent-color);
             text-shadow: 0 0 10px rgba(130, 170, 255, 0.3);
             margin-bottom: 2vh;
             line-height: 1;
+            transition: color 0.3s, text-shadow 0.3s;
         }
 
-        /* 미디어 쿼리: 화면이 너무 클 때 폰트 고정 */
+        /* 휴식 모드일 때 색상 변경 */
+        .break-mode .timer-display {
+            color: var(--break-color);
+            text-shadow: 0 0 10px rgba(195, 232, 141, 0.3);
+        }
+        .break-mode .header-bar { color: var(--break-color); }
+        .break-mode .block.active { 
+            background: var(--break-color); 
+            box-shadow: 0 0 5px var(--break-color);
+        }
+
         @media (min-width: 400px) {
-            .timer-display { font-size: 50px; }
+            .timer-display { font-size: 80px; }
         }
 
         /* 픽셀 진행 바 */
         .progress-bar {
             display: flex;
             gap: 4px;
-            width: 90%;
-            height: 10px;
+            width: 200px;
+            max-width: 90%;
+            height: 12px;
             margin-bottom: 10px;
         }
         .block {
@@ -85,17 +107,18 @@
             height: 100%;
             background: var(--off-color);
             border-radius: 1px;
+            transition: background 0.2s;
         }
         .block.active {
             background: var(--accent-color);
             box-shadow: 0 0 5px var(--accent-color);
         }
 
-        /* 버튼 영역 */
+        /* 컨트롤 버튼 */
         .controls {
             display: flex;
             border-top: 2px solid var(--border-color);
-            height: 40px; /* 버튼 높이 고정 */
+            height: 40px;
             flex-shrink: 0;
         }
         button {
@@ -108,24 +131,84 @@
             cursor: pointer;
             transition: all 0.2s;
         }
-        button:first-child { border-right: 2px solid var(--border-color); }
+        button:not(:last-child) { border-right: 2px solid var(--border-color); }
         button:hover {
             background: rgba(130, 170, 255, 0.1);
             color: var(--accent-color);
         }
         button:active { background: rgba(130, 170, 255, 0.2); }
 
+        /* 설정 오버레이 (모달) */
+        #settings-modal {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--overlay-bg);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            display: none; /* 기본 숨김 */
+        }
+        #settings-modal.show { display: flex; }
+
+        .settings-box {
+            border: 2px solid var(--border-color);
+            background: var(--bg-color);
+            padding: 20px;
+            width: 80%;
+            max-width: 300px;
+            text-align: center;
+            box-shadow: 4px 4px 0px var(--off-color);
+        }
+        
+        .setting-row {
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+        }
+        
+        input[type="number"] {
+            background: var(--off-color);
+            border: 1px solid var(--border-color);
+            color: var(--accent-color);
+            font-family: 'Silkscreen';
+            width: 60px;
+            padding: 5px;
+            text-align: center;
+            font-size: 14px;
+        }
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .save-btn {
+            background: var(--accent-color);
+            color: var(--bg-color);
+            border: none;
+            padding: 8px 15px;
+            font-family: 'Silkscreen';
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+        }
+        .save-btn:hover { opacity: 0.8; }
+
     </style>
 </head>
 <body>
 
-    <div class="timer-container">
+    <div class="timer-container" id="main-container">
         <div class="header-bar">
-            <span>FOCUS.EXE</span>
-            <span id="mode-badge">25m</span>
+            <span>PIXEL POMO</span>
+            <span class="btn-icon" onclick="openSettings()">[GEAR]</span>
         </div>
 
         <div class="content">
+            <div style="font-size: 10px; margin-bottom: 5px; opacity: 0.7;" id="status-text">FOCUS MODE</div>
             <div class="timer-display" id="time">25:00</div>
             
             <div class="progress-bar">
@@ -139,20 +222,80 @@
 
         <div class="controls">
             <button onclick="toggleTimer()" id="btn-main">START</button>
+            <button onclick="skipTimer()">SKIP</button>
             <button onclick="resetTimer()">RESET</button>
         </div>
     </div>
 
+    <div id="settings-modal">
+        <div class="settings-box">
+            <h3 style="margin-top:0; color:var(--accent-color);">SETTINGS</h3>
+            
+            <div class="setting-row">
+                <label>FOCUS (MIN)</label>
+                <input type="number" id="set-focus" value="25" min="1" max="60">
+            </div>
+            
+            <div class="setting-row">
+                <label>BREAK (MIN)</label>
+                <input type="number" id="set-break" value="5" min="1" max="30">
+            </div>
+
+            <button class="save-btn" onclick="saveSettings()">SAVE & RESET</button>
+        </div>
+    </div>
+
     <script>
-        let timeLeft = 25 * 60;
-        let maxTime = 25 * 60;
+        // --- 설정 값 ---
+        let focusTimeSet = 25;
+        let breakTimeSet = 5;
+        
+        // --- 상태 변수 ---
+        let timeLeft = focusTimeSet * 60;
+        let maxTime = focusTimeSet * 60;
         let timerId = null;
         let isRunning = false;
+        let isBreak = false; // 현재 휴식중인가?
 
+        // --- DOM 요소 ---
         const timeDisplay = document.getElementById("time");
         const btnMain = document.getElementById("btn-main");
         const blocks = document.querySelectorAll(".block");
+        const container = document.getElementById("main-container");
+        const statusText = document.getElementById("status-text");
+        const modal = document.getElementById("settings-modal");
+        const inputFocus = document.getElementById("set-focus");
+        const inputBreak = document.getElementById("set-break");
 
+        // --- Web Audio API (8비트 알람) ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = new AudioContext();
+
+        function play8BitAlarm() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            oscillator.type = 'square'; // 8비트 느낌의 사각파
+            
+            // 멜로디: 도-미-솔 (C5, E5, G5)
+            oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+            oscillator.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
+            oscillator.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); // G5
+            oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime + 0.4); // C5 (End)
+
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.6);
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.6);
+        }
+
+        // --- 타이머 로직 ---
         function updateDisplay() {
             const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
             const s = (timeLeft % 60).toString().padStart(2, '0');
@@ -167,7 +310,28 @@
             });
         }
 
+        function switchMode() {
+            isBreak = !isBreak;
+            if (isBreak) {
+                // 휴식 모드 진입
+                maxTime = breakTimeSet * 60;
+                timeLeft = maxTime;
+                statusText.innerText = "BREAK TIME";
+                container.classList.add("break-mode");
+            } else {
+                // 집중 모드 진입
+                maxTime = focusTimeSet * 60;
+                timeLeft = maxTime;
+                statusText.innerText = "FOCUS MODE";
+                container.classList.remove("break-mode");
+            }
+            updateDisplay();
+        }
+
         function toggleTimer() {
+            // 브라우저 정책상 사용자 인터랙션 시 오디오 컨텍스트 활성화 필요
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
             if (isRunning) {
                 clearInterval(timerId);
                 isRunning = false;
@@ -176,15 +340,19 @@
             } else {
                 isRunning = true;
                 btnMain.innerText = "PAUSE";
-                btnMain.style.color = "#82aaff";
+                btnMain.style.color = isBreak ? "var(--break-color)" : "var(--accent-color)";
+                
                 timerId = setInterval(() => {
                     if (timeLeft > 0) {
                         timeLeft--;
                         updateDisplay();
                     } else {
+                        // 시간 종료
                         clearInterval(timerId);
                         isRunning = false;
-                        btnMain.innerText = "DONE";
+                        btnMain.innerText = "START";
+                        play8BitAlarm(); // 알람 울리기
+                        switchMode(); // 모드 자동 전환 (집중 <-> 휴식)
                     }
                 }, 1000);
             }
@@ -193,11 +361,48 @@
         function resetTimer() {
             clearInterval(timerId);
             isRunning = false;
-            timeLeft = 25 * 60;
+            // 현재 모드에 맞춰 리셋
+            maxTime = (isBreak ? breakTimeSet : focusTimeSet) * 60;
+            timeLeft = maxTime;
             updateDisplay();
             btnMain.innerText = "START";
             btnMain.style.color = "";
         }
+
+        function skipTimer() {
+            // 현재 타이머를 강제로 끝내고 다음 모드로 전환
+            clearInterval(timerId);
+            isRunning = false;
+            btnMain.innerText = "START";
+            switchMode();
+        }
+
+        // --- 설정 모달 로직 ---
+        function openSettings() {
+            inputFocus.value = focusTimeSet;
+            inputBreak.value = breakTimeSet;
+            modal.classList.add("show");
+        }
+
+        function saveSettings() {
+            const newFocus = parseInt(inputFocus.value);
+            const newBreak = parseInt(inputBreak.value);
+
+            if(newFocus > 0) focusTimeSet = newFocus;
+            if(newBreak > 0) breakTimeSet = newBreak;
+
+            modal.classList.remove("show");
+            
+            // 설정 변경 후에는 집중 모드로 초기화
+            isBreak = false; 
+            container.classList.remove("break-mode");
+            statusText.innerText = "FOCUS MODE";
+            resetTimer(); 
+        }
+
+        // 초기화
+        updateDisplay();
+
     </script>
 </body>
 </html>
