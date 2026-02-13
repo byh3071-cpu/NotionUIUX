@@ -10,6 +10,7 @@ export default async function handler(req, res) {
   const NOTION_KEY = process.env.NOTION_KEY;
   const NOTION_DB_ID = process.env.NOTION_DB_ID;
   const NOTION_EVENTS_DB_ID = process.env.NOTION_EVENTS_DB_ID;
+  const NOTION_MEMOS_DB_ID = process.env.NOTION_MEMOS_DB_ID;
 
     const isValidNotionId = (id) => typeof id === "string" && /^[0-9a-fA-F-]{32,36}$/.test(id) && id.replace(/-/g,"").length === 32;
     
@@ -21,6 +22,9 @@ export default async function handler(req, res) {
     }
     if (NOTION_EVENTS_DB_ID && !isValidNotionId(NOTION_EVENTS_DB_ID)) {
       return res.status(500).json({ error: `Invalid NOTION_EVENTS_DB_ID format: ${String(NOTION_EVENTS_DB_ID)}` });
+    }
+    if (NOTION_MEMOS_DB_ID && !isValidNotionId(NOTION_MEMOS_DB_ID)) {
+      return res.status(500).json({ error: `Invalid NOTION_MEMOS_DB_ID format: ${String(NOTION_MEMOS_DB_ID)}` });
     }
 
   const headers = {
@@ -238,6 +242,85 @@ if (NOTION_EVENTS_DB_ID) {
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.message || 'Update Event Failed');
+      return res.status(200).json({ success: true });
+    }
+
+    // ✅ 메모: 전체 조회 (모든 기기 동기화)
+    if (action === 'fetchMemos') {
+      if (!NOTION_MEMOS_DB_ID) {
+        return res.status(200).json({ success: true, memos: [], syncEnabled: false });
+      }
+      const memoProp = process.env.NOTION_MEMOS_TITLE_PROP || '메모';
+      const pages = await queryAllFromNotionDB(NOTION_MEMOS_DB_ID, {
+        sorts: [{ timestamp: 'created_time', direction: 'descending' }],
+      });
+      const memos = (pages || [])
+        .filter((p) => !p.archived)
+        .map((p) => ({
+          id: p.id,
+          text: p.properties?.[memoProp]?.title?.[0]?.plain_text ?? '',
+          timestamp: p.created_time ? new Date(p.created_time).getTime() : Date.now(),
+        }))
+        .filter((m) => m.text !== undefined);
+      return res.status(200).json({ success: true, memos, syncEnabled: true });
+    }
+
+    // ✅ 메모: 생성
+    if (action === 'createMemo') {
+      if (!NOTION_MEMOS_DB_ID) {
+        return res.status(500).json({ error: 'NOTION_MEMOS_DB_ID is not configured' });
+      }
+      const memoProp = process.env.NOTION_MEMOS_TITLE_PROP || '메모';
+      const safeText = String(text ?? '').trim() || ' ';
+      const response = await fetch('https://api.notion.com/v1/pages', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          parent: { database_id: NOTION_MEMOS_DB_ID },
+          properties: {
+            [memoProp]: { title: [{ text: { content: safeText } }] },
+          },
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Create Memo Failed');
+      const ts = data.created_time ? new Date(data.created_time).getTime() : Date.now();
+      return res.status(200).json({ success: true, id: data.id, timestamp: ts });
+    }
+
+    // ✅ 메모: 수정
+    if (action === 'updateMemo' && pageId) {
+      if (!NOTION_MEMOS_DB_ID) {
+        return res.status(500).json({ error: 'NOTION_MEMOS_DB_ID is not configured' });
+      }
+      const memoProp = process.env.NOTION_MEMOS_TITLE_PROP || '메모';
+      const safeText = String(text ?? '').trim();
+      if (!safeText) {
+        return res.status(400).json({ error: 'updateMemo requires non-empty text' });
+      }
+      const response = await fetch(`https://api.notion.com/v1/pages/${pageId}`, {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify({
+          properties: {
+            [memoProp]: { title: [{ text: { content: safeText } }] },
+          },
+        }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.message || 'Update Memo Failed');
+      return res.status(200).json({ success: true });
+    }
+
+    // ✅ 메모: 삭제(archive)
+    if (action === 'deleteMemo' && pageId) {
+      const response = await fetch(`https://api.notion.com/v1/pages/${pageId}`, {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify({ archived: true }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.message || 'Delete Memo Failed');
       return res.status(200).json({ success: true });
     }
 

@@ -61,18 +61,41 @@
     const MEMO_KEY = "memo_pad_v1";
     let memos = [];
     let editingId = null;
+    let useSync = false;
     
-    function loadMemos() {
+    function api(body) {
+        return fetch("/api/notion", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+        }).then((r) => r.json().catch(() => ({})));
+    }
+    
+    async function loadMemos() {
         try {
-            const stored = localStorage.getItem(MEMO_KEY);
-            memos = stored ? JSON.parse(stored) : [];
+            const j = await api({ action: "fetchMemos" });
+            if (j.success && j.syncEnabled === true && Array.isArray(j.memos)) {
+                memos = j.memos;
+                useSync = true;
+            } else {
+                const stored = localStorage.getItem(MEMO_KEY);
+                memos = stored ? JSON.parse(stored) : [];
+                useSync = false;
+            }
         } catch (e) {
-            memos = [];
+            try {
+                const stored = localStorage.getItem(MEMO_KEY);
+                memos = stored ? JSON.parse(stored) : [];
+            } catch (_) {
+                memos = [];
+            }
+            useSync = false;
         }
         renderList();
     }
     
     function saveMemos() {
+        if (useSync) return;
         try {
             localStorage.setItem(MEMO_KEY, JSON.stringify(memos));
         } catch (e) {
@@ -230,29 +253,54 @@
         }
     }
     
-    function addMemo() {
+    async function addMemo() {
         const text = input.value.trim();
         if (!text) return;
+        
+        if (useSync) {
+            try {
+                const j = await api({ action: "createMemo", text: text });
+                if (j.success) {
+                    input.value = "";
+                    await loadMemos();
+                }
+            } catch (e) {
+                console.error(e);
+            }
+            return;
+        }
         
         const newMemo = {
             id: Date.now().toString(),
             text: text,
             timestamp: Date.now()
         };
-        
         memos.unshift(newMemo);
         saveMemos();
         input.value = "";
         renderList();
     }
     
-    function saveEdit(id, newText) {
+    async function saveEdit(id, newText) {
         if (!newText) {
-            deleteMemo(id);
+            await deleteMemo(id);
             return;
         }
         
-        const memo = memos.find(m => m.id === id);
+        if (useSync) {
+            try {
+                const j = await api({ action: "updateMemo", pageId: id, text: newText });
+                if (j.success) {
+                    editingId = null;
+                    await loadMemos();
+                }
+            } catch (e) {
+                console.error(e);
+            }
+            return;
+        }
+        
+        const memo = memos.find(m => String(m.id) === String(id));
         if (memo) {
             memo.text = newText;
             memo.timestamp = Date.now();
@@ -262,7 +310,17 @@
         renderList();
     }
     
-    function deleteMemo(id) {
+    async function deleteMemo(id) {
+        if (useSync) {
+            try {
+                const j = await api({ action: "deleteMemo", pageId: id });
+                if (j.success) await loadMemos();
+            } catch (e) {
+                console.error(e);
+            }
+            return;
+        }
+        
         const idStr = String(id);
         memos = memos.filter(m => String(m.id) !== idStr);
         saveMemos();
