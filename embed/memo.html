@@ -63,28 +63,39 @@
     let editingId = null;
     let useSync = false;
     
+    function getApiBase() {
+        try {
+            var base = window.location.origin || "";
+            if (base && !base.startsWith("file")) return base + "/api/notion";
+        } catch (_) {}
+        return "/api/notion";
+    }
+    
     function api(body) {
-        return fetch("/api/notion", {
+        var url = getApiBase();
+        return fetch(url, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body),
-        }).then((r) => r.json().catch(() => ({})));
+        }).then(function(r) {
+            return r.json().catch(function() { return {}; });
+        });
     }
     
     async function loadMemos() {
         try {
-            const j = await api({ action: "fetchMemos" });
-            if (j.success && j.syncEnabled === true && Array.isArray(j.memos)) {
+            var j = await api({ action: "fetchMemos" });
+            if (j && j.success && j.syncEnabled === true && Array.isArray(j.memos)) {
                 memos = j.memos;
                 useSync = true;
             } else {
-                const stored = localStorage.getItem(MEMO_KEY);
+                var stored = localStorage.getItem(MEMO_KEY);
                 memos = stored ? JSON.parse(stored) : [];
                 useSync = false;
             }
         } catch (e) {
             try {
-                const stored = localStorage.getItem(MEMO_KEY);
+                var stored = localStorage.getItem(MEMO_KEY);
                 memos = stored ? JSON.parse(stored) : [];
             } catch (_) {
                 memos = [];
@@ -254,23 +265,25 @@
     }
     
     async function addMemo() {
-        const text = input.value.trim();
+        var text = input.value.trim();
         if (!text) return;
         
         if (useSync) {
             try {
-                const j = await api({ action: "createMemo", text: text });
-                if (j.success) {
+                var j = await api({ action: "createMemo", text: text });
+                if (j && j.success) {
                     input.value = "";
                     await loadMemos();
+                    return;
                 }
+                useSync = false;
             } catch (e) {
-                console.error(e);
+                console.error("Memo API error:", e);
+                useSync = false;
             }
-            return;
         }
         
-        const newMemo = {
+        var newMemo = {
             id: Date.now().toString(),
             text: text,
             timestamp: Date.now()
@@ -289,18 +302,20 @@
         
         if (useSync) {
             try {
-                const j = await api({ action: "updateMemo", pageId: id, text: newText });
-                if (j.success) {
+                var j = await api({ action: "updateMemo", pageId: id, text: newText });
+                if (j && j.success) {
                     editingId = null;
                     await loadMemos();
+                    return;
                 }
+                useSync = false;
             } catch (e) {
-                console.error(e);
+                console.error("Memo API error:", e);
+                useSync = false;
             }
-            return;
         }
         
-        const memo = memos.find(m => String(m.id) === String(id));
+        var memo = memos.find(function(m) { return String(m.id) === String(id); });
         if (memo) {
             memo.text = newText;
             memo.timestamp = Date.now();
@@ -313,16 +328,20 @@
     async function deleteMemo(id) {
         if (useSync) {
             try {
-                const j = await api({ action: "deleteMemo", pageId: id });
-                if (j.success) await loadMemos();
+                var j = await api({ action: "deleteMemo", pageId: id });
+                if (j && j.success) {
+                    await loadMemos();
+                    return;
+                }
+                useSync = false;
             } catch (e) {
-                console.error(e);
+                console.error("Memo API error:", e);
+                useSync = false;
             }
-            return;
         }
         
-        const idStr = String(id);
-        memos = memos.filter(m => String(m.id) !== idStr);
+        var idStr = String(id);
+        memos = memos.filter(function(m) { return String(m.id) !== idStr; });
         saveMemos();
         renderList();
     }
