@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>프로젝트 관리</title>
+    <link href="https://fonts.googleapis.com/css2?family=Silkscreen&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --bg-color: #0f1115;
+        --border-color: #3b4261;
+        --accent-color: #82aaff;
+        --text-color: #dbe6f5;
+        --dim-color: #1e222a;
+        --bar-bg: rgba(59, 66, 97, 0.2);
+        --cell-bg: rgba(30, 34, 42, 0.4);
+        --hover-bg: rgba(130, 170, 255, 0.15);
+        --input-bg: rgba(130, 170, 255, 0.05);
+        --status-plan: #8a8fa3;
+        --status-dev: #82aaff;
+        --status-test: #ffb86c;
+        --status-done: #5af5a0;
+        --status-hold: #ffd166;
+        --status-plan-dim: rgba(138, 143, 163, 0.15);
+        --status-dev-dim: rgba(130, 170, 255, 0.15);
+        --status-test-dim: rgba(255, 184, 108, 0.15);
+        --status-done-dim: rgba(90, 245, 160, 0.12);
+        --status-hold-dim: rgba(255, 209, 102, 0.15);
+        --pri-high: #ff5370;
+        --pri-mid: #ffb86c;
+        --pri-low: #5af5a0;
+        --delete-color: #4c566a;
+        --card-shadow: none;
+        --scrollbar-track: var(--bg-color);
+        --scrollbar-thumb: var(--border-color);
+        --tl-today: rgba(255, 224, 138, 0.25);
+        --tl-grid: rgba(59, 66, 97, 0.3);
+        --tl-weekend: rgba(255, 83, 112, 0.06);
+      }
+
+      :root.light {
+        --bg-color: #f8f9fb;
+        --border-color: #d0d4dc;
+        --accent-color: #3b6ed5;
+        --text-color: #1a1a2e;
+        --dim-color: #ebedf2;
+        --bar-bg: rgba(0, 0, 0, 0.04);
+        --cell-bg: #ffffff;
+        --hover-bg: rgba(59, 110, 213, 0.08);
+        --input-bg: rgba(59, 110, 213, 0.04);
+        --status-plan: #7a7f93;
+        --status-dev: #3b6ed5;
+        --status-test: #d48420;
+        --status-done: #1a9f52;
+        --status-hold: #c49a00;
+        --status-plan-dim: rgba(122, 127, 147, 0.1);
+        --status-dev-dim: rgba(59, 110, 213, 0.08);
+        --status-test-dim: rgba(212, 132, 32, 0.08);
+        --status-done-dim: rgba(26, 159, 82, 0.08);
+        --status-hold-dim: rgba(196, 154, 0, 0.08);
+        --pri-high: #d03040;
+        --pri-mid: #c47800;
+        --pri-low: #1a9f52;
+        --delete-color: #999;
+        --card-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        --scrollbar-track: var(--bg-color);
+        --scrollbar-thumb: #c0c4cc;
+        --tl-today: rgba(196, 125, 0, 0.18);
+        --tl-grid: rgba(0, 0, 0, 0.06);
+        --tl-weekend: rgba(208, 48, 64, 0.04);
+      }
+
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body {
+        width: 100%; height: 100%;
+        background: var(--bg-color);
+        color: var(--text-color);
+        font-family: 'Silkscreen', cursive;
+        overflow: hidden;
+      }
+
+      .container {
+        width: 100%; height: 100%;
+        border: 2px solid var(--border-color);
+        display: flex; flex-direction: column;
+      }
+
+      /* ── 헤더 ── */
+      .header-bar {
+        height: 34px; flex-shrink: 0;
+        border-bottom: 1px solid var(--border-color);
+        background: var(--bar-bg);
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 0 12px;
+        font-size: 11px; color: var(--accent-color);
+      }
+      .header-left { display: flex; align-items: center; gap: 8px; }
+
+      /* ── 요약바 ── */
+      .summary-bar {
+        height: 28px; flex-shrink: 0;
+        border-bottom: 1px solid var(--border-color);
+        background: var(--bar-bg);
+        display: flex; align-items: center;
+        padding: 0 12px; gap: 10px;
+        font-size: 9px;
+      }
+      .summary-item {
+        display: flex; align-items: center; gap: 3px;
+        color: var(--text-color); opacity: 0.85;
+      }
+      .summary-dot { width: 7px; height: 7px; border-radius: 1px; }
+      .summary-bar .progress-mini {
+        flex: 1; height: 4px;
+        background: var(--dim-color);
+        margin-left: 6px; overflow: hidden;
+      }
+      .summary-bar .progress-mini-fill {
+        height: 100%;
+        background: var(--status-done);
+        transition: width 0.4s ease;
+      }
+
+      /* ── 필터+뷰 탭 ── */
+      .filter-bar {
+        height: 30px; flex-shrink: 0;
+        border-bottom: 2px solid var(--border-color);
+        display: flex; align-items: stretch;
+        background: var(--bar-bg);
+      }
+      .filter-tab {
+        flex: 1; display: flex; align-items: center; justify-content: center;
+        font-size: 9px; font-family: 'Noto Sans KR', sans-serif; font-weight: 700;
+        color: var(--text-color); opacity: 0.6;
+        cursor: pointer; border: none; background: transparent;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -2px; transition: all 0.15s;
+      }
+      .filter-tab:hover { opacity: 0.9; background: var(--hover-bg); }
+      .filter-tab.active {
+        opacity: 1; border-bottom-color: var(--accent-color);
+        color: var(--accent-color);
+      }
+      .filter-tab .tab-count { margin-left: 3px; font-size: 8px; opacity: 0.7; font-family: 'Silkscreen'; }
+      .view-toggle {
+        flex-shrink: 0; width: 62px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 9px; font-family: 'Noto Sans KR', sans-serif; font-weight: 700;
+        color: var(--accent-color); opacity: 0.9;
+        cursor: pointer; border: none; background: transparent;
+        border-left: 1px solid var(--border-color);
+        transition: all 0.15s; gap: 3px;
+      }
+      .view-toggle:hover { background: var(--hover-bg); opacity: 1; }
+
+      /* ── 입력 영역 ── */
+      .input-area {
+        flex-shrink: 0;
+        border-bottom: 2px solid var(--border-color);
+        display: flex; flex-direction: column;
+        background: var(--input-bg);
+      }
+      .input-row { height: 42px; display: flex; }
+      .input-row input[type="text"] {
+        flex: 1; background: transparent; border: none;
+        color: var(--text-color);
+        font-family: 'Noto Sans KR', sans-serif;
+        font-size: 12px; font-weight: 700;
+        padding: 0 12px; outline: none;
+      }
+      .input-row input[type="text"]::placeholder {
+        font-family: 'Noto Sans KR', sans-serif; color: var(--accent-color);
+        opacity: 0.5; font-size: 11px; font-weight: 700;
+      }
+      .input-date-row {
+        height: 30px; display: flex; align-items: center;
+        padding: 0 8px; gap: 6px;
+        border-top: 1px solid var(--border-color);
+        font-size: 9px;
+      }
+      .input-date-row label {
+        color: var(--accent-color); opacity: 0.7; font-size: 9px;
+        font-family: 'Noto Sans KR', sans-serif; font-weight: 700;
+      }
+      .input-date-row input[type="date"] {
+        background: var(--dim-color); border: 1px solid var(--border-color);
+        color: var(--text-color);
+        font-family: 'Noto Sans KR', sans-serif;
+        font-size: 10px; padding: 2px 6px; outline: none; cursor: pointer;
+      }
+      .input-date-row input[type="date"]:focus { border-color: var(--accent-color); }
+      .pri-select {
+        width: 50px; background: transparent; border: none;
+        border-left: 1px solid var(--border-color);
+        color: var(--accent-color);
+        font-family: 'Noto Sans KR', sans-serif; font-size: 9px; font-weight: 700;
+        cursor: pointer; text-align: center;
+        outline: none; -webkit-appearance: none; appearance: none; padding: 0 4px;
+      }
+      .pri-select option { background: var(--bg-color); color: var(--text-color); }
+      .btn-add {
+        width: 42px; background: transparent; border: none;
+        border-left: 1px solid var(--border-color);
+        color: var(--accent-color); cursor: pointer;
+        font-size: 18px; font-family: 'Silkscreen';
+      }
+      .btn-add:hover { background: var(--hover-bg); color: #fff; }
+
+      .main-content { flex: 1; overflow: hidden; position: relative; }
+
+      /* ── 리스트 뷰 ── */
+      .project-list {
+        width: 100%; height: 100%; overflow-y: auto;
+        padding: 8px; display: flex; flex-direction: column; gap: 6px;
+      }
+      .project-list::-webkit-scrollbar { width: 4px; }
+      .project-list::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+      .project-list::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 2px; }
+
+      .section-header {
+        font-size: 9px; color: var(--accent-color); opacity: 0.75;
+        padding: 6px 8px 3px;
+        border-bottom: 1px dashed var(--border-color);
+        margin-top: 4px;
+        font-family: 'Noto Sans KR', sans-serif; font-weight: 700;
+      }
+      .section-header:first-child { margin-top: 0; }
+
+      .project-card {
+        display: flex; align-items: center; gap: 8px;
+        padding: 8px 10px;
+        border: 1px solid var(--border-color);
+        background: var(--cell-bg);
+        box-shadow: var(--card-shadow);
+        transition: all 0.15s; position: relative;
+      }
+      .project-card:hover {
+        border-color: var(--accent-color); transform: translateX(2px);
+      }
+      .status-bar {
+        width: 4px; align-self: stretch;
+        border-radius: 1px; flex-shrink: 0; transition: background 0.2s;
+      }
+      .status-badge {
+        flex-shrink: 0; width: 40px; height: 21px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 9px; font-family: 'Noto Sans KR', sans-serif; font-weight: 700;
+        cursor: pointer; border: 1px solid;
+        transition: all 0.15s;
+        -webkit-user-select: none; user-select: none;
+      }
+      .status-badge:hover { transform: scale(1.05); }
+      .status-badge:active { transform: scale(0.95); }
+      .status-badge[data-status="기획"] { color: var(--status-plan); border-color: var(--status-plan); background: var(--status-plan-dim); }
+      .status-badge[data-status="개발"] { color: var(--status-dev);  border-color: var(--status-dev);  background: var(--status-dev-dim); }
+      .status-badge[data-status="테스트"] { color: var(--status-test); border-color: var(--status-test); background: var(--status-test-dim); font-size: 8px; }
+      .status-badge[data-status="완료"] { color: var(--status-done); border-color: var(--status-done); background: var(--status-done-dim); }
+      .status-badge[data-status="보류"] { color: var(--status-hold); border-color: var(--status-hold); background: var(--status-hold-dim); }
+
+      .pri-badge {
+        flex-shrink: 0; font-size: 8px;
+        font-family: 'Noto Sans KR', sans-serif; font-weight: 700;
+        padding: 2px 5px; border: 1px solid; opacity: 0.85;
+      }
+      .pri-badge.높음 { color: var(--pri-high); border-color: var(--pri-high); }
+      .pri-badge.보통 { color: var(--pri-mid);  border-color: var(--pri-mid); }
+      .pri-badge.낮음 { color: var(--pri-low);  border-color: var(--pri-low); }
+
+      .project-name {
+        flex: 1; min-width: 0;
+        font-family: 'Noto Sans KR', sans-serif;
+        font-size: 12px; font-weight: 700; color: var(--text-color);
+        overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        letter-spacing: -0.3px;
+      }
+      .project-card .date-range {
+        font-size: 8px; color: var(--accent-color); opacity: 0.65;
+        flex-shrink: 0; font-family: 'Noto Sans KR', sans-serif;
+      }
+      .project-card.is-done .project-name { text-decoration: line-through; opacity: 0.5; }
+      .project-card.is-done { opacity: 0.55; border-color: var(--dim-color); }
+      .project-card.is-hold { opacity: 0.65; border-style: dashed; }
+      .project-card.is-hold .project-name { opacity: 0.7; }
+
+      .hold-since {
+        font-size: 7px; color: var(--status-hold); opacity: 0.8;
+        flex-shrink: 0; font-family: 'Noto Sans KR', sans-serif;
+      }
+
+      .card-actions { display: flex; gap: 3px; flex-shrink: 0; align-items: center; }
+      .btn-action {
+        color: var(--delete-color); cursor: pointer;
+        padding: 3px 5px; opacity: 0.7;
+        font-family: 'Noto Sans KR', sans-serif; font-size: 9px;
+        background: transparent; border: 1px solid var(--border-color);
+        display: flex; align-items: center; justify-content: center;
+        transition: all 0.15s;
+      }
+      .btn-action:hover { opacity: 1; }
+      .btn-edit:hover { color: var(--accent-color); border-color: var(--accent-color); background: var(--hover-bg); }
+      .btn-hold {
+        font-size: 9px; font-weight: 700;
+        padding: 3px 8px;
+        color: var(--status-hold) !important;
+        border-color: var(--status-hold) !important;
+        opacity: 0.9 !important;
+      }
+      .btn-hold:hover { background: var(--status-hold-dim); opacity: 1 !important; }
+      .btn-hold.is-held {
+        background: var(--status-hold-dim);
+        opacity: 1 !important;
+      }
+      .btn-delete:hover { color: var(--pri-high); border-color: var(--pri-high); }
+
+      .empty-msg {
+        padding: 28px 16px; text-align: center;
+        color: var(--accent-color); opacity: 0.6;
+        font-size: 11px; line-height: 1.8; white-space: pre-line;
+        font-family: 'Noto Sans KR', sans-serif;
+      }
+      .edit-input {
+        flex: 1; min-width: 0;
+        background: var(--dim-color); border: 1px solid var(--border-color);
+        color: var(--text-color); padding: 4px 8px;
+        font-family: 'Noto Sans KR', sans-serif;
+        font-size: 12px; font-weight: 700; outline: none;
+      }
+      .edit-input:focus { border-color: var(--accent-color); }
+
+      /* ── 타임라인 뷰 ── */
+      .timeline-view {
+        width: 100%; height: 100%;
+        display: none; flex-direction: column;
+      }
+      .timeline-view.active { display: flex; }
+      .project-list.active { display: flex; }
+      .project-list:not(.active) { display: none; }
+
+      .tl-header {
+        height: 32px; flex-shrink: 0;
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 0 10px;
+        border-bottom: 1px solid var(--border-color);
+        background: var(--bar-bg);
+      }
+      .tl-nav-btn {
+        background: transparent; border: 1px solid var(--border-color);
+        color: var(--text-color); cursor: pointer;
+        font-family: 'Noto Sans KR', sans-serif; font-size: 10px; font-weight: 700;
+        padding: 3px 8px; transition: all 0.15s;
+      }
+      .tl-nav-btn:hover { border-color: var(--accent-color); background: var(--hover-bg); }
+      .tl-month-title {
+        font-size: 12px; color: var(--accent-color);
+        font-family: 'Noto Sans KR', sans-serif; font-weight: 700;
+      }
+
+      .tl-body {
+        flex: 1; overflow: auto; position: relative;
+      }
+      .tl-body::-webkit-scrollbar { width: 4px; height: 4px; }
+      .tl-body::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+      .tl-body::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 2px; }
+
+      .tl-table { display: grid; min-width: 100%; }
+
+      .tl-day-cell {
+        text-align: center; font-size: 7px; padding: 4px 0;
+        border-bottom: 2px solid var(--border-color);
+        border-right: 1px solid var(--tl-grid);
+        background: var(--bar-bg);
+        color: var(--text-color); opacity: 0.8;
+        position: sticky; top: 0; z-index: 5;
+      }
+      .tl-day-cell.sun { color: var(--pri-high); }
+      .tl-day-cell.sat { color: var(--accent-color); }
+      .tl-day-cell.today { background: var(--tl-today); opacity: 1; font-weight: 900; }
+
+      .tl-label-cell {
+        position: sticky; left: 0; z-index: 3;
+        background: var(--bg-color);
+        border-right: 2px solid var(--border-color);
+        border-bottom: 1px solid var(--tl-grid);
+        padding: 0 6px;
+        display: flex; align-items: center; gap: 4px;
+        font-family: 'Noto Sans KR', sans-serif;
+        font-size: 10px; font-weight: 700;
+        color: var(--text-color);
+        overflow: hidden; white-space: nowrap;
+        min-width: 110px; max-width: 110px;
+      }
+      .tl-label-cell .tl-status-dot {
+        width: 6px; height: 6px; border-radius: 1px; flex-shrink: 0;
+      }
+      .tl-label-cell .tl-name {
+        overflow: hidden; text-overflow: ellipsis;
+      }
+
+      .tl-bar-cell {
+        border-right: 1px solid var(--tl-grid);
+        border-bottom: 1px solid var(--tl-grid);
+        position: relative; min-height: 28px;
+      }
+      .tl-bar-cell.weekend { background: var(--tl-weekend); }
+      .tl-bar-cell.today-col { background: var(--tl-today); }
+
+      .tl-bar-fill {
+        position: absolute; top: 5px; bottom: 5px;
+        border-radius: 2px; min-width: 2px;
+        opacity: 0.85; z-index: 2;
+      }
+      .tl-bar-fill.hold {
+        opacity: 0.5;
+        background-image: repeating-linear-gradient(
+          45deg, transparent, transparent 3px,
+          rgba(255,255,255,0.15) 3px, rgba(255,255,255,0.15) 6px
+        ) !important;
+      }
+
+      .tl-empty {
+        grid-column: 1 / -1;
+        padding: 20px; text-align: center;
+        color: var(--accent-color); opacity: 0.5; font-size: 10px;
+        font-family: 'Noto Sans KR', sans-serif;
+      }
+
+      /* ── 하단바 ── */
+      .bottom-bar {
+        height: 34px; flex-shrink: 0;
+        border-top: 2px solid var(--border-color);
+        background: var(--bar-bg);
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 0 10px;
+      }
+      .btn-theme {
+        height: 24px; padding: 0 8px;
+        background: transparent; border: 1px solid var(--border-color);
+        color: var(--text-color); cursor: pointer;
+        font-family: 'Noto Sans KR', sans-serif; font-size: 9px; font-weight: 700;
+      }
+      .btn-theme:hover { border-color: var(--accent-color); background: var(--hover-bg); }
+    </style>
+</head>
+<body>
+  <div class="container">
+
+    <div class="header-bar">
+      <span class="header-left">
+        <span style="font-family:'Noto Sans KR',sans-serif; font-weight:700;">프로젝트 관리</span>
+        <span id="projectCount" style="font-size:9px; opacity:0.7; font-family:'Noto Sans KR',sans-serif;">0개 진행중</span>
+      </span>
+      <span id="syncStatus" style="font-size:8px; opacity:0.8; font-family:'Noto Sans KR',sans-serif;">—</span>
+    </div>
+
+    <div class="summary-bar">
+      <div class="summary-item"><div class="summary-dot" style="background:var(--status-plan)"></div><span id="cntPlan">0</span></div>
+      <div class="summary-item"><div class="summary-dot" style="background:var(--status-dev)"></div><span id="cntDev">0</span></div>
+      <div class="summary-item"><div class="summary-dot" style="background:var(--status-test)"></div><span id="cntTest">0</span></div>
+      <div class="summary-item"><div class="summary-dot" style="background:var(--status-hold)"></div><span id="cntHold">0</span></div>
+      <div class="summary-item"><div class="summary-dot" style="background:var(--status-done)"></div><span id="cntDone">0</span></div>
+      <div class="progress-mini"><div class="progress-mini-fill" id="progressFill" style="width:0%"></div></div>
+    </div>
+
+    <div class="filter-bar">
+      <button class="filter-tab active" data-filter="전체">전체</button>
+      <button class="filter-tab" data-filter="기획">기획</button>
+      <button class="filter-tab" data-filter="개발">개발</button>
+      <button class="filter-tab" data-filter="테스트">테스트</button>
+      <button class="filter-tab" data-filter="보류">보류</button>
+      <button class="filter-tab" data-filter="완료">완료</button>
+      <button class="view-toggle" id="viewToggle" title="목록 / 일정 전환">📋 목록</button>
+    </div>
+
+    <div class="input-area">
+      <div class="input-row">
+        <input type="text" id="inputName" placeholder="새 프로젝트 이름..." autocomplete="off" maxlength="80">
+        <select class="pri-select" id="inputPri">
+          <option value="보통">보통</option>
+          <option value="높음">높음</option>
+          <option value="낮음">낮음</option>
+        </select>
+        <button class="btn-add" id="btnAdd" title="추가 (Enter)">+</button>
+      </div>
+      <div class="input-date-row">
+        <label>시작</label>
+        <input type="date" id="inputStart">
+        <label>종료</label>
+        <input type="date" id="inputEnd">
+      </div>
+    </div>
+
+    <div class="main-content">
+      <div class="project-list active" id="list"></div>
+      <div class="timeline-view" id="timelineView">
+        <div class="tl-header">
+          <button class="tl-nav-btn" id="tlPrev">&lt;</button>
+          <span class="tl-month-title" id="tlTitle">2026년 2월</span>
+          <button class="tl-nav-btn" id="tlToday">오늘</button>
+          <button class="tl-nav-btn" id="tlNext">&gt;</button>
+        </div>
+        <div class="tl-body" id="tlBody"></div>
+      </div>
+    </div>
+
+    <div class="bottom-bar">
+      <span style="font-size:9px; color:var(--accent-color); opacity:0.7; font-family:'Noto Sans KR',sans-serif;" id="totalInfo">전체: 0개</span>
+      <button class="btn-theme" id="themeBtn">다크</button>
+    </div>
+
+  </div>
+
+<script>
+  const STORAGE_KEY = "projectlog_data_v2";
+  const THEME_KEY   = "projectlog_theme_v1";
+  const STATUSES = ["기획", "개발", "테스트", "완료"];
+  const STATUS_CSS = { "기획": "--status-plan", "개발": "--status-dev", "테스트": "--status-test", "완료": "--status-done", "보류": "--status-hold" };
+  const DOW_KR = ["일","월","화","수","목","금","토"];
+
+  let projects = [];
+  let currentFilter = "전체";
+  let currentView = "LIST";
+  let editingId = null;
+  let tlViewDate = new Date();
+
+  const $ = (s) => document.querySelector(s);
+  const inputName  = $("#inputName");
+  const inputPri   = $("#inputPri");
+  const inputStart = $("#inputStart");
+  const inputEnd   = $("#inputEnd");
+  const listEl     = $("#list");
+
+  const todayISO = new Date().toLocaleDateString('sv-SE');
+  inputStart.value = todayISO;
+  const defEnd = new Date(); defEnd.setDate(defEnd.getDate() + 7);
+  inputEnd.value = defEnd.toLocaleDateString('sv-SE');
+
+  function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(projects)); } catch(_){}
+  }
+  function load() {
+    try {
+      const d = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if (Array.isArray(d)) projects = d;
+    } catch(_){}
+    // v1 → v2 마이그레이션
+    try {
+      const old = JSON.parse(localStorage.getItem("projectlog_data_v1"));
+      if (Array.isArray(old) && old.length > 0 && projects.length === 0) {
+        const statusMap = { PLAN:"기획", DEV:"개발", TEST:"테스트", DONE:"완료", HOLD:"보류" };
+        const priMap = { HIGH:"높음", MID:"보통", LOW:"낮음" };
+        projects = old.map(p => ({
+          ...p,
+          status: statusMap[p.status] || p.status,
+          priority: priMap[p.priority] || p.priority,
+        }));
+        save();
+        localStorage.removeItem("projectlog_data_v1");
+      }
+    } catch(_){}
+  }
+
+  // 날짜 포맷
+  function fmtDate(iso) {
+    if (!iso) return "";
+    const [y, m, d] = iso.split("-");
+    return `${parseInt(m)}/${parseInt(d)}`;
+  }
+  function fmtDateFull(iso) {
+    if (!iso) return "";
+    const [y, m, d] = iso.split("-");
+    return `${y}년 ${parseInt(m)}월 ${parseInt(d)}일`;
+  }
+  function daysSince(iso) {
+    if (!iso) return 0;
+    const then = new Date(iso + "T00:00:00");
+    const now = new Date(todayISO + "T00:00:00");
+    return Math.floor((now - then) / 86400000);
+  }
+
+  const priOrder = { "높음": 0, "보통": 1, "낮음": 2 };
+  const statusOrder = { "기획": 0, "개발": 1, "테스트": 2, "보류": 3, "완료": 4 };
+
+  function getFiltered() {
+    const filtered = currentFilter === "전체"
+      ? [...projects]
+      : projects.filter(p => p.status === currentFilter);
+    filtered.sort((a, b) => {
+      const sa = statusOrder[a.status] ?? 99;
+      const sb = statusOrder[b.status] ?? 99;
+      if (sa !== sb) return sa - sb;
+      const pa = priOrder[a.priority] ?? 1;
+      const pb = priOrder[b.priority] ?? 1;
+      if (pa !== pb) return pa - pb;
+      return b.createdAt - a.createdAt;
+    });
+    return filtered;
+  }
+
+  // ── 렌더 ──
+  function render() {
+    const counts = { "기획":0, "개발":0, "테스트":0, "완료":0, "보류":0 };
+    projects.forEach(p => { if (counts[p.status] !== undefined) counts[p.status]++; });
+    const total = projects.length;
+    const active = total - counts["완료"] - counts["보류"];
+
+    $("#cntPlan").textContent = counts["기획"];
+    $("#cntDev").textContent  = counts["개발"];
+    $("#cntTest").textContent = counts["테스트"];
+    $("#cntHold").textContent = counts["보류"];
+    $("#cntDone").textContent = counts["완료"];
+    $("#projectCount").textContent = `${active}개 진행중`;
+    $("#totalInfo").textContent = `전체: ${total}개`;
+    $("#progressFill").style.width = total > 0 ? `${(counts["완료"] / total * 100).toFixed(0)}%` : "0%";
+
+    document.querySelectorAll(".filter-tab").forEach(tab => {
+      const f = tab.dataset.filter;
+      if (!f) return;
+      const cnt = f === "전체" ? total : counts[f] || 0;
+      let cntSpan = tab.querySelector(".tab-count");
+      if (!cntSpan) { cntSpan = document.createElement("span"); cntSpan.className = "tab-count"; tab.appendChild(cntSpan); }
+      cntSpan.textContent = cnt;
+    });
+
+    if (currentView === "LIST") renderList();
+    else renderTimeline();
+  }
+
+  // ── 리스트 뷰 ──
+  function renderList() {
+    const filtered = getFiltered();
+    listEl.innerHTML = "";
+
+    if (filtered.length === 0) {
+      const empty = document.createElement("div");
+      empty.className = "empty-msg";
+      empty.textContent = currentFilter === "전체"
+        ? "등록된 프로젝트가 없습니다.\n위에서 추가해보세요."
+        : `${currentFilter} 상태의 프로젝트가 없습니다.`;
+      listEl.appendChild(empty);
+      return;
+    }
+
+    // 섹션 그룹핑
+    let lastStatus = null;
+    const sectionNames = { "기획": "📋 기획 중", "개발": "💻 개발 중", "테스트": "🧪 테스트 중", "보류": "⏸ 보류", "완료": "✅ 완료" };
+
+    filtered.forEach(p => {
+      if (currentFilter === "전체" && p.status !== lastStatus) {
+        lastStatus = p.status;
+        const hdr = document.createElement("div");
+        hdr.className = "section-header";
+        hdr.textContent = sectionNames[p.status] || p.status;
+        listEl.appendChild(hdr);
+      }
+
+      const card = document.createElement("div");
+      card.className = `project-card`;
+      if (p.status === "완료") card.classList.add("is-done");
+      if (p.status === "보류") card.classList.add("is-hold");
+
+      const sbar = document.createElement("div");
+      sbar.className = "status-bar";
+      sbar.style.background = `var(${STATUS_CSS[p.status]})`;
+      card.appendChild(sbar);
+
+      const badge = document.createElement("div");
+      badge.className = "status-badge";
+      badge.dataset.status = p.status;
+      badge.textContent = p.status;
+      if (p.status !== "보류") {
+        badge.title = "클릭: 다음 단계 / 우클릭: 이전 단계";
+        badge.addEventListener("click", (e) => { e.stopPropagation(); advanceStatus(p.id, 1); });
+        badge.addEventListener("contextmenu", (e) => { e.preventDefault(); e.stopPropagation(); advanceStatus(p.id, -1); });
+      } else {
+        badge.title = "보류 중 — ▶ 버튼으로 복귀";
+        badge.style.cursor = "default";
+      }
+      card.appendChild(badge);
+
+      const pri = document.createElement("span");
+      pri.className = `pri-badge ${p.priority}`;
+      pri.textContent = p.priority;
+      card.appendChild(pri);
+
+      if (editingId === p.id) {
+        const inp = document.createElement("input");
+        inp.type = "text"; inp.className = "edit-input";
+        inp.value = p.name; inp.maxLength = 80;
+        card.appendChild(inp);
+        const saveBtn = document.createElement("button");
+        saveBtn.className = "btn-action btn-edit"; saveBtn.textContent = "✔"; saveBtn.title = "저장";
+        saveBtn.onclick = (e) => { e.stopPropagation(); saveEditFn(p.id, inp.value); };
+        card.appendChild(saveBtn);
+        const cancelBtn = document.createElement("button");
+        cancelBtn.className = "btn-action btn-delete"; cancelBtn.textContent = "↩"; cancelBtn.title = "취소";
+        cancelBtn.onclick = (e) => { e.stopPropagation(); editingId = null; render(); };
+        card.appendChild(cancelBtn);
+        listEl.appendChild(card);
+        setTimeout(() => { inp.focus(); inp.select(); }, 0);
+        inp.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") saveEditFn(p.id, inp.value);
+          if (e.key === "Escape") { editingId = null; render(); }
+        });
+        return;
+      }
+
+      const name = document.createElement("span");
+      name.className = "project-name";
+      name.textContent = p.name;
+      name.title = p.name;
+      card.appendChild(name);
+
+      // 보류 기간 표시
+      if (p.status === "보류" && p.holdDate) {
+        const hs = document.createElement("span");
+        hs.className = "hold-since";
+        const d = daysSince(p.holdDate);
+        hs.textContent = d > 0 ? `${d}일째` : "오늘";
+        hs.title = `보류 시작: ${fmtDateFull(p.holdDate)}`;
+        card.appendChild(hs);
+      }
+
+      // 날짜 범위
+      if (p.startDate || p.endDate) {
+        const dr = document.createElement("span");
+        dr.className = "date-range";
+        dr.textContent = `${fmtDate(p.startDate)}~${fmtDate(p.endDate)}`;
+        card.appendChild(dr);
+      }
+
+      const actions = document.createElement("div");
+      actions.className = "card-actions";
+
+      // 보류 토글 버튼 (완료 상태에서는 숨김)
+      if (p.status !== "완료") {
+        const holdBtn = document.createElement("button");
+        holdBtn.className = `btn-action btn-hold ${p.status === "보류" ? "is-held" : ""}`;
+        holdBtn.textContent = p.status === "보류" ? "복귀" : "보류";
+        holdBtn.title = p.status === "보류" ? "이전 상태로 복귀합니다" : "프로젝트를 보류 상태로 전환합니다";
+        holdBtn.onclick = (e) => { e.stopPropagation(); toggleHold(p.id); };
+        actions.appendChild(holdBtn);
+      }
+
+      const editBtn = document.createElement("button");
+      editBtn.className = "btn-action btn-edit"; editBtn.textContent = "✎"; editBtn.title = "수정";
+      editBtn.onclick = (e) => { e.stopPropagation(); editingId = p.id; render(); };
+      actions.appendChild(editBtn);
+
+      const delBtn = document.createElement("button");
+      delBtn.className = "btn-action btn-delete"; delBtn.textContent = "X"; delBtn.title = "삭제";
+      delBtn.onclick = (e) => { e.stopPropagation(); deleteProject(p.id); };
+      actions.appendChild(delBtn);
+
+      card.appendChild(actions);
+      listEl.appendChild(card);
+    });
+  }
+
+  // ── 타임라인 뷰 ──
+  function renderTimeline() {
+    const body = $("#tlBody");
+    body.innerHTML = "";
+    const year = tlViewDate.getFullYear();
+    const month = tlViewDate.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const todayStr = new Date().toLocaleDateString('sv-SE');
+
+    $("#tlTitle").textContent = `${year}년 ${month + 1}월`;
+
+    const filtered = getFiltered();
+    const table = document.createElement("div");
+    table.className = "tl-table";
+    table.style.gridTemplateColumns = `110px repeat(${daysInMonth}, minmax(22px, 1fr))`;
+
+    // 헤더
+    const corner = document.createElement("div");
+    corner.className = "tl-day-cell";
+    corner.style.position = "sticky"; corner.style.left = "0"; corner.style.zIndex = "6";
+    corner.style.background = "var(--bg-color)";
+    corner.style.borderRight = "2px solid var(--border-color)";
+    table.appendChild(corner);
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const date = new Date(year, month, d);
+      const dow = date.getDay();
+      const iso = date.toLocaleDateString('sv-SE');
+      const cell = document.createElement("div");
+      cell.className = "tl-day-cell";
+      if (dow === 0) cell.classList.add("sun");
+      if (dow === 6) cell.classList.add("sat");
+      if (iso === todayStr) cell.classList.add("today");
+      cell.innerHTML = `<div>${d}</div><div style="font-size:6px;opacity:0.6">${DOW_KR[dow]}</div>`;
+      table.appendChild(cell);
+    }
+
+    if (filtered.length === 0) {
+      const emptyRow = document.createElement("div");
+      emptyRow.className = "tl-empty";
+      emptyRow.textContent = "표시할 프로젝트가 없습니다.";
+      table.appendChild(emptyRow);
+      body.appendChild(table);
+      return;
+    }
+
+    filtered.forEach(p => {
+      const labelCell = document.createElement("div");
+      labelCell.className = "tl-label-cell";
+      const dot = document.createElement("div");
+      dot.className = "tl-status-dot";
+      dot.style.background = `var(${STATUS_CSS[p.status]})`;
+      labelCell.appendChild(dot);
+      const nameSpan = document.createElement("span");
+      nameSpan.className = "tl-name";
+      nameSpan.textContent = p.name;
+      nameSpan.title = p.name;
+      labelCell.appendChild(nameSpan);
+      table.appendChild(labelCell);
+
+      const pStart = p.startDate ? new Date(p.startDate + "T00:00:00") : null;
+      const pEnd = p.endDate ? new Date(p.endDate + "T00:00:00") : null;
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const cellDate = new Date(year, month, d);
+        const dow = cellDate.getDay();
+        const iso = cellDate.toLocaleDateString('sv-SE');
+        const cell = document.createElement("div");
+        cell.className = "tl-bar-cell";
+        if (dow === 0 || dow === 6) cell.classList.add("weekend");
+        if (iso === todayStr) cell.classList.add("today-col");
+
+        if (pStart && pEnd && cellDate >= pStart && cellDate <= pEnd) {
+          const bar = document.createElement("div");
+          bar.className = "tl-bar-fill";
+          if (p.status === "보류") bar.classList.add("hold");
+          bar.style.background = `var(${STATUS_CSS[p.status]})`;
+          const isFirst = cellDate.getTime() === pStart.getTime();
+          const isLast = cellDate.getTime() === pEnd.getTime();
+          if (isFirst && isLast) { bar.style.left = "2px"; bar.style.right = "2px"; bar.style.borderRadius = "3px"; }
+          else if (isFirst) { bar.style.left = "2px"; bar.style.right = "0"; bar.style.borderRadius = "3px 0 0 3px"; }
+          else if (isLast) { bar.style.left = "0"; bar.style.right = "2px"; bar.style.borderRadius = "0 3px 3px 0"; }
+          else { bar.style.left = "0"; bar.style.right = "0"; bar.style.borderRadius = "0"; }
+          cell.appendChild(bar);
+        }
+        table.appendChild(cell);
+      }
+    });
+    body.appendChild(table);
+  }
+
+  // ── CRUD ──
+  function addProject() {
+    const name = inputName.value.trim();
+    if (!name) return;
+    projects.unshift({
+      id: "p-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6),
+      name,
+      status: "기획",
+      priority: inputPri.value || "보통",
+      startDate: inputStart.value || null,
+      endDate: inputEnd.value || null,
+      createdAt: Date.now(),
+      prevStatus: null,
+      holdDate: null
+    });
+    inputName.value = "";
+    save(); render();
+    inputName.focus();
+  }
+
+  function deleteProject(id) {
+    projects = projects.filter(p => p.id !== id);
+    save(); render();
+  }
+
+  function advanceStatus(id, dir) {
+    const proj = projects.find(item => item.id === id);
+    if (!proj || proj.status === "보류") return;
+    const idx = STATUSES.indexOf(proj.status);
+    if (idx < 0) return;
+    const next = idx + dir;
+    if (next < 0 || next >= STATUSES.length) return;
+    proj.status = STATUSES[next];
+    proj.prevStatus = null;
+    proj.holdDate = null;
+    save(); render();
+  }
+
+  function toggleHold(id) {
+    const proj = projects.find(item => item.id === id);
+    if (!proj) return;
+    if (proj.status === "보류") {
+      // 복귀: 이전 상태로 돌아감
+      const restore = proj.prevStatus;
+      proj.status = (restore && STATUSES.includes(restore)) ? restore : "기획";
+      proj.prevStatus = null;
+      proj.holdDate = null;
+    } else if (proj.status !== "완료") {
+      // 보류로 전환 (완료 상태에서는 보류 불가)
+      proj.prevStatus = proj.status;
+      proj.status = "보류";
+      proj.holdDate = todayISO;
+    }
+    save(); render();
+  }
+
+  function saveEditFn(id, newName) {
+    const trimmed = newName.trim();
+    if (!trimmed) { editingId = null; render(); return; }
+    const proj = projects.find(item => item.id === id);
+    if (proj) proj.name = trimmed;
+    editingId = null;
+    save(); render();
+  }
+
+  // ── 필터 ──
+  document.querySelectorAll(".filter-tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+      document.querySelectorAll(".filter-tab").forEach(t => t.classList.remove("active"));
+      tab.classList.add("active");
+      currentFilter = tab.dataset.filter;
+      render();
+    });
+  });
+
+  // ── 뷰 토글 ──
+  const viewToggleBtn = $("#viewToggle");
+  function setView(v) {
+    currentView = v;
+    if (v === "LIST") {
+      viewToggleBtn.innerHTML = "📋 목록";
+      listEl.classList.add("active");
+      $("#timelineView").classList.remove("active");
+    } else {
+      viewToggleBtn.innerHTML = "📊 일정";
+      listEl.classList.remove("active");
+      $("#timelineView").classList.add("active");
+    }
+    render();
+  }
+  viewToggleBtn.onclick = () => setView(currentView === "LIST" ? "TIMELINE" : "LIST");
+
+  // ── 타임라인 네비 ──
+  $("#tlPrev").onclick = () => { tlViewDate.setMonth(tlViewDate.getMonth() - 1); render(); };
+  $("#tlNext").onclick = () => { tlViewDate.setMonth(tlViewDate.getMonth() + 1); render(); };
+  $("#tlToday").onclick = () => { tlViewDate = new Date(); render(); };
+
+  // ── 입력 ──
+  inputName.addEventListener("keydown", (e) => { if (e.key === "Enter") addProject(); });
+  $("#btnAdd").addEventListener("click", addProject);
+
+  // ── 테마 ──
+  const themeBtnEl = $("#themeBtn");
+  function applyTheme(mode) {
+    if (mode === "light") {
+      document.documentElement.classList.add("light");
+      themeBtnEl.textContent = "라이트";
+    } else {
+      document.documentElement.classList.remove("light");
+      themeBtnEl.textContent = "다크";
+    }
+    localStorage.setItem(THEME_KEY, mode);
+  }
+  applyTheme(localStorage.getItem(THEME_KEY) || "dark");
+  themeBtnEl.onclick = () => {
+    const cur = document.documentElement.classList.contains("light") ? "light" : "dark";
+    applyTheme(cur === "dark" ? "light" : "dark");
+  };
+
+  // ── 초기화 ──
+  load();
+  render();
+</script>
+</body>
+</html>
