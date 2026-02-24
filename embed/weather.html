@@ -13,6 +13,14 @@
             --cloud-color: #3b4261;
         }
 
+        :root.light {
+            --bg-color: #f8f9fb;
+            --border-color: #a0a5b5;
+            --accent-color: #3b6ed5;
+            --text-color: #1a1a2e;
+            --cloud-color: #c0c4cc;
+        }
+
         body {
             margin: 0; padding: 0;
             background-color: var(--bg-color);
@@ -139,15 +147,18 @@
     </div>
 
     <script>
-        // ▼▼▼ 수정된 부분: 끝에 'Y' 제거했습니다! ▼▼▼
-        const API_KEY = "28d973834adf062cd5ce35560b8d1091"; 
+        // 노션 테마 감지
+        const params = new URLSearchParams(window.location.search);
+        if (params.get("mode") === "light") {
+            document.documentElement.classList.add("light");
+        }
+
         const CITY = "Seoul";
 
         async function fetchWeather() {
             try {
-                // 방해되는 if 문 삭제함 (바로 호출 시작)
-
-                const url = `https://api.openweathermap.org/data/2.5/weather?q=${CITY}&appid=${API_KEY}&units=metric`;
+                // 프론트엔드에서 직접 키를 노출하지 않고 백엔드 거치도록 수정
+                const url = `/api/weather?city=${CITY}`;
                 const response = await fetch(url);
                 
                 // 에러 체크: 키가 틀리거나 호출 실패시

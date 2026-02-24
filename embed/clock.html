@@ -16,6 +16,14 @@
       --dim-color: #1e222a;
     }
 
+    :root.light {
+      --bg-color: #f8f9fb;
+      --border-color: #a0a5b5;
+      --accent-color: #3b6ed5;
+      --text-color: #1a1a2e;
+      --dim-color: #ebedf2;
+    }
+
     * { box-sizing:border-box; }
     
     html, body {
@@ -149,6 +157,13 @@
   </div>
 
 <script>
+    // 노션 테마 감지
+    const params = new URLSearchParams(window.location.search);
+    const mode = params.get("mode");
+    if (mode === "light") {
+      document.documentElement.classList.add("light");
+    }
+
     const $ = (s) => document.querySelector(s);
 
     // ✅ 오프라인 모드: ?offline=1 → Notion API 호출 안 함 (투두와 동일 localStorage 사용)

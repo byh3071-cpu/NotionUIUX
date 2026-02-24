@@ -15,6 +15,16 @@
             --overlay-bg: rgba(15, 17, 21, 0.95);
         }
 
+        :root.light {
+            --bg-color: #f8f9fb;
+            --border-color: #a0a5b5;
+            --accent-color: #3b6ed5;
+            --break-color: #4caf50;
+            --text-color: #1a1a2e;
+            --off-color: #ebedf2;
+            --overlay-bg: rgba(248, 249, 251, 0.95);
+        }
+
         body {
             margin: 0; padding: 0;
             background-color: var(--bg-color);
@@ -289,6 +299,12 @@
     </div>
 
     <script>
+        // 노션 테마 감지
+        const params = new URLSearchParams(window.location.search);
+        if (params.get("mode") === "light") {
+            document.documentElement.classList.add("light");
+        }
+
         let focusTimeSet = 25;
         let breakTimeSet = 5;
         let timeLeft = focusTimeSet * 60;

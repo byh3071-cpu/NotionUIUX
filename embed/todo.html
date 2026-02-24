@@ -7,6 +7,7 @@
     <style>
         /* 기존 디자인 100% 동일 */
         :root { --bg-color: #0f1115; --border-color: #3b4261; --accent-color: #82aaff; --text-color: #dbe6f5; --dim-color: #1e222a; }
+        :root.light { --bg-color: #f8f9fb; --border-color: #a0a5b5; --accent-color: #3b6ed5; --text-color: #1a1a2e; --dim-color: #ebedf2; }
         body { margin: 0; padding: 0; background-color: var(--bg-color); font-family: 'Silkscreen', cursive; width: 100vw; height: 100vh; overflow: hidden; color: var(--text-color); }
         .todo-container { width: 100%; height: 100%; border: 2px solid var(--border-color); box-sizing: border-box; display: flex; flex-direction: column; }
         .header-bar { height: 32px; flex-shrink: 0; border-bottom: 1px solid var(--border-color); background: rgba(59, 66, 97, 0.2); display: flex; align-items: center; justify-content: space-between; padding: 0 12px; font-size: 11px; color: var(--accent-color); }
@@ -73,6 +74,12 @@
     </div>
 
 <script>
+    // 노션 테마 감지
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("mode") === "light") {
+      document.documentElement.classList.add("light");
+    }
+
     const input = document.getElementById("input");
     const list = document.getElementById("list");
     const countDisplay = document.getElementById("task-count");
@@ -201,7 +208,7 @@ function getPrevDayISO(iso) {
     function setSyncStatus(txt) { if (syncStatusEl) syncStatusEl.textContent = txt; }
 
     async function syncFromNotion() {
-        if (inFlight > 0) return;
+        if (inFlight > 0 || editingId) return;
         try {
             const today = getTodayISO();
             const yesterday = getYesterdayISO();
