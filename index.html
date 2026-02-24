@@ -48,6 +48,8 @@
       border-radius:0;
       overflow:hidden;
       position:relative;
+      display: flex;
+      flex-direction: column;
     }
 
     .topbar{
@@ -127,12 +129,14 @@
       padding:8px;
       display:grid;
       grid-template-columns: repeat(7, 1fr);
+      grid-template-rows: repeat(6, 1fr);
       gap: var(--gap);
       background:var(--panel);
+      flex: 1;
     }
 
     .day{
-      height: var(--cell);
+      /* height: var(--cell); */
       border:2px solid var(--line);
       border-radius:0;
       background:#0b0c10;

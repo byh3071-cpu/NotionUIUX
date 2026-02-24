@@ -50,7 +50,7 @@
       /* 라이트 모드 */
       :root.light {
         --bg-color: #f8f9fb;
-        --border-color: #5b657e;
+        --border-color: #2d3748;
         --accent-color: #3b6ed5;
         --text-color: #1a1a2e;
         --dim-color: #ebedf2;
@@ -195,11 +195,13 @@
         padding: 8px;
         display: grid;
         grid-template-columns: repeat(7, 1fr);
+        grid-template-rows: repeat(6, 1fr);
         gap: var(--gap);
+        flex: 1;
       }
 
       .day {
-        height: var(--cell);
+        /* height: var(--cell); */
         border: 1px solid var(--border-color);
         background: var(--cell-bg);
         position: relative;
