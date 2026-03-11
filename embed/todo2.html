@@ -1,0 +1,3614 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Todo Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --app-bg: #f7f7f5;
+        --panel-bg: #ffffff;
+        --panel-muted: #f8f8f6;
+        --panel-soft: #fcfcfb;
+        --border: #ecece8;
+        --border-strong: #dfdfd8;
+        --text-main: #1f2328;
+        --text-sub: #6b7280;
+        --text-soft: #959cab;
+        --accent: #3578f6;
+        --accent-soft: rgba(53, 120, 246, 0.08);
+        --success: #0f9d58;
+        --success-soft: rgba(15, 157, 88, 0.1);
+        --warning: #d97706;
+        --warning-soft: rgba(217, 119, 6, 0.12);
+        --danger: #e5484d;
+        --danger-soft: rgba(229, 72, 77, 0.1);
+        --surface-hover: rgba(15, 23, 42, 0.025);
+        --surface-strong: rgba(15, 23, 42, 0.06);
+        --hero-glow: rgba(53, 120, 246, 0.045);
+        --chrome-bg: rgba(255, 255, 255, 0.5);
+        --chrome-fade: rgba(255, 255, 255, 0);
+        --shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+      }
+
+      :root.dark {
+        --app-bg: #11151b;
+        --panel-bg: #181d25;
+        --panel-muted: #11151b;
+        --panel-soft: #141922;
+        --border: #262d38;
+        --border-strong: #313949;
+        --text-main: #f3f5f7;
+        --text-sub: #b0b8c5;
+        --text-soft: #8c96a8;
+        --accent: #7aa2ff;
+        --accent-soft: rgba(122, 162, 255, 0.14);
+        --success: #4ed08b;
+        --success-soft: rgba(78, 208, 139, 0.14);
+        --warning: #ffb34d;
+        --warning-soft: rgba(255, 179, 77, 0.14);
+        --danger: #ff7b7b;
+        --danger-soft: rgba(255, 123, 123, 0.14);
+        --surface-hover: rgba(255, 255, 255, 0.04);
+        --surface-strong: rgba(255, 255, 255, 0.06);
+        --hero-glow: rgba(122, 162, 255, 0.12);
+        --chrome-bg: rgba(17, 21, 27, 0.72);
+        --chrome-fade: rgba(17, 21, 27, 0);
+        --shadow: none;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        background: var(--app-bg);
+        color: var(--text-main);
+        font-family: "Inter", "Noto Sans KR", sans-serif;
+      }
+
+      body {
+        padding: 0;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      button:focus-visible,
+      input:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 4px var(--accent-soft);
+      }
+
+      .app-shell {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        background:
+          radial-gradient(
+            circle at top right,
+            var(--hero-glow),
+            transparent 28%
+          ),
+          linear-gradient(
+            180deg,
+            var(--chrome-bg),
+            var(--chrome-fade)
+          ),
+          var(--app-bg);
+      }
+
+      .topbar {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 18px 22px 14px;
+        border-bottom: 1px solid var(--border);
+        background: var(--chrome-bg);
+        backdrop-filter: blur(14px);
+      }
+
+      .topbar-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      .page-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(180deg, var(--panel-soft), var(--panel-bg));
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+        font-size: 16px;
+      }
+
+      .title-group {
+        min-width: 0;
+      }
+
+      .title-group h1 {
+        margin: 0;
+        font-size: 21px;
+        line-height: 1.2;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+      }
+
+      .title-group p {
+        margin: 4px 0 0;
+        color: var(--text-sub);
+        font-size: 11.5px;
+      }
+
+      .topbar-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        max-width: 48%;
+      }
+
+      .chip {
+        height: 30px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 11px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: var(--panel-bg);
+        color: var(--text-sub);
+        font-size: 11px;
+        font-weight: 700;
+        box-shadow: var(--shadow);
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .chip.primary {
+        background: var(--accent-soft);
+        border-color: transparent;
+        color: var(--accent);
+      }
+
+      .chip.success {
+        background: var(--success-soft);
+        border-color: transparent;
+        color: var(--success);
+      }
+
+      .chip.warning {
+        background: var(--warning-soft);
+        border-color: transparent;
+        color: var(--warning);
+      }
+
+      .chip.danger {
+        background: var(--danger-soft);
+        border-color: transparent;
+        color: var(--danger);
+      }
+
+      .dashboard {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+        padding: 18px 16px 24px;
+        scrollbar-width: thin;
+        scrollbar-color: var(--border-strong) transparent;
+      }
+
+      .dashboard::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .dashboard::-webkit-scrollbar-thumb {
+        background: var(--border-strong);
+        border-radius: 999px;
+      }
+
+      .card {
+        min-width: 0;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        background: var(--panel-bg);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        transition:
+          border-color 0.18s ease,
+          box-shadow 0.18s ease,
+          transform 0.18s ease;
+      }
+
+      .card:hover {
+        border-color: var(--border-strong);
+      }
+
+      .card-header {
+        flex-shrink: 0;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 16px 16px 12px;
+      }
+
+      .card-title h2,
+      .card-title h3 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      .card-title p {
+        margin: 6px 0 0;
+        color: var(--text-sub);
+        font-size: 11.5px;
+        line-height: 1.5;
+        max-width: 42ch;
+      }
+
+      .card-count {
+        padding: 4px 9px;
+        border-radius: 999px;
+        background: var(--panel-soft);
+        color: var(--text-sub);
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+        border: 1px solid var(--border);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .content-wrap {
+        width: min(100%, 1120px);
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .workspace-tabs {
+        width: min(100%, 1120px);
+        margin: 0 auto 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .view-tab {
+        height: 34px;
+        padding: 0 13px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: var(--panel-bg);
+        color: var(--text-sub);
+        font-size: 11.5px;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: var(--shadow);
+      }
+
+      .view-tab.is-active {
+        background: var(--text-main);
+        border-color: transparent;
+        color: var(--panel-bg);
+      }
+
+      .view-panel {
+        display: none;
+      }
+
+      .view-panel.is-active {
+        display: block;
+      }
+
+      .quick-add-card,
+      .list-section {
+        background: var(--panel-bg);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+      }
+
+      .done-section .card-count {
+        background: var(--success-soft);
+        color: var(--success);
+        border-color: transparent;
+      }
+
+      .hero-card {
+        position: relative;
+        overflow: hidden;
+        background:
+          linear-gradient(135deg, rgba(53, 120, 246, 0.06), transparent 48%),
+          linear-gradient(180deg, var(--panel-bg), var(--panel-soft));
+      }
+
+      .hero-card::after {
+        content: "";
+        position: absolute;
+        inset: auto -40px -60px auto;
+        width: 180px;
+        height: 180px;
+        border-radius: 999px;
+        background: radial-gradient(circle, var(--hero-glow), transparent 70%);
+        pointer-events: none;
+      }
+
+      .hero-overview {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+
+      .hero-copy {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        max-width: 58ch;
+      }
+
+      .hero-copy strong {
+        font-size: 14px;
+        letter-spacing: -0.02em;
+      }
+
+      .hero-copy span {
+        color: var(--text-sub);
+        font-size: 11.5px;
+        line-height: 1.6;
+      }
+
+      .hero-kicker {
+        display: inline-flex;
+        align-items: center;
+        width: fit-content;
+        min-height: 28px;
+        padding: 0 10px;
+        border-radius: 999px;
+        background: var(--panel-bg);
+        border: 1px solid var(--border);
+        color: var(--text-sub);
+        font-size: 10.5px;
+        font-weight: 700;
+      }
+
+      .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .metric-card {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 16px;
+        background: var(--panel-bg);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+      }
+
+      .metric-label {
+        color: var(--text-sub);
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .metric-value {
+        font-size: 28px;
+        line-height: 1;
+        font-weight: 700;
+        letter-spacing: -0.04em;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .metric-note {
+        color: var(--text-sub);
+        font-size: 11.5px;
+        line-height: 1.5;
+      }
+
+      .metric-card.focus .metric-value {
+        color: var(--accent);
+      }
+
+      .metric-card.urgent .metric-value {
+        color: var(--warning);
+      }
+
+      .metric-card.progress .metric-value {
+        color: var(--text-main);
+      }
+
+      .metric-card.done .metric-value {
+        color: var(--success);
+      }
+
+      .board-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.35fr);
+        gap: 16px;
+        align-items: start;
+      }
+
+      .focus-panel {
+        min-height: 100%;
+      }
+
+      .focus-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .focus-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .focus-item {
+        display: grid;
+        grid-template-columns: 44px minmax(0, 1fr) auto;
+        gap: 12px;
+        align-items: center;
+        padding: 14px;
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        background: linear-gradient(180deg, var(--panel-soft), var(--panel-bg));
+      }
+
+      .focus-rank {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        background: var(--accent-soft);
+        color: var(--accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .focus-title {
+        margin: 0;
+        font-size: 13.5px;
+        font-weight: 700;
+        line-height: 1.55;
+      }
+
+      .focus-reason {
+        margin: 5px 0 0;
+        color: var(--text-sub);
+        font-size: 11.5px;
+        line-height: 1.55;
+      }
+
+      .focus-meta {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-top: 9px;
+      }
+
+      .focus-action {
+        height: 36px;
+        padding: 0 12px;
+        border-radius: 10px;
+        background: var(--text-main);
+        color: var(--panel-bg);
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .section-intro {
+        margin: 0 0 12px;
+        color: var(--text-sub);
+        font-size: 11.5px;
+        line-height: 1.6;
+      }
+
+      .workspace-panel {
+        background: var(--panel-bg);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .workspace-body {
+        padding: 0 16px 16px;
+      }
+
+      .kanban-board {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .kanban-column {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 14px;
+        border-radius: 16px;
+        background: var(--panel-soft);
+        border: 1px solid var(--border);
+      }
+
+      .kanban-column-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .kanban-column-head strong {
+        font-size: 12.5px;
+      }
+
+      .kanban-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-height: 160px;
+      }
+
+      .kanban-card {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 13px;
+        border-radius: 14px;
+        background: var(--panel-bg);
+        border: 1px solid var(--border);
+      }
+
+      .kanban-card h3 {
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .kanban-meta,
+      .mindmap-meta {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+
+      .kanban-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .gantt-board {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .gantt-scale {
+        display: grid;
+        grid-template-columns: 220px repeat(14, minmax(0, 1fr));
+        gap: 6px;
+        align-items: center;
+        color: var(--text-sub);
+        font-size: 10.5px;
+        font-weight: 700;
+      }
+
+      .gantt-row {
+        display: grid;
+        grid-template-columns: 220px minmax(0, 1fr);
+        gap: 12px;
+        align-items: center;
+      }
+
+      .gantt-info {
+        min-width: 0;
+      }
+
+      .gantt-info strong {
+        display: block;
+        font-size: 12.5px;
+      }
+
+      .gantt-info span {
+        display: block;
+        margin-top: 4px;
+        color: var(--text-sub);
+        font-size: 11px;
+      }
+
+      .gantt-track {
+        position: relative;
+        height: 34px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background:
+          linear-gradient(90deg, var(--panel-soft) 0, var(--panel-soft) calc(100% / 14 - 1px), transparent calc(100% / 14 - 1px), transparent calc(100% / 14)) 0 0 / calc(100% / 14) 100% repeat-x,
+          var(--panel-bg);
+      }
+
+      .gantt-bar {
+        position: absolute;
+        top: 6px;
+        height: 20px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        border: 1px solid rgba(53, 120, 246, 0.18);
+        color: var(--accent);
+        font-size: 10px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        padding: 0 8px;
+        overflow: hidden;
+        white-space: nowrap;
+      }
+
+      .mindmap-board {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .mindmap-project {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 14px;
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        background: linear-gradient(180deg, var(--panel-soft), var(--panel-bg));
+      }
+
+      .mindmap-head {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .mindmap-head strong {
+        font-size: 13px;
+      }
+
+      .mindmap-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .mindmap-group-label {
+        color: var(--text-sub);
+        font-size: 10.5px;
+        font-weight: 700;
+      }
+
+      .mindmap-node {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 12px;
+        border-radius: 14px;
+        background: var(--panel-bg);
+        border: 1px solid var(--border);
+      }
+
+      .quick-add-body {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 0 16px 16px;
+        flex: 1;
+      }
+
+      .quick-add-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .quick-input {
+        flex: 1;
+        width: auto;
+        height: 54px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 0 16px;
+        background: var(--panel-soft);
+        color: var(--text-main);
+        outline: none;
+        font-size: 14px;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+        transition:
+          border-color 0.18s ease,
+          box-shadow 0.18s ease;
+      }
+
+      .quick-add-row .btn-primary {
+        width: 112px;
+        flex-shrink: 0;
+      }
+
+      .quick-input::placeholder {
+        color: var(--text-soft);
+      }
+
+      .quick-input:focus,
+      .task-edit-input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 4px var(--accent-soft);
+      }
+
+      .quick-note {
+        margin: 0;
+        color: var(--text-sub);
+        font-size: 11.5px;
+        line-height: 1.5;
+      }
+
+      .quick-stats {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .helper-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+        color: var(--text-sub);
+        font-size: 11px;
+      }
+
+      .helper-tags {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .helper-side {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .helper-tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: var(--panel-soft);
+        color: var(--text-sub);
+        font-size: 10.5px;
+        font-weight: 600;
+        border: 1px solid var(--border);
+      }
+
+      .property-strip {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+      }
+
+      .property-pill {
+        display: inline-flex;
+        align-items: center;
+        min-height: 26px;
+        padding: 0 10px;
+        border-radius: 999px;
+        background: var(--panel-soft);
+        border: 1px solid var(--border);
+        color: var(--text-sub);
+        font-size: 10.5px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+
+      .property-pill.primary {
+        color: var(--accent);
+        background: var(--accent-soft);
+        border-color: transparent;
+      }
+
+      .mini-stat {
+        display: inline-flex;
+        align-items: center;
+        height: 28px;
+        padding: 0 10px;
+        border-radius: 999px;
+        background: var(--panel-soft);
+        border: 1px solid var(--border);
+        color: var(--text-sub);
+        font-size: 10.5px;
+        font-weight: 700;
+      }
+
+      .btn-primary,
+      .task-action,
+      .focus-action {
+        border: 0;
+        cursor: pointer;
+        transition:
+          transform 0.12s ease,
+          opacity 0.12s ease,
+          background 0.12s ease;
+      }
+
+      .btn-primary:hover,
+      .task-action:hover,
+      .focus-action:hover {
+        transform: translateY(-1px);
+      }
+
+      .btn-primary {
+        height: 40px;
+        border-radius: 11px;
+        background: var(--text-main);
+        color: var(--panel-bg);
+        font-size: 12px;
+        font-weight: 700;
+        box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+      }
+
+      .btn-primary:disabled {
+        cursor: not-allowed;
+        opacity: 0.45;
+        transform: none;
+        box-shadow: none;
+      }
+
+      .task-list {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+        scrollbar-width: thin;
+        scrollbar-color: var(--border-strong) transparent;
+      }
+
+      .task-list::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .task-list::-webkit-scrollbar-thumb {
+        background: var(--border-strong);
+        border-radius: 999px;
+      }
+
+      .task-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .task-area {
+        flex: 1;
+        min-height: 0;
+        padding: 0 16px 16px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .list-group-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 2px;
+        color: var(--text-sub);
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .list-group-label::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        background: var(--border-strong);
+      }
+
+      .list-group-label.carry::before {
+        background: var(--warning);
+      }
+
+      .list-group-label.today::before {
+        background: var(--accent);
+      }
+
+      .task-stack {
+        padding-bottom: 4px;
+      }
+
+      .task-item {
+        display: grid;
+        grid-template-columns: 40px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 11px;
+        padding: 12px 13px;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: var(--panel-soft);
+        transition:
+          border-color 0.18s ease,
+          background 0.18s ease;
+      }
+
+      .task-item:hover {
+        border-color: var(--border-strong);
+        background: var(--surface-hover);
+      }
+
+      .task-item.is-temp {
+        border-style: dashed;
+      }
+
+      .task-item.is-done {
+        opacity: 0.82;
+      }
+
+      .task-item.is-editing {
+        grid-template-columns: minmax(0, 1fr) auto;
+      }
+
+      .task-check {
+        width: 40px;
+        height: 40px;
+        border-radius: 11px;
+        border: 1px solid var(--border-strong);
+        background: var(--panel-bg);
+        color: transparent;
+        font-size: 18px;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .task-check:hover {
+        background: var(--surface-hover);
+      }
+
+      .task-check.is-done {
+        border-color: transparent;
+        background: var(--success);
+        color: #ffffff;
+      }
+
+      .task-body {
+        min-width: 0;
+        cursor: pointer;
+      }
+
+      .task-title {
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 1.55;
+        word-break: break-word;
+      }
+
+      .task-item.is-done .task-title {
+        text-decoration: line-through;
+        color: var(--text-soft);
+      }
+
+      .task-meta {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-top: 7px;
+      }
+
+      .task-badge {
+        display: inline-flex;
+        align-items: center;
+        height: 22px;
+        padding: 0 8px;
+        border-radius: 999px;
+        font-size: 10.5px;
+        font-weight: 700;
+        border: 1px solid transparent;
+        letter-spacing: -0.01em;
+      }
+
+      .task-badge.today {
+        background: var(--accent-soft);
+        color: var(--accent);
+      }
+
+      .task-badge.carry {
+        background: var(--warning-soft);
+        color: var(--warning);
+      }
+
+      .task-badge.done {
+        background: var(--success-soft);
+        color: var(--success);
+      }
+
+      .task-badge.pending {
+        background: rgba(148, 163, 184, 0.12);
+        color: var(--text-sub);
+        border-color: var(--border);
+      }
+
+      .task-badge.date {
+        background: transparent;
+        color: var(--text-sub);
+        border-color: var(--border);
+      }
+
+      .task-badge.schema {
+        background: var(--panel-bg);
+        color: var(--text-sub);
+        border-color: var(--border);
+      }
+
+      .task-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+      }
+
+      .task-action {
+        height: 32px;
+        min-width: 50px;
+        padding: 0 11px;
+        border-radius: 9px;
+        background: var(--panel-bg);
+        border: 1px solid var(--border);
+        color: var(--text-sub);
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .task-action:hover {
+        background: var(--surface-hover);
+      }
+
+      .task-action.postpone {
+        color: var(--warning);
+      }
+
+      .task-action.edit {
+        color: var(--accent);
+      }
+
+      .task-action.delete {
+        color: var(--danger);
+      }
+
+      .task-edit-input {
+        width: 100%;
+        height: 40px;
+        border-radius: 11px;
+        border: 1px solid var(--border);
+        padding: 0 14px;
+        outline: none;
+        background: var(--panel-bg);
+        color: var(--text-main);
+      }
+
+      .empty-state {
+        min-height: 148px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px 14px;
+        border: 1px dashed var(--border-strong);
+        border-radius: 14px;
+        background: linear-gradient(
+          180deg,
+          var(--panel-soft),
+          rgba(255, 255, 255, 0)
+        );
+        text-align: center;
+      }
+
+      .empty-state.compact {
+        min-height: 110px;
+        padding: 18px 12px;
+      }
+
+      .empty-state strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 12.5px;
+      }
+
+      .empty-state p {
+        margin: 0;
+        color: var(--text-sub);
+        font-size: 11.5px;
+        line-height: 1.5;
+      }
+
+      .section-subnote {
+        color: var(--text-sub);
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .undo-toast {
+        position: fixed;
+        left: 50%;
+        bottom: 18px;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 14px;
+        border-radius: 14px;
+        background: var(--text-main);
+        color: var(--panel-bg);
+        box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18);
+        z-index: 20;
+        max-width: min(92vw, 420px);
+      }
+
+      .btn-undo {
+        border: 0;
+        background: rgba(255, 255, 255, 0.16);
+        color: inherit;
+        border-radius: 10px;
+        padding: 8px 10px;
+        cursor: pointer;
+        font-weight: 700;
+      }
+
+      @media (max-width: 760px) {
+        .topbar {
+          padding: 14px;
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .topbar-meta {
+          max-width: 100%;
+          justify-content: flex-start;
+        }
+
+        .dashboard {
+          padding: 12px;
+        }
+
+        .kpi-grid,
+        .board-grid,
+        .kanban-board,
+        .mindmap-board {
+          grid-template-columns: 1fr;
+        }
+
+        .workspace-tabs {
+          margin-bottom: 10px;
+        }
+
+        .gantt-scale {
+          display: none;
+        }
+
+        .gantt-row {
+          grid-template-columns: 1fr;
+        }
+
+        .quick-add-row {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .quick-add-row .btn-primary {
+          width: 100%;
+        }
+
+        .helper-side {
+          justify-content: flex-start;
+        }
+
+        .card-header,
+        .task-area {
+          padding-left: 14px;
+          padding-right: 14px;
+        }
+
+        .card-header {
+          padding-top: 16px;
+        }
+
+        .focus-item {
+          grid-template-columns: 1fr;
+          align-items: flex-start;
+        }
+
+        .focus-action {
+          width: 100%;
+        }
+
+        .task-item {
+          grid-template-columns: 1fr;
+          align-items: flex-start;
+        }
+
+        .task-check {
+          display: none;
+        }
+
+        .task-actions {
+          width: 100%;
+        }
+
+        .task-actions {
+          justify-content: flex-start;
+          flex-wrap: wrap;
+        }
+
+        .btn-primary {
+          justify-content: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="topbar-title">
+          <div class="page-icon">✓</div>
+          <div class="title-group">
+            <h1>오늘 업무 대시보드</h1>
+            <p id="headerDate">오늘 일정을 불러오는 중입니다.</p>
+          </div>
+        </div>
+        <div class="topbar-meta">
+          <span class="chip" id="syncStatus" title="동기화 상태"
+            >동기화 준비</span
+          >
+          <span class="chip warning" id="offlineBadge" style="display: none"
+            >테스트 모드</span
+          >
+          <span class="chip primary" id="task-count">남은 0개</span>
+        </div>
+      </header>
+
+      <main class="dashboard">
+        <div class="workspace-tabs" id="viewTabs">
+          <button class="view-tab is-active" data-view="home" type="button">홈</button>
+          <button class="view-tab" data-view="kanban" type="button">칸반</button>
+          <button class="view-tab" data-view="gantt" type="button">간트</button>
+          <button class="view-tab" data-view="mindmap" type="button">마인드맵</button>
+        </div>
+
+        <section class="view-panel is-active" id="homeView">
+        <div class="content-wrap">
+        <section class="quick-add-card hero-card">
+          <div class="card-header">
+            <div class="card-title">
+              <h2>빠른 추가</h2>
+              <p id="schemaGuide">생각난 일을 바로 적고 오늘 할 일로 등록합니다.</p>
+            </div>
+            <span class="card-count" id="syncNoteCount">동기화 대기 0건</span>
+          </div>
+          <div class="quick-add-body">
+            <div class="quick-add-row">
+              <input
+                type="text"
+                id="input"
+                class="quick-input"
+                placeholder="예: 오전 회의 전에 제안서 초안 정리"
+                maxlength="60"
+                autocomplete="off"
+                title="Enter로 바로 추가"
+              />
+              <button
+                class="btn-primary"
+                id="addButton"
+                onclick="addTask()"
+                disabled
+              >
+                할 일 추가
+              </button>
+            </div>
+            <p class="quick-note">
+              짧고 명확하게 적을수록 빠르게 처리할 수 있습니다. 예: 클라이언트
+              답변 정리, 제안서 마감, 랜딩 문구 검토
+            </p>
+            <div class="hero-overview">
+              <div class="hero-copy">
+                <span class="hero-kicker">1인기업 운영 보드</span>
+                <strong>오늘 밀어야 할 일과 당장 처리할 일을 한 화면에서 정리합니다.</strong>
+                <span id="heroSummary">
+                  제안서, 고객 응답, 제작 마감처럼 매출과 직결된 업무를 먼저 움직일 수 있게 설계했습니다.
+                </span>
+              </div>
+            </div>
+            <div class="quick-stats">
+              <span class="mini-stat" id="todayCount">실행 0건</span>
+              <span class="mini-stat" id="doneCount">완료 0건</span>
+            </div>
+            <div class="helper-row">
+              <div class="helper-tags">
+                <span class="helper-tag" id="schemaBadge">DB 연결 준비 중</span>
+                <span class="helper-tag" id="syncSummary">동기화 대기 0건</span>
+              </div>
+              <div class="helper-side">
+                <span id="charCounter">0 / 60</span>
+                <span id="lastSyncLabel">마지막 반영 전</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="kpi-grid">
+          <article class="metric-card focus">
+            <span class="metric-label">오늘 포커스</span>
+            <strong class="metric-value" id="focusMetricValue">0</strong>
+            <p class="metric-note" id="focusMetricNote">오늘 집중해야 할 핵심 업무 수</p>
+          </article>
+          <article class="metric-card urgent">
+            <span class="metric-label">우선 처리</span>
+            <strong class="metric-value" id="urgentMetricValue">0</strong>
+            <p class="metric-note" id="urgentMetricNote">미뤄진 일과 높은 중요도 업무</p>
+          </article>
+          <article class="metric-card progress">
+            <span class="metric-label">진행 현황</span>
+            <strong class="metric-value" id="progressMetricValue">0%</strong>
+            <p class="metric-note" id="progressMetricNote">오늘 불러온 업무 기준 완료 비율</p>
+          </article>
+          <article class="metric-card done">
+            <span class="metric-label">오늘 성과</span>
+            <strong class="metric-value" id="doneMetricValue">0</strong>
+            <p class="metric-note" id="doneMetricNote">오늘 완료되었거나 정리된 업무 수</p>
+          </article>
+        </section>
+
+        <div class="board-grid">
+          <section class="list-section focus-panel">
+            <div class="card-header">
+              <div class="card-title">
+                <h2>오늘 가장 중요한 일</h2>
+                <p id="focusSectionNote">포커스로 지정한 업무와 바로 착수할 추천 업무를 보여줍니다.</p>
+              </div>
+              <span class="card-count" id="focusCountBadge">0건</span>
+            </div>
+            <div class="task-area">
+              <div class="property-strip" id="focusPropertyStrip"></div>
+              <p class="section-intro" id="focusIntro">
+                체크한 포커스 업무가 먼저 오고, 부족하면 미뤄진 일과 오래된 업무가 채워집니다.
+              </p>
+              <div class="focus-list" id="focusList"></div>
+            </div>
+          </section>
+
+          <section class="list-section execution-section">
+            <div class="card-header">
+              <div class="card-title">
+                <h2>지금 실행할 일</h2>
+                <p id="activeSectionNote">오늘 처리할 일과 미뤄진 일을 구분해서 바로 실행할 수 있습니다.</p>
+              </div>
+              <span class="card-count" id="activeCountBadge">0건</span>
+            </div>
+            <div class="task-area">
+              <div class="property-strip" id="activePropertyStrip"></div>
+              <div class="task-list" id="todayList"></div>
+            </div>
+          </section>
+        </div>
+
+        <section class="list-section done-section">
+          <div class="card-header">
+            <div class="card-title">
+              <h2>오늘 성과와 완료 기록</h2>
+              <p id="doneSectionNote">완료한 일은 아래에서 다시 확인하고 필요하면 바로 복원할 수 있습니다.</p>
+            </div>
+            <span class="card-count" id="completedCountBadge">0건</span>
+          </div>
+          <div class="task-area">
+            <div class="property-strip" id="donePropertyStrip"></div>
+            <div class="task-list" id="doneList"></div>
+          </div>
+        </section>
+        </div>
+        </section>
+
+        <section class="view-panel" id="kanbanView">
+          <div class="content-wrap">
+            <section class="workspace-panel">
+              <div class="card-header">
+                <div class="card-title">
+                  <h2>프로젝트 칸반 보드</h2>
+                  <p id="kanbanSectionNote">상태 기준으로 프로젝트 연결 업무를 한 번에 정리합니다.</p>
+                </div>
+                <span class="card-count" id="kanbanCountBadge">0건</span>
+              </div>
+              <div class="workspace-body">
+                <div class="property-strip" id="kanbanPropertyStrip"></div>
+                <div class="kanban-board" id="kanbanBoard"></div>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view-panel" id="ganttView">
+          <div class="content-wrap">
+            <section class="workspace-panel">
+              <div class="card-header">
+                <div class="card-title">
+                  <h2>프로젝트 간트 타임라인</h2>
+                  <p id="ganttSectionNote">프로젝트와 연결된 업무를 날짜 흐름으로 확인합니다.</p>
+                </div>
+                <span class="card-count" id="ganttCountBadge">0개</span>
+              </div>
+              <div class="workspace-body">
+                <div class="gantt-scale" id="ganttScale"></div>
+                <div class="gantt-board" id="ganttBoard"></div>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view-panel" id="mindmapView">
+          <div class="content-wrap">
+            <section class="workspace-panel">
+              <div class="card-header">
+                <div class="card-title">
+                  <h2>프로젝트 마인드맵</h2>
+                  <p id="mindmapSectionNote">프로젝트를 중심으로 연결된 업무를 상태별로 펼쳐서 봅니다.</p>
+                </div>
+                <span class="card-count" id="mindmapCountBadge">0개</span>
+              </div>
+              <div class="workspace-body">
+                <div class="mindmap-board" id="mindmapBoard"></div>
+              </div>
+            </section>
+          </div>
+        </section>
+      </main>
+
+      <div id="undoToast" class="undo-toast" style="display: none"></div>
+    </div>
+
+    <script>
+        /* ── 초기 설정 ── */
+        const params = new URLSearchParams(window.location.search);
+        if (params.get("mode") === "dark") {
+            document.documentElement.classList.add("dark");
+        }
+
+        const OFFLINE_MODE = window.location.search.includes("offline=1");
+
+        /* ── 상수 ── */
+        const STORAGE_KEYS = {
+            OFFLINE:   "missionlog_offline_tasks_v1",
+            DELETED:   "missionlog_deletedIds_v1",
+            LOCAL:     "missionlog_localTasks_v1",
+            PENDING:   "missionlog_pendingTasks_v1",
+            LAST_DAY:  "missionlog_lastDayISO_v1",
+        };
+
+        const CONFIG = {
+            SYNC_INTERVAL:      5000,
+            DAY_CHECK_INTERVAL: 60000,
+            UNDO_TIMEOUT:       5000,
+            BC_DEBOUNCE:        150,
+            MAX_INPUT_LENGTH:   60,
+        };
+
+        function getDefaultTaskSchema() {
+            return {
+                databaseTitle: "업무 DB",
+                properties: {
+                    title: { name: "할 일", type: "title", options: [] },
+                    date: { name: "날짜", type: "date", options: [] },
+                    focus: { name: "오늘", type: "checkbox", options: [] },
+                    done: { name: "완료", type: "checkbox", options: [] },
+                    status: null,
+                    priority: null,
+                    project: null,
+                },
+                defaults: {
+                    status: null,
+                    doneStatus: "완료",
+                    priority: null,
+                },
+            };
+        }
+
+        function getDefaultProjectSchema() {
+            return {
+                databaseTitle: "프로젝트 DB",
+                properties: {
+                    title: { name: "프로젝트", type: "title", options: [] },
+                    status: null,
+                    startDate: null,
+                    endDate: null,
+                    client: null,
+                    priority: null,
+                },
+            };
+        }
+
+        function normalizeSchemaProperty(prop, fallback = null) {
+            if (!prop || typeof prop !== "object") return fallback;
+            return {
+                name: prop.name || fallback?.name || "",
+                type: prop.type || fallback?.type || "",
+                options: Array.isArray(prop.options) ? prop.options : [],
+            };
+        }
+
+        function normalizeTaskSchema(schema) {
+            const fallback = getDefaultTaskSchema();
+            const source = schema && typeof schema === "object" ? schema : {};
+            return {
+                databaseTitle: source.databaseTitle || fallback.databaseTitle,
+                properties: {
+                    title: normalizeSchemaProperty(source.properties?.title, fallback.properties.title),
+                    date: normalizeSchemaProperty(source.properties?.date, fallback.properties.date),
+                    focus: normalizeSchemaProperty(source.properties?.focus, null),
+                    done: normalizeSchemaProperty(source.properties?.done, null),
+                    status: normalizeSchemaProperty(source.properties?.status, null),
+                    priority: normalizeSchemaProperty(source.properties?.priority, null),
+                    project: normalizeSchemaProperty(source.properties?.project, null),
+                },
+                defaults: {
+                    status: source.defaults?.status || fallback.defaults.status,
+                    doneStatus: source.defaults?.doneStatus || fallback.defaults.doneStatus,
+                    priority: source.defaults?.priority || fallback.defaults.priority,
+                },
+            };
+        }
+
+        function normalizeProjectSchema(schema) {
+            const fallback = getDefaultProjectSchema();
+            const source = schema && typeof schema === "object" ? schema : {};
+            return {
+                databaseTitle: source.databaseTitle || fallback.databaseTitle,
+                properties: {
+                    title: normalizeSchemaProperty(source.properties?.title, fallback.properties.title),
+                    status: normalizeSchemaProperty(source.properties?.status, null),
+                    startDate: normalizeSchemaProperty(source.properties?.startDate, null),
+                    endDate: normalizeSchemaProperty(source.properties?.endDate, null),
+                    client: normalizeSchemaProperty(source.properties?.client, null),
+                    priority: normalizeSchemaProperty(source.properties?.priority, null),
+                },
+            };
+        }
+
+        /* ── DOM 참조 ── */
+        const DOM = {
+            input:         document.getElementById("input"),
+            todayList:     document.getElementById("todayList"),
+            doneList:      document.getElementById("doneList"),
+            focusList:     document.getElementById("focusList"),
+            kanbanBoard:   document.getElementById("kanbanBoard"),
+            ganttBoard:    document.getElementById("ganttBoard"),
+            ganttScale:    document.getElementById("ganttScale"),
+            mindmapBoard:  document.getElementById("mindmapBoard"),
+            taskCount:     document.getElementById("task-count"),
+            headerDate:    document.getElementById("headerDate"),
+            syncStatus:    document.getElementById("syncStatus"),
+            syncNoteCount: document.getElementById("syncNoteCount"),
+            syncSummary:   document.getElementById("syncSummary"),
+            schemaBadge:   document.getElementById("schemaBadge"),
+            schemaGuide:   document.getElementById("schemaGuide"),
+            heroSummary:   document.getElementById("heroSummary"),
+            lastSyncLabel: document.getElementById("lastSyncLabel"),
+            viewTabs:      Array.from(document.querySelectorAll(".view-tab")),
+            homeView:      document.getElementById("homeView"),
+            kanbanView:    document.getElementById("kanbanView"),
+            ganttView:     document.getElementById("ganttView"),
+            mindmapView:   document.getElementById("mindmapView"),
+            charCounter:   document.getElementById("charCounter"),
+            addButton:     document.getElementById("addButton"),
+            todayCount:    document.getElementById("todayCount"),
+            doneCount:     document.getElementById("doneCount"),
+            focusMetricValue: document.getElementById("focusMetricValue"),
+            focusMetricNote: document.getElementById("focusMetricNote"),
+            urgentMetricValue: document.getElementById("urgentMetricValue"),
+            urgentMetricNote: document.getElementById("urgentMetricNote"),
+            progressMetricValue: document.getElementById("progressMetricValue"),
+            progressMetricNote: document.getElementById("progressMetricNote"),
+            doneMetricValue: document.getElementById("doneMetricValue"),
+            doneMetricNote: document.getElementById("doneMetricNote"),
+            activeCountBadge: document.getElementById("activeCountBadge"),
+            focusCountBadge: document.getElementById("focusCountBadge"),
+            completedCountBadge: document.getElementById("completedCountBadge"),
+            kanbanCountBadge: document.getElementById("kanbanCountBadge"),
+            ganttCountBadge: document.getElementById("ganttCountBadge"),
+            mindmapCountBadge: document.getElementById("mindmapCountBadge"),
+            focusSectionNote: document.getElementById("focusSectionNote"),
+            focusIntro: document.getElementById("focusIntro"),
+            activeSectionNote: document.getElementById("activeSectionNote"),
+            doneSectionNote: document.getElementById("doneSectionNote"),
+            kanbanSectionNote: document.getElementById("kanbanSectionNote"),
+            ganttSectionNote: document.getElementById("ganttSectionNote"),
+            mindmapSectionNote: document.getElementById("mindmapSectionNote"),
+            focusPropertyStrip: document.getElementById("focusPropertyStrip"),
+            activePropertyStrip: document.getElementById("activePropertyStrip"),
+            donePropertyStrip: document.getElementById("donePropertyStrip"),
+            kanbanPropertyStrip: document.getElementById("kanbanPropertyStrip"),
+            offlineBadge:  document.getElementById("offlineBadge"),
+            undoToast:     document.getElementById("undoToast"),
+        };
+
+        /* ── 상태 ── */
+        let globalTasks = [];
+        let carryOverTasks = [];
+        let workspaceTasks = [];
+        let inFlight = 0;
+        let deletedIds = new Set();
+        let editingId = null;
+        let editingCarryOver = false;
+        let undoPostponeData = null;
+        let undoToastTimer = null;
+        let lastSyncedAt = null;
+        let taskSchema = getDefaultTaskSchema();
+        let projectSchema = getDefaultProjectSchema();
+        let projectItems = [];
+        let activeView = "home";
+        let lastRemoteError = "";
+
+        /* ── 공통 헬퍼 ── */
+        async function notionAPI(action, payload = {}) {
+            const response = await fetch("/api/notion", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action, ...payload }),
+            });
+            const data = await response.json().catch(() => null);
+            return { ok: response.ok, data };
+        }
+
+        async function withFlight(asyncFn) {
+            inFlight++;
+            try {
+                return await asyncFn();
+            } finally {
+                inFlight--;
+            }
+        }
+
+        function showUndoToast(message, onUndo) {
+            const toast = DOM.undoToast;
+            if (!toast) return;
+            toast.innerHTML = "";
+            toast.appendChild(document.createTextNode(message + " "));
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "btn-undo";
+            btn.textContent = "되돌리기";
+            btn.title = "되돌리기";
+            btn.onclick = onUndo;
+            toast.appendChild(btn);
+            toast.style.display = "flex";
+            if (undoToastTimer) clearTimeout(undoToastTimer);
+            undoToastTimer = setTimeout(() => {
+                undoPostponeData = null;
+                toast.style.display = "none";
+            }, CONFIG.UNDO_TIMEOUT);
+        }
+
+        /* ── BroadcastChannel ── */
+        const bc =
+          typeof BroadcastChannel !== "undefined"
+            ? new BroadcastChannel("missionlog_bus_v1")
+            : {
+                postMessage() {},
+                close() {},
+                onmessage: null,
+              };
+        let bcTimer = null;
+        if (typeof BroadcastChannel !== "undefined") {
+          bc.onmessage = (event) => {
+            if (event?.data?.type !== "TASKS_UPDATED") return;
+            clearTimeout(bcTimer);
+            bcTimer = setTimeout(syncFromNotion, CONFIG.BC_DEBOUNCE);
+          };
+        }
+      try {
+        const savedDeletedIds = JSON.parse(
+          localStorage.getItem(STORAGE_KEYS.DELETED) || "[]",
+        );
+        deletedIds = new Set(savedDeletedIds);
+      } catch (_) {}
+
+        /* ── 오프라인 스토어 ── */
+        function loadOfflineStore() {
+            try {
+                return JSON.parse(localStorage.getItem(STORAGE_KEYS.OFFLINE)) || {};
+            } catch (_) {
+                return {};
+            }
+        }
+
+        function saveOfflineStore(obj) {
+            localStorage.setItem(STORAGE_KEYS.OFFLINE, JSON.stringify(obj));
+        }
+
+        function getOfflineTasks(iso) {
+            const store = loadOfflineStore();
+            return Array.isArray(store[iso]) ? store[iso] : [];
+        }
+
+        function setOfflineTasks(iso, arr) {
+            const store = loadOfflineStore();
+            store[iso] = arr;
+            saveOfflineStore(store);
+        }
+
+        /* ── Pending 관리 ── */
+        function removeFromPending(today, { id, text }) {
+            try {
+                const pending = JSON.parse(localStorage.getItem(STORAGE_KEYS.PENDING) || "{}");
+                const arr = Array.isArray(pending[today]) ? pending[today] : [];
+                pending[today] = arr.filter((p) => !(p && (p.id === id || (text && p.text === text))));
+                if (pending[today].length === 0) delete pending[today];
+                localStorage.setItem(STORAGE_KEYS.PENDING, JSON.stringify(pending));
+            } catch (_) {}
+        }
+
+        function patchPendingDone(today, { id, text }, nextDone) {
+            try {
+                const pending = JSON.parse(localStorage.getItem(STORAGE_KEYS.PENDING) || "{}");
+                const arr = Array.isArray(pending[today]) ? pending[today] : [];
+                pending[today] = arr.map((p) => {
+                    if (!p) return p;
+                    if (p.id === id || (text && p.text === text)) return { ...p, done: nextDone };
+                    return p;
+                });
+                localStorage.setItem(STORAGE_KEYS.PENDING, JSON.stringify(pending));
+            } catch (_) {}
+        }
+
+        /* ── 로컬 저장/로드 ── */
+        function loadLocalTasks() {
+            try {
+                const arr = JSON.parse(localStorage.getItem(STORAGE_KEYS.LOCAL) || "[]");
+                if (Array.isArray(arr)) {
+                  globalTasks = arr;
+                  workspaceTasks = [...arr];
+                }
+            } catch (_) {}
+        }
+
+        function saveLocalTasks() {
+            try {
+                if (OFFLINE_MODE) {
+                    const today = getTodayISO();
+                    const yesterday = getYesterdayISO();
+                    const safeToday = globalTasks
+                        .filter((task) => !deletedIds.has(task.id))
+                        .map((task) => ({
+                          id: task.id,
+                          text: task.text,
+                          done: task.done,
+                          focus: !!task.focus,
+                          status: task.status || null,
+                          priority: task.priority || null,
+                          project: task.project || null,
+                          projectId: task.projectId || null,
+                          projectIds: Array.isArray(task.projectIds) ? task.projectIds : [],
+                          createdAt: task.createdAt || Date.now(),
+                          date: today,
+                        }));
+                    const safeYesterday = carryOverTasks
+                        .filter((task) => !deletedIds.has(task.id))
+                        .map((task) => ({
+                          id: task.id,
+                          text: task.text,
+                          done: task.done,
+                          focus: !!task.focus,
+                          status: task.status || null,
+                          priority: task.priority || null,
+                          project: task.project || null,
+                          projectId: task.projectId || null,
+                          projectIds: Array.isArray(task.projectIds) ? task.projectIds : [],
+                          createdAt: task.createdAt || Date.now(),
+                          date: yesterday,
+                        }));
+                    setOfflineTasks(today, safeToday);
+                    setOfflineTasks(yesterday, safeYesterday);
+            return;
+          }
+
+          const safe = globalTasks.filter((task) => !deletedIds.has(task.id));
+          localStorage.setItem(STORAGE_KEYS.LOCAL, JSON.stringify(safe));
+        } catch (_) {}
+      }
+
+      function getTodayISO() {
+        return new Date().toLocaleDateString("sv-SE", {
+          timeZone: "Asia/Seoul",
+        });
+      }
+
+      function getYesterdayISO() {
+        const date = new Date();
+        date.setDate(date.getDate() - 1);
+        return date.toLocaleDateString("sv-SE", { timeZone: "Asia/Seoul" });
+      }
+
+      function getOffsetDayISO(offset) {
+        const date = new Date();
+        date.setDate(date.getDate() + Number(offset || 0));
+        return date.toLocaleDateString("sv-SE", { timeZone: "Asia/Seoul" });
+      }
+
+      function getNextDayISO(iso) {
+        const [y, m, d] = iso.split("-").map(Number);
+        const next = new Date(y, m - 1, d + 1);
+        return next.toLocaleDateString("sv-SE", { timeZone: "Asia/Seoul" });
+      }
+
+      function reconcileDayBoundary() {
+        const today = getTodayISO();
+        const last = localStorage.getItem(STORAGE_KEYS.LAST_DAY);
+        if (last && last !== today) {
+          globalTasks = [];
+          try {
+            localStorage.setItem(STORAGE_KEYS.LOCAL, "[]");
+          } catch (_) {}
+          try {
+            localStorage.setItem(STORAGE_KEYS.PENDING, "{}");
+          } catch (_) {}
+        }
+        localStorage.setItem(STORAGE_KEYS.LAST_DAY, today);
+      }
+
+      function setSyncStatus(text) {
+        if (!DOM.syncStatus) return;
+        DOM.syncStatus.textContent = text;
+        DOM.syncStatus.className = "chip";
+      }
+
+      function setSyncStatusTone(text, tone) {
+        setSyncStatus(text);
+        if (!DOM.syncStatus || !tone) return;
+        DOM.syncStatus.classList.add(tone);
+      }
+
+      function formatHeaderDate() {
+        const now = new Date();
+        return now.toLocaleDateString("ko-KR", {
+          timeZone: "Asia/Seoul",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          weekday: "long",
+        });
+      }
+
+      function formatShortDate(iso) {
+        if (!iso) return "날짜 없음";
+        const [year, month, day] = String(iso).split("-").map(Number);
+        if (!year || !month || !day) return String(iso);
+        return month + "." + String(day).padStart(2, "0");
+      }
+
+      function formatTimeLabel(timestamp) {
+        if (!timestamp) return "마지막 반영 전";
+        return (
+          "마지막 반영 " +
+          new Date(timestamp).toLocaleTimeString("ko-KR", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+          })
+        );
+      }
+
+      function getSchemaProperty(key) {
+        return taskSchema?.properties?.[key] || null;
+      }
+
+      function getSchemaLabel(key, fallback) {
+        return getSchemaProperty(key)?.name || fallback;
+      }
+
+      function getSchemaDefaultSummary() {
+        if (lastRemoteError) return lastRemoteError;
+        const defaults = [];
+        if (taskSchema?.defaults?.status) {
+          defaults.push(getSchemaLabel("status", "상태") + " 기본값 " + taskSchema.defaults.status);
+        }
+        if (taskSchema?.defaults?.priority) {
+          defaults.push(getSchemaLabel("priority", "중요도") + " 기본값 " + taskSchema.defaults.priority);
+        }
+        return defaults.length ? defaults.join(" · ") : "현재 DB 속성 기준으로 바로 등록됩니다.";
+      }
+
+      function normalizeStatusValue(value) {
+        return String(value || "")
+          .trim()
+          .toLowerCase()
+          .replace(/\s+/g, "");
+      }
+
+      function isHighPriorityTask(task) {
+        const value = normalizeStatusValue(task?.priority);
+        return ["상", "높음", "high", "urgent", "critical"].includes(value);
+      }
+
+      function sortEntriesForBoard(entries) {
+        return [...entries].sort((a, b) => {
+          if (Number(!!b.task.focus) !== Number(!!a.task.focus)) {
+            return Number(!!b.task.focus) - Number(!!a.task.focus);
+          }
+          if (a.isCarryOver !== b.isCarryOver) {
+            return a.isCarryOver ? -1 : 1;
+          }
+          return (b.task.createdAt || 0) - (a.task.createdAt || 0);
+        });
+      }
+
+      function getWorkspaceEntries() {
+        const today = getTodayISO();
+        const yesterday = getYesterdayISO();
+        const merged = new Map();
+        [...workspaceTasks, ...carryOverTasks, ...globalTasks].forEach((task) => {
+          if (!task) return;
+          if (task.id && deletedIds.has(task.id)) return;
+          const key = task.id || [task.text, task.date || ""].join("::");
+          if (!key) return;
+          merged.set(key, task);
+        });
+        return sortEntriesForBoard(
+          [...merged.values()].map((task) => ({
+            task,
+            isCarryOver: task.date === yesterday,
+            isToday: task.date === today,
+          })),
+        );
+      }
+
+      function getTaskTimingMeta(task) {
+        const today = getTodayISO();
+        const yesterday = getYesterdayISO();
+        const date = String(task?.date || "");
+        if (!date) return { text: "날짜 미지정", tone: "schema" };
+        if (date === today) return { text: "오늘", tone: "today" };
+        if (date === yesterday) return { text: "어제", tone: "carry" };
+        if (date > today) return { text: "예정", tone: "date" };
+        return { text: "누적", tone: "carry" };
+      }
+
+      function getProjectDisplayLabel(task) {
+        if (task?.project) return task.project;
+        return "프로젝트 미지정";
+      }
+
+      function getProjectCollections(allEntries) {
+        const projectMap = new Map();
+        projectItems.forEach((project) => {
+          projectMap.set(project.id, { ...project, tasks: [] });
+        });
+
+        allEntries.forEach((entry) => {
+          const task = entry.task;
+          const projectId = task.projectId || null;
+          const projectName = getProjectDisplayLabel(task);
+          const key = projectId || "name:" + projectName;
+          if (!projectMap.has(key)) {
+            projectMap.set(key, {
+              id: projectId || key,
+              title: projectName,
+              status: null,
+              startDate: null,
+              endDate: null,
+              client: null,
+              priority: null,
+              tasks: [],
+            });
+          }
+          projectMap.get(key).tasks.push(entry);
+        });
+
+        return [...projectMap.values()]
+          .filter((project) => project.tasks?.length)
+          .sort((a, b) => (a.title || "").localeCompare(b.title || ""));
+      }
+
+      function getTaskStatusColumns(entries) {
+        const observed = [...new Set(entries.map((entry) => entry.task.status).filter(Boolean))];
+        const fromSchema = Array.isArray(taskSchema?.properties?.status?.options)
+          ? taskSchema.properties.status.options
+          : [];
+        const columns = [...new Set([...fromSchema, ...observed])];
+        return columns.length ? columns : ["상태 없음"];
+      }
+
+      function getNextStatusValue(currentStatus) {
+        const columns = [
+          ...new Set(
+            (Array.isArray(taskSchema?.properties?.status?.options)
+              ? taskSchema.properties.status.options
+              : getWorkspaceEntries().map((entry) => entry.task.status)
+            ).filter(Boolean),
+          ),
+        ];
+        if (!columns.length) return null;
+        const rawIndex = columns.indexOf(currentStatus);
+        if (rawIndex < 0) return columns[0];
+        const index = rawIndex;
+        return columns[(index + 1) % columns.length];
+      }
+
+      function formatProjectDateRange(startDate, endDate) {
+        if (!startDate && !endDate) return "일정 미지정";
+        const start = formatShortDate(startDate || endDate);
+        const end = formatShortDate(endDate || startDate);
+        return start === end ? start : start + " - " + end;
+      }
+
+      function getProjectSchedule(project) {
+        const taskDates = (project.tasks || [])
+          .map((entry) => entry.task.date)
+          .filter(Boolean)
+          .sort();
+        const startDate = project.startDate || taskDates[0] || null;
+        const endDate = project.endDate || taskDates[taskDates.length - 1] || startDate;
+        return { startDate, endDate };
+      }
+
+      function toLocalDate(iso) {
+        if (!iso) return null;
+        const [year, month, day] = String(iso).split("-").map(Number);
+        if (!year || !month || !day) return null;
+        return new Date(year, month - 1, day);
+      }
+
+      function getTimelineDates(dayCount = 14) {
+        const start = toLocalDate(getTodayISO()) || new Date();
+        const dates = [];
+        for (let index = 0; index < dayCount; index += 1) {
+          const date = new Date(start);
+          date.setDate(start.getDate() + index);
+          dates.push(date);
+        }
+        return dates;
+      }
+
+      function getTimelinePosition(iso, timelineDates) {
+        const date = toLocalDate(iso);
+        if (!date || !timelineDates.length) return 0;
+        const start = timelineDates[0].getTime();
+        const end = timelineDates[timelineDates.length - 1].getTime();
+        if (end === start) return 0;
+        const clamped = Math.min(Math.max(date.getTime(), start), end);
+        return ((clamped - start) / (end - start)) * 100;
+      }
+
+      function getPropertyStripItems() {
+        const items = [];
+        items.push({ key: "title", text: getSchemaLabel("title", "할 일"), primary: true });
+        if (getSchemaProperty("status")) {
+          items.push({ key: "status", text: getSchemaLabel("status", "상태") });
+        }
+        if (getSchemaProperty("date")) {
+          items.push({ key: "date", text: getSchemaLabel("date", "날짜") });
+        }
+        if (getSchemaProperty("focus")) {
+          items.push({ key: "focus", text: getSchemaLabel("focus", "오늘 포커스") });
+        }
+        if (getSchemaProperty("priority")) {
+          items.push({ key: "priority", text: getSchemaLabel("priority", "중요도") });
+        }
+        if (getSchemaProperty("project")) {
+          items.push({ key: "project", text: getSchemaLabel("project", "프로젝트") });
+        }
+        if (getSchemaProperty("done")) {
+          items.push({ key: "done", text: getSchemaLabel("done", "완료") });
+        }
+        return items;
+      }
+
+      function renderPropertyStrip(target) {
+        if (!target) return;
+        target.innerHTML = "";
+        getPropertyStripItems().forEach((item) => {
+          const pill = document.createElement("span");
+          pill.className = "property-pill" + (item.primary ? " primary" : "");
+          pill.textContent = item.text;
+          target.appendChild(pill);
+        });
+      }
+
+      function updateSchemaUI() {
+        if (DOM.schemaBadge) {
+          DOM.schemaBadge.textContent = lastRemoteError
+            ? "DB 연결 오류"
+            : "DB: " + (taskSchema?.databaseTitle || "업무 DB");
+        }
+        if (DOM.schemaGuide) {
+          DOM.schemaGuide.textContent = getSchemaDefaultSummary();
+        }
+        renderPropertyStrip(DOM.activePropertyStrip);
+        renderPropertyStrip(DOM.focusPropertyStrip);
+        renderPropertyStrip(DOM.donePropertyStrip);
+        renderPropertyStrip(DOM.kanbanPropertyStrip);
+      }
+
+      function getApiErrorMessage(data, fallback) {
+        const message =
+          data?.error ||
+          data?.message ||
+          fallback ||
+          "동기화 실패";
+        return String(message);
+      }
+
+      function applyRemoteError(message) {
+        lastRemoteError = String(message || "").trim();
+        updateSchemaUI();
+      }
+
+      function clearRemoteError() {
+        if (!lastRemoteError) return;
+        lastRemoteError = "";
+        updateSchemaUI();
+      }
+
+      function applyTaskDoneState(task, nextDone) {
+        if (!task) return;
+        task.done = nextDone;
+        if (getSchemaProperty("status")) {
+          if (nextDone && taskSchema?.defaults?.doneStatus) {
+            task.status = taskSchema.defaults.doneStatus;
+          } else if (!nextDone && taskSchema?.defaults?.status) {
+            task.status = taskSchema.defaults.status;
+          }
+        }
+      }
+
+      function getComparableCreatedAt(task, fallbackRank = 0) {
+        if (typeof task?.createdAt === "number" && task.createdAt > 0) {
+          return task.createdAt;
+        }
+        return fallbackRank;
+      }
+
+      function getFocusReason(task, isCarryOver) {
+        if (task.focus) return "직접 오늘 포커스로 체크한 업무입니다";
+        if (isCarryOver) return "미뤄진 일이라 먼저 처리하는 것을 추천해요";
+        if (task.pending) return "방금 추가된 항목이라 지금 바로 처리하기 좋아요";
+        return "오늘 남은 일 중 오래된 순서로 추천해요";
+      }
+
+      function getFocusEntries(todayActive, carryActive) {
+        const todayEntries = todayActive.map((task, index) => ({
+          task,
+          isCarryOver: false,
+          sortKey: getComparableCreatedAt(task, 9000000000000 + index),
+        }));
+        const carryEntries = carryActive.map((task, index) => ({
+          task,
+          isCarryOver: true,
+          sortKey: getComparableCreatedAt(task, index),
+        }));
+
+        return [...carryEntries, ...todayEntries]
+          .sort((a, b) => {
+            if (a.isCarryOver !== b.isCarryOver) return a.isCarryOver ? -1 : 1;
+            if (a.sortKey !== b.sortKey) return a.sortKey - b.sortKey;
+            return (a.task.text || "").localeCompare(b.task.text || "");
+          })
+          .slice(0, 3);
+      }
+
+      function updateInputUI() {
+        const text = (DOM.input?.value || "").trim();
+        const length = (DOM.input?.value || "").length;
+        if (DOM.charCounter) {
+          DOM.charCounter.textContent = length + " / " + CONFIG.MAX_INPUT_LENGTH;
+        }
+        if (DOM.addButton) {
+          DOM.addButton.disabled = text.length === 0;
+        }
+      }
+
+      function createEmptyState(title, description) {
+        const wrap = document.createElement("div");
+        wrap.className = "empty-state";
+
+        const inner = document.createElement("div");
+        const strong = document.createElement("strong");
+        strong.textContent = title;
+        const p = document.createElement("p");
+        p.textContent = description;
+        inner.appendChild(strong);
+        inner.appendChild(p);
+        wrap.appendChild(inner);
+
+        return wrap;
+      }
+
+      function createCompactEmptyState(title, description) {
+        const state = createEmptyState(title, description);
+        state.classList.add("compact");
+        return state;
+      }
+
+      function createListGroupLabel(text, className) {
+        const label = document.createElement("div");
+        label.className = "list-group-label " + className;
+        label.textContent = text;
+        return label;
+      }
+
+      function makeBadge(text, className) {
+        const span = document.createElement("span");
+        span.className = "task-badge " + className;
+        span.textContent = text;
+        return span;
+      }
+
+      function makeActionButton(text, className, title, onClick) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "task-action " + className;
+        button.textContent = text;
+        button.title = title;
+        button.onclick = (event) => {
+          event.stopPropagation();
+          onClick();
+        };
+        return button;
+      }
+
+      function renderTaskItem(task, isCarryOver) {
+        const isEditing =
+          editingId === task.id && editingCarryOver === isCarryOver;
+        const item = document.createElement("article");
+        item.className = "task-item";
+        if (task.done) item.classList.add("is-done");
+        if (String(task.id || "").startsWith("temp-"))
+          item.classList.add("is-temp");
+        if (isEditing) item.classList.add("is-editing");
+
+        if (isEditing) {
+          const inputWrap = document.createElement("div");
+          const editInput = document.createElement("input");
+          editInput.type = "text";
+          editInput.id = "editInput";
+          editInput.className = "task-edit-input";
+          editInput.maxLength = 60;
+          editInput.value = task.text || "";
+          inputWrap.appendChild(editInput);
+
+          const actions = document.createElement("div");
+          actions.className = "task-actions";
+          actions.appendChild(
+            makeActionButton("저장", "edit", "수정 저장", saveEdit),
+          );
+          actions.appendChild(
+            makeActionButton("취소", "delete", "수정 취소", cancelEdit),
+          );
+
+          item.appendChild(inputWrap);
+          item.appendChild(actions);
+
+          setTimeout(() => {
+            const field = document.getElementById("editInput");
+            if (!field) return;
+            field.focus();
+            field.select();
+            field.onkeydown = (event) => {
+              if (event.key === "Enter") saveEdit();
+              if (event.key === "Escape") cancelEdit();
+            };
+          }, 0);
+
+          return item;
+        }
+
+        const check = document.createElement("button");
+        check.type = "button";
+        check.className = "task-check" + (task.done ? " is-done" : "");
+        check.textContent = task.done ? "✓" : "";
+        check.title = task.done ? "완료 해제" : "완료 처리";
+        check.onclick = () => toggleTask(task.id, task.done, isCarryOver);
+
+        const body = document.createElement("div");
+        body.className = "task-body";
+        body.onclick = () => toggleTask(task.id, task.done, isCarryOver);
+
+        const title = document.createElement("div");
+        title.className = "task-title";
+        title.textContent = task.text;
+        body.appendChild(title);
+
+        const meta = document.createElement("div");
+        meta.className = "task-meta";
+        if (task.done) meta.appendChild(makeBadge("완료", "done"));
+        else
+          meta.appendChild(
+            makeBadge(
+              isCarryOver ? "어제 미완료" : "오늘",
+              isCarryOver ? "carry" : "today",
+            ),
+          );
+        if (task.status) {
+          meta.appendChild(
+            makeBadge(
+              getSchemaLabel("status", "상태") + " " + task.status,
+              "schema",
+            ),
+          );
+        }
+        if (task.focus) {
+          meta.appendChild(
+            makeBadge(
+              getSchemaLabel("focus", "오늘") + " 포커스",
+              "today",
+            ),
+          );
+        }
+        meta.appendChild(
+          makeBadge(
+            getSchemaLabel("date", "날짜") +
+              " " +
+              formatShortDate(task.date || getTodayISO()),
+            "date",
+          ),
+        );
+        if (task.priority) {
+          meta.appendChild(
+            makeBadge(
+              getSchemaLabel("priority", "중요도") + " " + task.priority,
+              "schema",
+            ),
+          );
+        }
+        if (task.project) {
+          meta.appendChild(
+            makeBadge(
+              getSchemaLabel("project", "프로젝트") + " " + task.project,
+              "schema",
+            ),
+          );
+        }
+        if (task.pending) meta.appendChild(makeBadge("동기화 대기", "pending"));
+        if (String(task.id || "").startsWith("temp-"))
+          meta.appendChild(makeBadge("임시", "pending"));
+        body.appendChild(meta);
+
+        const actions = document.createElement("div");
+        actions.className = "task-actions";
+        const isTemp = String(task.id || "").startsWith("temp-");
+        if (!task.done && !isTemp) {
+          actions.appendChild(
+            makeActionButton("내일", "postpone", "다음 날로 미루기", () =>
+              postponeTask(task.id, task.date || getTodayISO()),
+            ),
+          );
+        }
+        actions.appendChild(
+          makeActionButton("수정", "edit", "텍스트 수정", () =>
+            startEdit(task.id, isCarryOver),
+          ),
+        );
+        actions.appendChild(
+          makeActionButton("삭제", "delete", "할 일 삭제", () =>
+            deleteTask(task.id, isCarryOver),
+          ),
+        );
+
+        item.appendChild(check);
+        item.appendChild(body);
+        item.appendChild(actions);
+
+        return item;
+      }
+
+      function renderFocusItem(task, isCarryOver, rank) {
+        const item = document.createElement("article");
+        item.className = "focus-item";
+
+        const rankBox = document.createElement("div");
+        rankBox.className = "focus-rank";
+        rankBox.textContent = String(rank).padStart(2, "0");
+
+        const body = document.createElement("div");
+        const title = document.createElement("p");
+        title.className = "focus-title";
+        title.textContent = task.text;
+        body.appendChild(title);
+
+        const reason = document.createElement("p");
+        reason.className = "focus-reason";
+        reason.textContent = getFocusReason(task, isCarryOver);
+        body.appendChild(reason);
+
+        const meta = document.createElement("div");
+        meta.className = "focus-meta";
+        meta.appendChild(
+          makeBadge(
+            isCarryOver ? "어제 미완료" : "오늘",
+            isCarryOver ? "carry" : "today",
+          ),
+        );
+        if (task.focus) {
+          meta.appendChild(makeBadge(getSchemaLabel("focus", "오늘") + " 포커스", "today"));
+        }
+        meta.appendChild(
+          makeBadge(formatShortDate(task.date || getTodayISO()), "date"),
+        );
+        if (task.priority) {
+          meta.appendChild(
+            makeBadge(
+              getSchemaLabel("priority", "중요도") + " " + task.priority,
+              "schema",
+            ),
+          );
+        }
+        if (task.pending) meta.appendChild(makeBadge("동기화 대기", "pending"));
+        body.appendChild(meta);
+
+        const action = document.createElement("button");
+        action.type = "button";
+        action.className = "focus-action";
+        action.textContent = "완료";
+        action.onclick = () => toggleTask(task.id, task.done, isCarryOver);
+
+        item.appendChild(rankBox);
+        item.appendChild(body);
+        item.appendChild(action);
+        return item;
+      }
+
+      function renderTaskCollection(
+        target,
+        entries,
+        emptyTitle,
+        emptyDescription,
+      ) {
+        target.innerHTML = "";
+        if (!entries.length) {
+          target.appendChild(createEmptyState(emptyTitle, emptyDescription));
+          return;
+        }
+
+        const stack = document.createElement("div");
+        stack.className = "task-stack";
+        entries.forEach((entry) => {
+          stack.appendChild(renderTaskItem(entry.task, entry.isCarryOver));
+        });
+        target.appendChild(stack);
+      }
+
+      function renderFocusCollection(entries) {
+        if (!DOM.focusList) return;
+        DOM.focusList.innerHTML = "";
+        if (!entries.length) {
+          DOM.focusList.appendChild(
+            createCompactEmptyState(
+              "오늘 포커스가 아직 비어 있습니다.",
+              "노션에서 오늘 체크박스를 표시하거나, 중요한 일을 먼저 위로 올려 바로 시작할 수 있습니다.",
+            ),
+          );
+          return;
+        }
+
+        const stack = document.createElement("div");
+        stack.className = "focus-stack";
+        entries.forEach((entry, index) => {
+          stack.appendChild(renderFocusItem(entry.task, entry.isCarryOver, index + 1));
+        });
+        DOM.focusList.appendChild(stack);
+      }
+
+      function renderActiveList(todayEntries, carryEntries) {
+        DOM.todayList.innerHTML = "";
+        if (!todayEntries.length && !carryEntries.length) {
+          DOM.todayList.appendChild(
+            createEmptyState(
+              "아직 남은 할 일이 없어요.",
+              "위에서 할 일을 추가하면 여기서 바로 체크하고 정리할 수 있습니다.",
+            ),
+          );
+          return;
+        }
+
+        const stack = document.createElement("div");
+        stack.className = "task-stack";
+
+        const focusEntries = todayEntries.filter((entry) => !!entry.task.focus);
+        const normalTodayEntries = todayEntries.filter((entry) => !entry.task.focus);
+
+        if (focusEntries.length) {
+          stack.appendChild(createListGroupLabel("오늘 포커스", "today"));
+          focusEntries.forEach((entry) => {
+            stack.appendChild(renderTaskItem(entry.task, false));
+          });
+        }
+
+        if (carryEntries.length) {
+          stack.appendChild(createListGroupLabel("어제 미완료", "carry"));
+          carryEntries.forEach((entry) => {
+            stack.appendChild(renderTaskItem(entry.task, true));
+          });
+        }
+
+        if (normalTodayEntries.length) {
+          stack.appendChild(createListGroupLabel("오늘", "today"));
+          normalTodayEntries.forEach((entry) => {
+            stack.appendChild(renderTaskItem(entry.task, false));
+          });
+        }
+
+        DOM.todayList.appendChild(stack);
+      }
+
+      function renderKanbanCard(entry) {
+        const task = entry.task;
+        const card = document.createElement("article");
+        card.className = "kanban-card";
+
+        const title = document.createElement("h3");
+        title.textContent = task.text;
+        card.appendChild(title);
+
+        const meta = document.createElement("div");
+        meta.className = "kanban-meta";
+        const timing = getTaskTimingMeta(task);
+        meta.appendChild(makeBadge(timing.text, timing.tone));
+        if (task.focus) meta.appendChild(makeBadge("포커스", "today"));
+        if (task.priority) meta.appendChild(makeBadge(getSchemaLabel("priority", "중요도") + " " + task.priority, "schema"));
+        if (task.project) meta.appendChild(makeBadge(task.project, "schema"));
+        if (task.date) meta.appendChild(makeBadge(formatShortDate(task.date), "date"));
+        card.appendChild(meta);
+
+        const actions = document.createElement("div");
+        actions.className = "kanban-actions";
+        const nextStatus = getNextStatusValue(task.status);
+        if (nextStatus && nextStatus !== task.status) {
+          actions.appendChild(
+            makeActionButton("다음 상태", "edit", nextStatus + "로 변경", () =>
+              updateTaskStatus(task.id, task.status, nextStatus, entry.isCarryOver),
+            ),
+          );
+        }
+        actions.appendChild(
+          makeActionButton(task.done ? "복원" : "완료", task.done ? "edit" : "postpone", "완료 상태 전환", () =>
+            toggleTask(task.id, task.done, entry.isCarryOver),
+          ),
+        );
+        card.appendChild(actions);
+        return card;
+      }
+
+      function renderKanbanBoard(entries) {
+        if (!DOM.kanbanBoard) return;
+        DOM.kanbanBoard.innerHTML = "";
+        const columns = getTaskStatusColumns(entries);
+        if (DOM.kanbanCountBadge) {
+          DOM.kanbanCountBadge.textContent = entries.length + "건";
+        }
+        if (!entries.length) {
+          DOM.kanbanBoard.appendChild(
+            createEmptyState("칸반에 표시할 업무가 없습니다.", "상태가 있는 업무를 불러오면 프로젝트 보드처럼 정리됩니다."),
+          );
+          return;
+        }
+
+        columns.forEach((statusName) => {
+          const column = document.createElement("section");
+          column.className = "kanban-column";
+          const head = document.createElement("div");
+          head.className = "kanban-column-head";
+          const title = document.createElement("strong");
+          title.textContent = statusName;
+          const count = document.createElement("span");
+          count.className = "card-count";
+          const columnEntries = entries.filter((entry) => (entry.task.status || "상태 없음") === statusName);
+          count.textContent = columnEntries.length + "건";
+          head.appendChild(title);
+          head.appendChild(count);
+          column.appendChild(head);
+
+          const list = document.createElement("div");
+          list.className = "kanban-list";
+          if (!columnEntries.length) {
+            list.appendChild(createCompactEmptyState("비어 있습니다.", "해당 상태의 업무가 여기에 표시됩니다."));
+          } else {
+            columnEntries.forEach((entry) => list.appendChild(renderKanbanCard(entry)));
+          }
+          column.appendChild(list);
+          DOM.kanbanBoard.appendChild(column);
+        });
+      }
+
+      function renderGanttBoard(projectCollections) {
+        if (!DOM.ganttBoard || !DOM.ganttScale) return;
+        DOM.ganttBoard.innerHTML = "";
+        DOM.ganttScale.innerHTML = "";
+        const timelineDates = getTimelineDates(14);
+        const scaleLead = document.createElement("span");
+        scaleLead.textContent = "프로젝트";
+        DOM.ganttScale.appendChild(scaleLead);
+        timelineDates.forEach((date) => {
+          const cell = document.createElement("span");
+          cell.textContent = (date.getMonth() + 1) + "." + String(date.getDate()).padStart(2, "0");
+          DOM.ganttScale.appendChild(cell);
+        });
+
+        if (DOM.ganttCountBadge) {
+          DOM.ganttCountBadge.textContent = projectCollections.length + "개";
+        }
+        if (!projectCollections.length) {
+          DOM.ganttBoard.appendChild(
+            createEmptyState("간트에 표시할 프로젝트가 없습니다.", "프로젝트 relation이 연결된 업무를 불러오면 타임라인이 그려집니다."),
+          );
+          return;
+        }
+
+        projectCollections.forEach((project) => {
+          const row = document.createElement("div");
+          row.className = "gantt-row";
+          const info = document.createElement("div");
+          info.className = "gantt-info";
+          const title = document.createElement("strong");
+          title.textContent = project.title;
+          const meta = document.createElement("span");
+          const schedule = getProjectSchedule(project);
+          meta.textContent =
+            formatProjectDateRange(schedule.startDate, schedule.endDate) +
+            " · 업무 " +
+            project.tasks.length +
+            "건";
+          info.appendChild(title);
+          info.appendChild(meta);
+
+          const track = document.createElement("div");
+          track.className = "gantt-track";
+          if (schedule.startDate) {
+            const bar = document.createElement("div");
+            bar.className = "gantt-bar";
+            const start = getTimelinePosition(schedule.startDate, timelineDates);
+            const end = getTimelinePosition(schedule.endDate || schedule.startDate, timelineDates);
+            const width = Math.max(end - start, 6);
+            bar.style.left = start + "%";
+            bar.style.width = width + "%";
+            bar.textContent = project.title;
+            track.appendChild(bar);
+          }
+
+          row.appendChild(info);
+          row.appendChild(track);
+          DOM.ganttBoard.appendChild(row);
+        });
+      }
+
+      function renderMindmapBoard(projectCollections) {
+        if (!DOM.mindmapBoard) return;
+        DOM.mindmapBoard.innerHTML = "";
+        if (DOM.mindmapCountBadge) {
+          DOM.mindmapCountBadge.textContent = projectCollections.length + "개";
+        }
+        if (!projectCollections.length) {
+          DOM.mindmapBoard.appendChild(
+            createEmptyState("마인드맵에 표시할 프로젝트가 없습니다.", "프로젝트와 연결된 업무가 있으면 상태별로 펼쳐서 보여드립니다."),
+          );
+          return;
+        }
+
+        projectCollections.forEach((project) => {
+          const card = document.createElement("section");
+          card.className = "mindmap-project";
+          const head = document.createElement("div");
+          head.className = "mindmap-head";
+          const title = document.createElement("strong");
+          title.textContent = project.title;
+          const meta = document.createElement("div");
+          meta.className = "mindmap-meta";
+          if (project.client) meta.appendChild(makeBadge(project.client, "schema"));
+          if (project.priority) meta.appendChild(makeBadge(project.priority, "schema"));
+          meta.appendChild(makeBadge(project.tasks.length + "건", "date"));
+          head.appendChild(title);
+          head.appendChild(meta);
+          card.appendChild(head);
+
+          [
+            ["포커스", project.tasks.filter((entry) => entry.task.focus)],
+            ["진행중", project.tasks.filter((entry) => !entry.task.done && !entry.task.focus)],
+            ["완료", project.tasks.filter((entry) => entry.task.done)],
+          ].forEach(([label, entries]) => {
+            if (!entries.length) return;
+            const group = document.createElement("div");
+            group.className = "mindmap-group";
+            const groupLabel = document.createElement("div");
+            groupLabel.className = "mindmap-group-label";
+            groupLabel.textContent = label;
+            group.appendChild(groupLabel);
+            entries.slice(0, 4).forEach((entry) => {
+              const node = document.createElement("article");
+              node.className = "mindmap-node";
+              const nodeTitle = document.createElement("strong");
+              nodeTitle.textContent = entry.task.text;
+              const nodeMeta = document.createElement("div");
+              nodeMeta.className = "mindmap-meta";
+              if (entry.task.status) nodeMeta.appendChild(makeBadge(entry.task.status, "schema"));
+              if (entry.task.date) nodeMeta.appendChild(makeBadge(formatShortDate(entry.task.date), "date"));
+              node.appendChild(nodeTitle);
+              node.appendChild(nodeMeta);
+              group.appendChild(node);
+            });
+            card.appendChild(group);
+          });
+
+          DOM.mindmapBoard.appendChild(card);
+        });
+      }
+
+      function setActiveView(view) {
+        activeView = view;
+        const map = {
+          home: DOM.homeView,
+          kanban: DOM.kanbanView,
+          gantt: DOM.ganttView,
+          mindmap: DOM.mindmapView,
+        };
+        Object.entries(map).forEach(([key, element]) => {
+          if (!element) return;
+          element.classList.toggle("is-active", key === activeView);
+        });
+        (DOM.viewTabs || []).forEach((button) => {
+          button.classList.toggle("is-active", button.dataset.view === activeView);
+        });
+      }
+
+      function prepareDashboardData() {
+        const todaySorted = [...globalTasks].sort(
+          (a, b) =>
+            Number(!!b.focus) - Number(!!a.focus) ||
+            (b.createdAt || 0) - (a.createdAt || 0),
+        );
+        const carrySorted = [...carryOverTasks].sort((a, b) =>
+          (b.date || "").localeCompare(a.date || ""),
+        );
+
+        const todayActive = todaySorted.filter((task) => !task.done);
+        const todayDone = todaySorted.filter((task) => task.done);
+        const carryActive = carrySorted.filter((task) => !task.done);
+        const carryDone = carrySorted.filter((task) => task.done);
+        const pendingSync = todaySorted.filter(
+          (task) => task.pending || String(task.id || "").startsWith("temp-"),
+        );
+        const activeCount = todayActive.length + carryActive.length;
+        const highPriorityCount = [...todayActive, ...carryActive].filter(isHighPriorityTask).length;
+        
+        const focusSelectedEntries = sortEntriesForBoard([
+          ...carryActive.filter((task) => task.focus).map((task) => ({ task, isCarryOver: true })),
+          ...todayActive.filter((task) => task.focus).map((task) => ({ task, isCarryOver: false })),
+        ]);
+        const recommendedEntries = getFocusEntries(todayActive, carryActive);
+        
+        const focusBoardEntries = [];
+        const seenFocusIds = new Set();
+        [...focusSelectedEntries, ...recommendedEntries].forEach((entry) => {
+          const id = entry?.task?.id || entry?.task?.text;
+          if (!id || seenFocusIds.has(id)) return;
+          seenFocusIds.add(id);
+          focusBoardEntries.push(entry);
+        });
+
+        const workspaceEntries = getWorkspaceEntries();
+        const projectCollections = getProjectCollections(workspaceEntries);
+
+        const allDone = [
+          ...todayDone.map((task) => ({ task, isCarryOver: false })),
+          ...carryDone.map((task) => ({ task, isCarryOver: true })),
+        ].sort((a, b) => {
+          const aTime = a.task.createdAt || 0;
+          const bTime = b.task.createdAt || 0;
+          if (aTime !== bTime) return bTime - aTime;
+          return String(b.task.date || "").localeCompare(String(a.task.date || ""));
+        });
+        
+        const doneCount = allDone.length;
+        const completionBase = activeCount + doneCount;
+        const completionRate = completionBase ? Math.round((doneCount / completionBase) * 100) : 0;
+
+        return {
+          todayActive, todayDone, carryActive, carryDone, pendingSync,
+          activeCount, highPriorityCount, focusSelectedEntries, focusBoardEntries, 
+          projectCollections, allDone, doneCount, completionBase, completionRate,
+          workspaceEntries,
+        };
+      }
+
+      function updateDashboardMetrics(stats) {
+        DOM.headerDate.textContent = formatHeaderDate() + " · " + (taskSchema?.databaseTitle || "업무 DB");
+        DOM.taskCount.textContent = "남은 " + stats.activeCount + "개";
+        
+        const syncText = stats.pendingSync.length
+          ? "동기화 대기 " + stats.pendingSync.length + "건"
+          : "모든 항목 동기화 완료";
+        if (DOM.syncNoteCount) DOM.syncNoteCount.textContent = syncText;
+        if (DOM.syncSummary) DOM.syncSummary.textContent = syncText;
+        DOM.lastSyncLabel.textContent = formatTimeLabel(lastSyncedAt);
+        DOM.todayCount.textContent = "실행 " + stats.activeCount + "건";
+        DOM.doneCount.textContent = "완료 " + stats.doneCount + "건";
+
+        if (DOM.focusMetricValue) DOM.focusMetricValue.textContent = String(stats.focusSelectedEntries.length);
+        if (DOM.focusMetricNote) {
+          DOM.focusMetricNote.textContent = stats.focusSelectedEntries.length
+            ? "직접 체크한 오늘 포커스 업무 수"
+            : "아직 직접 지정한 포커스 업무가 없습니다";
+        }
+        
+        if (DOM.urgentMetricValue) DOM.urgentMetricValue.textContent = String(stats.carryActive.length + stats.highPriorityCount);
+        if (DOM.urgentMetricNote) {
+          DOM.urgentMetricNote.textContent = "미뤄진 " + stats.carryActive.length + "건 · 높은 중요도 " + stats.highPriorityCount + "건";
+        }
+        
+        if (DOM.progressMetricValue) DOM.progressMetricValue.textContent = stats.completionRate + "%";
+        if (DOM.progressMetricNote) {
+          DOM.progressMetricNote.textContent = "전체 " + stats.completionBase + "건 중 " + stats.doneCount + "건 완료";
+        }
+        
+        if (DOM.doneMetricValue) DOM.doneMetricValue.textContent = String(stats.doneCount);
+        if (DOM.doneMetricNote) {
+          DOM.doneMetricNote.textContent = stats.todayDone.length + "건은 오늘 완료, " + stats.carryDone.length + "건은 이전 업무 정리";
+        }
+        
+        if (DOM.activeCountBadge) DOM.activeCountBadge.textContent = stats.activeCount + "건";
+        if (DOM.focusCountBadge) DOM.focusCountBadge.textContent = stats.focusBoardEntries.length + "건";
+        if (DOM.completedCountBadge) DOM.completedCountBadge.textContent = stats.doneCount + "건";
+      }
+
+      function updateDashboardNotes(stats) {
+        if (DOM.heroSummary) {
+          DOM.heroSummary.textContent = "포커스 " + stats.focusSelectedEntries.length + "건, 미뤄진 일 " + stats.carryActive.length + "건, 완료 " + stats.doneCount + "건을 기준으로 오늘 흐름을 정리합니다.";
+        }
+        if (DOM.focusSectionNote) {
+          DOM.focusSectionNote.textContent = stats.focusSelectedEntries.length
+            ? "직접 체크한 포커스 업무를 우선 보여주고, 부족한 자리는 추천 업무로 채웁니다."
+            : "직접 체크한 포커스가 없으면 미뤄진 일과 오래된 업무를 추천합니다.";
+        }
+        if (DOM.focusIntro) {
+          DOM.focusIntro.textContent = stats.focusSelectedEntries.length
+            ? "오늘 체크박스로 지정한 업무가 우선순위 상단에 옵니다."
+            : "포커스 체크가 없는 경우에도 바로 시작할 업무를 자동 추천합니다.";
+        }
+        if (DOM.activeSectionNote) DOM.activeSectionNote.textContent = "포커스된 일, 미뤄진 일, 오늘 업무 순으로 정리해 바로 실행할 수 있습니다.";
+        if (DOM.doneSectionNote) DOM.doneSectionNote.textContent = "오늘 완료한 일과 이전에 밀린 일을 정리한 기록을 함께 확인할 수 있습니다.";
+        if (DOM.kanbanSectionNote) DOM.kanbanSectionNote.textContent = "상태별로 업무를 나눠 프로젝트 진행 흐름을 바로 확인할 수 있습니다.";
+        if (DOM.ganttSectionNote) DOM.ganttSectionNote.textContent = "프로젝트 일정과 연결된 업무를 2주 타임라인 기준으로 보여줍니다.";
+        if (DOM.mindmapSectionNote) DOM.mindmapSectionNote.textContent = "프로젝트를 중심으로 포커스, 진행중, 완료 업무를 구조적으로 펼쳐 보여줍니다.";
+      }
+
+      function renderDashboard() {
+        const stats = prepareDashboardData();
+        updateDashboardMetrics(stats);
+        updateDashboardNotes(stats);
+        updateSchemaUI();
+
+        renderFocusCollection(stats.focusBoardEntries.slice(0, 4));
+        renderActiveList(
+          stats.todayActive.map((task) => ({ task })),
+          stats.carryActive.map((task) => ({ task })),
+        );
+        renderTaskCollection(
+          DOM.doneList,
+          stats.allDone,
+          "아직 완료된 항목이 없습니다.",
+          "업무를 체크하면 이 카드로 이동해서 진행률이 함께 올라갑니다.",
+        );
+        renderKanbanBoard(stats.workspaceEntries);
+        renderGanttBoard(stats.projectCollections);
+        renderMindmapBoard(stats.projectCollections);
+      }
+
+      function handleApiError(data, fallbackMessage) {
+        const message = getApiErrorMessage(data, fallbackMessage);
+        applyRemoteError(message);
+        let toneType = fallbackMessage;
+        if (message.includes("속성") || message.includes("매핑")) toneType = "매핑 오류";
+        setSyncStatusTone(toneType, "danger");
+      }
+
+      async function syncFromNotion() {
+        if (inFlight > 0 || editingId) return;
+        try {
+          const today = getTodayISO();
+          const yesterday = getYesterdayISO();
+          const workspaceFrom = getOffsetDayISO(-30);
+          const workspaceTo = getOffsetDayISO(45);
+          const localSnapshot = new Map(
+            [...workspaceTasks, ...globalTasks, ...carryOverTasks]
+              .filter((task) => task?.id || task?.text)
+              .map((task) => [task.id || task.text, task]),
+          );
+          if (!OFFLINE_MODE) setSyncStatusTone("동기화중", "primary");
+
+          if (OFFLINE_MODE) {
+            setSyncStatusTone("테스트 모드", "warning");
+            projectItems = [];
+            projectSchema = getDefaultProjectSchema();
+            const todayTasks = getOfflineTasks(today).map((task) => ({
+              ...task,
+              isSynced: true,
+              date: today,
+            }));
+            carryOverTasks = getOfflineTasks(yesterday).map((task) => ({
+              ...task,
+              isSynced: true,
+              date: yesterday,
+            }));
+            globalTasks = todayTasks;
+            workspaceTasks = [...carryOverTasks, ...todayTasks];
+            lastSyncedAt = Date.now();
+            saveLocalTasks();
+            renderDashboard();
+            return;
+          }
+
+          const response = await fetch("/api/notion", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "fetch",
+              from: workspaceFrom,
+              to: workspaceTo,
+            }),
+          });
+          const data = await response.json();
+          if (!response.ok || !data?.success) {
+            handleApiError(data, "동기화 실패");
+            return;
+          }
+
+          clearRemoteError();
+          taskSchema = normalizeTaskSchema(data.taskSchema);
+          projectSchema = normalizeProjectSchema(data.projectSchema);
+          projectItems = Array.isArray(data.projects) ? data.projects : [];
+          updateSchemaUI();
+
+          const allServer = (data.tasks || [])
+            .filter((task) => !deletedIds.has(task.id))
+            .map((task) => ({
+              ...task,
+              isSynced: true,
+              date: String(task.date || "").slice(0, 10),
+              createdAt:
+                localSnapshot.get(task.id)?.createdAt ||
+                localSnapshot.get(task.text)?.createdAt ||
+                (String(task.date || "").slice(0, 10) === yesterday ? 1 : Date.now()),
+            }));
+          workspaceTasks = [...allServer];
+          const serverTasks = allServer.filter((task) => task.date === today);
+          carryOverTasks = allServer.filter((task) => task.date === yesterday);
+
+          try {
+            const pending = JSON.parse(
+              localStorage.getItem(STORAGE_KEYS.PENDING) || "{}",
+            );
+            const arr = Array.isArray(pending[today]) ? pending[today] : [];
+            if (arr.length) {
+              pending[today] = arr.filter(
+                (p) =>
+                  !serverTasks.some(
+                    (s) =>
+                      (s.id && p?.id && s.id === p.id) ||
+                      ((s.text || "").trim() &&
+                        (p?.text || "").trim() &&
+                        s.text.trim() === p.text.trim() &&
+                        String(s.date || "").slice(0, 10) === today),
+                  ),
+              );
+              localStorage.setItem(STORAGE_KEYS.PENDING, JSON.stringify(pending));
+            }
+          } catch (_) {}
+
+          globalTasks.forEach((task) => {
+            if (task?.pending && serverTasks.some((s) => s.id === task.id)) {
+              task.pending = false;
+            }
+          });
+
+          const zombies = globalTasks.filter((local) => {
+            if (deletedIds.has(local.id)) return false;
+            if (local.date !== today) return false;
+
+            const exists = serverTasks.some(
+              (serverTask) =>
+                serverTask.id === local.id || serverTask.text === local.text,
+            );
+            if (exists) return false;
+            if (!local.isSynced) return true;
+            if (local.pending) return true;
+            return false;
+          });
+
+          globalTasks = [...serverTasks, ...zombies];
+          const seen = new Set();
+          globalTasks = globalTasks.filter((task) => {
+            const key = (task.text || "").trim();
+            if (!key) return true;
+            if (seen.has(key) && task.isSynced === false) return false;
+            seen.add(key);
+            return true;
+          });
+
+          lastSyncedAt = Date.now();
+          saveLocalTasks();
+          setSyncStatusTone("동기화 완료", "success");
+          renderDashboard();
+        } catch (error) {
+          console.error(error);
+          handleApiError({ error: error?.message }, "동기화 실패");
+        }
+      }
+
+      function startEdit(id, isCarryOver) {
+        editingId = id;
+        editingCarryOver = isCarryOver;
+        renderDashboard();
+      }
+
+      function cancelEdit() {
+        editingId = null;
+        editingCarryOver = false;
+        renderDashboard();
+      }
+
+      async function saveEdit() {
+        const editInput = document.getElementById("editInput");
+        const newText = editInput ? editInput.value.trim() : "";
+        if (!newText || !editingId) {
+          cancelEdit();
+          return;
+        }
+
+        const today = getTodayISO();
+        const yesterday = getYesterdayISO();
+        let task = globalTasks.find((item) => item.id === editingId);
+        if (!task && editingCarryOver)
+          task = carryOverTasks.find((item) => item.id === editingId);
+        if (!task) {
+          cancelEdit();
+          return;
+        }
+
+        task.text = newText;
+        if (OFFLINE_MODE) {
+          if (editingCarryOver) {
+            const arr = getOfflineTasks(yesterday).map((item) =>
+              item.id === editingId ? { ...item, text: newText } : item,
+            );
+            setOfflineTasks(yesterday, arr);
+          } else {
+            const arr = getOfflineTasks(today).map((item) =>
+              item.id === editingId ? { ...item, text: newText } : item,
+            );
+            setOfflineTasks(today, arr);
+          }
+          saveLocalTasks();
+          editingId = null;
+          editingCarryOver = false;
+          renderDashboard();
+          bc.postMessage({ type: "TASKS_UPDATED" });
+          return;
+        }
+
+        if (String(editingId).startsWith("temp-")) {
+          cancelEdit();
+          renderDashboard();
+          return;
+        }
+
+        inFlight++;
+        try {
+          const response = await fetch("/api/notion", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "update",
+              pageId: editingId,
+              text: newText,
+            }),
+          });
+          const data = await response.json().catch(() => null);
+          if (data?.success) {
+            saveLocalTasks();
+            bc.postMessage({ type: "TASKS_UPDATED" });
+          }
+        } catch (error) {
+          console.error(error);
+        } finally {
+          inFlight--;
+        }
+
+        editingId = null;
+        editingCarryOver = false;
+        renderDashboard();
+      }
+
+      async function updateTaskStatus(id, currentStatus, nextStatus, isCarryOver) {
+        if (!nextStatus || currentStatus === nextStatus) return;
+        let task = globalTasks.find((item) => item.id === id);
+        if (!task && isCarryOver) {
+          task = carryOverTasks.find((item) => item.id === id);
+        }
+        if (!task) return;
+
+        const previousStatus = task.status;
+        const previousDone = task.done;
+        task.status = nextStatus;
+        task.done = normalizeStatusValue(nextStatus) === normalizeStatusValue(taskSchema?.defaults?.doneStatus || "완료");
+
+        if (String(id).startsWith("temp-") || OFFLINE_MODE) {
+          saveLocalTasks();
+          renderDashboard();
+          bc.postMessage({ type: "TASKS_UPDATED" });
+          return;
+        }
+
+        renderDashboard();
+        inFlight++;
+        try {
+          const response = await fetch("/api/notion", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "update",
+              pageId: id,
+              status: nextStatus,
+              done: task.done,
+            }),
+          });
+          const data = await response.json().catch(() => null);
+          if (!response.ok || !data?.success) {
+            task.status = previousStatus;
+            task.done = previousDone;
+            handleApiError(data, "상태 변경 실패");
+            renderDashboard();
+            return;
+          }
+          clearRemoteError();
+          bc.postMessage({ type: "TASKS_UPDATED" });
+        } catch (error) {
+          task.status = previousStatus;
+          task.done = previousDone;
+          handleApiError({ error: error?.message }, "상태 변경 실패");
+          renderDashboard();
+        } finally {
+          inFlight--;
+        }
+      }
+
+      async function addTask() {
+        const text = DOM.input.value.trim();
+        if (!text) return;
+
+        const today = getTodayISO();
+        const newId = OFFLINE_MODE ? "off-" + Date.now() : "temp-" + Date.now();
+        const newTask = {
+          id: newId,
+          text,
+          focus: false,
+          done: false,
+          status: taskSchema?.defaults?.status || null,
+          priority: taskSchema?.defaults?.priority || null,
+          project: null,
+          projectId: null,
+          projectIds: [],
+          date: today,
+          isSynced: OFFLINE_MODE,
+          createdAt: Date.now(),
+          pending: !OFFLINE_MODE,
+        };
+
+        globalTasks.unshift(newTask);
+
+        if (!OFFLINE_MODE) {
+          try {
+            const pending = JSON.parse(
+              localStorage.getItem(STORAGE_KEYS.PENDING) || "{}",
+            );
+            (pending[today] ||= []).unshift(newTask);
+            localStorage.setItem(STORAGE_KEYS.PENDING, JSON.stringify(pending));
+          } catch (_) {}
+        }
+
+        bc.postMessage({ type: "TASK_ADDED", task: newTask });
+        saveLocalTasks();
+        DOM.input.value = "";
+        updateInputUI();
+        renderDashboard();
+
+        if (OFFLINE_MODE) {
+          bc.postMessage({ type: "TASKS_UPDATED" });
+          return;
+        }
+
+        inFlight++;
+        try {
+          const response = await fetch("/api/notion", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "create",
+              text,
+              date: today,
+              status: newTask.status,
+              priority: newTask.priority,
+            }),
+          });
+          const data = await response.json().catch(() => null);
+
+          if (!response.ok) {
+            console.error("CREATE HTTP error:", response.status);
+            handleApiError(data, "생성 실패");
+            return;
+          }
+
+          if (!data?.success || !data?.id) {
+            console.error("CREATE payload error:", data);
+            handleApiError(data, "생성 실패");
+            return;
+          }
+
+          const target = globalTasks.find((task) => task.id === newId);
+          if (target) {
+            target.id = data.id;
+            try {
+              const pending = JSON.parse(
+                localStorage.getItem(STORAGE_KEYS.PENDING) || "{}",
+              );
+              const arr = Array.isArray(pending[today]) ? pending[today] : [];
+              pending[today] = arr.map((item) =>
+                item && item.id === newId ? { ...item, id: data.id } : item,
+              );
+              localStorage.setItem(STORAGE_KEYS.PENDING, JSON.stringify(pending));
+            } catch (_) {}
+
+            target.isSynced = true;
+            target.pending = true;
+            target.createdAt = Date.now();
+
+            saveLocalTasks();
+            clearRemoteError();
+            renderDashboard();
+            bc.postMessage({ type: "TASKS_UPDATED" });
+            return;
+          }
+
+          if (deletedIds.has(newId)) {
+            deletedIds.add(data.id);
+            await fetch("/api/notion", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ action: "delete", pageId: data.id }),
+            });
+          }
+
+          bc.postMessage({ type: "TASKS_UPDATED" });
+        } catch (error) {
+          console.error(error);
+          handleApiError({ error: error?.message }, "생성 실패");
+        } finally {
+          inFlight--;
+        }
+      }
+
+      async function toggleTask(id, done, isCarryOver) {
+        let task = globalTasks.find((item) => item.id === id);
+        if (!task && isCarryOver)
+          task = carryOverTasks.find((item) => item.id === id);
+        if (!task) return;
+
+        const nextDone = !done;
+        const previousStatus = task.status;
+        if (String(id).startsWith("temp-") || OFFLINE_MODE) {
+          applyTaskDoneState(task, nextDone);
+          if (!OFFLINE_MODE)
+            patchPendingDone(getTodayISO(), { id, text: task.text }, nextDone);
+          saveLocalTasks();
+          renderDashboard();
+          bc.postMessage({ type: "TASKS_UPDATED" });
+          return;
+        }
+
+        applyTaskDoneState(task, nextDone);
+        renderDashboard();
+        patchPendingDone(getTodayISO(), { id, text: task.text }, nextDone);
+
+        inFlight++;
+        try {
+          const response = await fetch("/api/notion", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "update",
+              pageId: id,
+              done: nextDone,
+            }),
+          });
+          const json = await response.json().catch(() => null);
+
+          if (!response.ok) {
+            console.error("UPDATE HTTP error:", response.status);
+            task.done = done;
+            task.status = previousStatus;
+            handleApiError(json, "수정 실패");
+            patchPendingDone(getTodayISO(), { id, text: task.text }, done);
+            renderDashboard();
+            return;
+          }
+
+          if (!json?.success) {
+            console.error("UPDATE payload error:", json);
+            task.done = done;
+            task.status = previousStatus;
+            handleApiError(json, "수정 실패");
+            patchPendingDone(getTodayISO(), { id, text: task.text }, done);
+            renderDashboard();
+            return;
+          }
+
+          clearRemoteError();
+          bc.postMessage({ type: "TASKS_UPDATED" });
+        } catch (error) {
+          console.error(error);
+          task.done = done;
+          task.status = previousStatus;
+          handleApiError({ error: error?.message }, "수정 실패");
+          patchPendingDone(getTodayISO(), { id, text: task.text }, done);
+          renderDashboard();
+        } finally {
+          inFlight--;
+        }
+      }
+
+      async function deleteTask(id, isCarryOver) {
+        const today = getTodayISO();
+        let target = globalTasks.find((task) => task.id === id);
+        if (!target && isCarryOver)
+          target = carryOverTasks.find((task) => task.id === id);
+        const targetText = target?.text;
+
+        removeFromPending(today, { id, text: targetText });
+        if (String(id).startsWith("temp-") && targetText) {
+          removeFromPending(today, { id: "__nope__", text: targetText });
+        }
+
+        globalTasks = globalTasks.filter((task) => task.id !== id);
+        carryOverTasks = carryOverTasks.filter((task) => task.id !== id);
+        saveLocalTasks();
+        deletedIds.add(id);
+        if (!OFFLINE_MODE)
+          localStorage.setItem(STORAGE_KEYS.DELETED, JSON.stringify([...deletedIds]));
+        renderDashboard();
+        bc.postMessage({ type: "TASKS_UPDATED" });
+
+        if (OFFLINE_MODE) return;
+        if (!String(id).startsWith("temp-")) {
+          try {
+            const response = await fetch("/api/notion", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ action: "delete", pageId: id }),
+            });
+            const json = await response.json().catch(() => ({}));
+            if (!response.ok)
+              console.error("DELETE failed:", response.status, json);
+          } catch (error) {
+            console.error("DELETE error:", error);
+          }
+        }
+      }
+
+      async function postponeTask(id, taskDate) {
+        if (String(id).startsWith("temp-")) return;
+        const originalDate = taskDate || getTodayISO();
+        const nextDate = getNextDayISO(originalDate);
+        const task =
+          globalTasks.find((item) => item.id === id) ||
+          carryOverTasks.find((item) => item.id === id);
+        if (!task) return;
+
+        if (OFFLINE_MODE) {
+          const prevArr = getOfflineTasks(originalDate).filter(
+            (item) => item.id !== id,
+          );
+          const nextArr = getOfflineTasks(nextDate);
+          nextArr.unshift({ ...task, date: nextDate, done: task.done });
+          setOfflineTasks(originalDate, prevArr);
+          setOfflineTasks(nextDate, nextArr);
+          globalTasks = globalTasks.filter((item) => item.id !== id);
+          carryOverTasks = carryOverTasks.filter((item) => item.id !== id);
+          renderDashboard();
+          bc.postMessage({ type: "TASKS_UPDATED" });
+          undoPostponeData = { id, originalDate, task: { ...task, date: originalDate } };
+          showUndoToast("다음 날로 미뤘어요.", undoPostpone);
+          return;
+        }
+
+        inFlight++;
+        try {
+          const response = await fetch("/api/notion", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "update",
+              pageId: id,
+              newDate: nextDate,
+            }),
+          });
+          const json = await response.json().catch(() => null);
+          if (!response.ok || !json?.success) {
+            console.error("POSTPONE failed:", response.status, json);
+            return;
+          }
+
+          globalTasks = globalTasks.filter((item) => item.id !== id);
+          carryOverTasks = carryOverTasks.filter((item) => item.id !== id);
+          saveLocalTasks();
+          renderDashboard();
+          bc.postMessage({ type: "TASKS_UPDATED" });
+
+          undoPostponeData = { id, originalDate, task: { ...task, date: originalDate } };
+          showUndoToast("다음 날로 미뤘어요.", undoPostpone);
+        } catch (error) {
+          console.error("postponeTask error:", error);
+        } finally {
+          inFlight--;
+        }
+      }
+
+      async function undoPostpone() {
+        if (!undoPostponeData) return;
+        const { id, originalDate, task } = undoPostponeData;
+        undoPostponeData = null;
+        if (DOM.undoToast) DOM.undoToast.style.display = "none";
+        if (undoToastTimer) {
+          clearTimeout(undoToastTimer);
+          undoToastTimer = null;
+        }
+
+        if (OFFLINE_MODE) {
+          const nextDate = getNextDayISO(originalDate);
+          const nextArr = getOfflineTasks(nextDate).filter(
+            (item) => item.id !== id,
+          );
+          const origArr = getOfflineTasks(originalDate);
+          origArr.unshift({ ...task, date: originalDate });
+          setOfflineTasks(nextDate, nextArr);
+          setOfflineTasks(originalDate, origArr);
+          const today = getTodayISO();
+          const yesterday = getYesterdayISO();
+          if (originalDate === today)
+            globalTasks.unshift({
+              ...task,
+              date: originalDate,
+              isSynced: true,
+            });
+          else if (originalDate === yesterday)
+            carryOverTasks.push({
+              ...task,
+              date: originalDate,
+              isSynced: true,
+            });
+          renderDashboard();
+          bc.postMessage({ type: "TASKS_UPDATED" });
+          return;
+        }
+
+        inFlight++;
+        try {
+          const response = await fetch("/api/notion", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "update",
+              pageId: id,
+              newDate: originalDate,
+            }),
+          });
+          const json = await response.json().catch(() => null);
+          if (!response.ok || !json?.success) {
+            console.error("UNDO POSTPONE failed:", response.status, json);
+            return;
+          }
+          const today = getTodayISO();
+          const yesterday = getYesterdayISO();
+          if (originalDate === today) {
+            globalTasks.unshift({
+              ...task,
+              date: originalDate,
+              isSynced: true,
+            });
+          } else if (originalDate === yesterday) {
+            carryOverTasks.push({
+              ...task,
+              date: originalDate,
+              isSynced: true,
+            });
+          }
+          saveLocalTasks();
+          renderDashboard();
+          bc.postMessage({ type: "TASKS_UPDATED" });
+        } catch (error) {
+          console.error("undoPostpone error:", error);
+        } finally {
+          inFlight--;
+        }
+      }
+
+      DOM.input.addEventListener("input", updateInputUI);
+
+      DOM.input.addEventListener("keypress", (event) => {
+        if (event.key === "Enter") addTask();
+      });
+
+      (DOM.viewTabs || []).forEach((button) => {
+        button.addEventListener("click", () => {
+          setActiveView(button.dataset.view || "home");
+        });
+      });
+
+      reconcileDayBoundary();
+      setInterval(reconcileDayBoundary, CONFIG.DAY_CHECK_INTERVAL);
+
+      if (OFFLINE_MODE && DOM.offlineBadge) {
+        DOM.offlineBadge.style.display = "inline-flex";
+      }
+      if (!OFFLINE_MODE) loadLocalTasks();
+
+      updateInputUI();
+      setActiveView(activeView);
+      renderDashboard();
+      syncFromNotion();
+      setInterval(syncFromNotion, CONFIG.SYNC_INTERVAL);
+    </script>
+  </body>
+</html>
