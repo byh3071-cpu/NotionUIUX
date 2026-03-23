@@ -558,6 +558,13 @@ export default async function handler(req, res) {
     status,
     priority,
     project,
+    amount,
+    category,
+    memo,
+    type: financeType,
+    payment,
+    spendType,
+    fixedCategory,
   } = req.body;
 
   const NOTION_KEY = process.env.NOTION_KEY;
@@ -565,6 +572,8 @@ export default async function handler(req, res) {
   const NOTION_PROJECTS_DB_ID = process.env.NOTION_PROJECTS_DB_ID;
   const NOTION_EVENTS_DB_ID = process.env.NOTION_EVENTS_DB_ID;
   const NOTION_MEMOS_DB_ID = process.env.NOTION_MEMOS_DB_ID;
+  const NOTION_INCOME_DB_ID = process.env.NOTION_INCOME_DB_ID;
+  const NOTION_EXPENSE_DB_ID = process.env.NOTION_EXPENSE_DB_ID;
 
   if (!NOTION_KEY || !NOTION_DB_ID) {
     return res.status(500).json({ error: 'Missing NOTION_KEY or NOTION_DB_ID' });
@@ -580,6 +589,12 @@ export default async function handler(req, res) {
   }
   if (NOTION_MEMOS_DB_ID && !isValidNotionId(NOTION_MEMOS_DB_ID)) {
     return res.status(500).json({ error: `Invalid NOTION_MEMOS_DB_ID format: ${String(NOTION_MEMOS_DB_ID)}` });
+  }
+  if (NOTION_INCOME_DB_ID && !isValidNotionId(NOTION_INCOME_DB_ID)) {
+    return res.status(500).json({ error: `Invalid NOTION_INCOME_DB_ID format: ${String(NOTION_INCOME_DB_ID)}` });
+  }
+  if (NOTION_EXPENSE_DB_ID && !isValidNotionId(NOTION_EXPENSE_DB_ID)) {
+    return res.status(500).json({ error: `Invalid NOTION_EXPENSE_DB_ID format: ${String(NOTION_EXPENSE_DB_ID)}` });
   }
 
   const headers = {
@@ -957,6 +972,97 @@ if (NOTION_EVENTS_DB_ID) {
       if (!response.ok) throw new Error(data.message || 'Delete Failed');
 
       return res.status(200).json({ success: true });
+    }
+
+    // ✅ 소득: 생성
+    if (action === 'createIncome') {
+      if (!NOTION_INCOME_DB_ID) {
+        return res.status(500).json({ error: 'NOTION_INCOME_DB_ID is not configured' });
+      }
+      const safeTitle = String(title ?? '').trim();
+      if (!safeTitle) {
+        return res.status(400).json({ error: 'createIncome requires a title (내역)' });
+      }
+      const safeAmount = Number(amount) || 0;
+      if (safeAmount <= 0) {
+        return res.status(400).json({ error: 'createIncome requires a positive amount' });
+      }
+
+      const properties = {
+        '내역': { title: [{ text: { content: safeTitle } }] },
+        '금액': { number: safeAmount },
+        '소득 날짜': { date: { start: normalizeISODate(date) || kstToday } },
+      };
+
+      const safePayment = String(payment ?? '').trim();
+      if (safePayment) {
+        properties['결제 수단'] = { select: { name: safePayment } };
+      }
+
+      const safeSpendType = String(spendType ?? '').trim();
+      if (safeSpendType) {
+        properties['소비 유형'] = { select: { name: safeSpendType } };
+      }
+
+      const response = await fetch('https://api.notion.com/v1/pages', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          parent: { database_id: NOTION_INCOME_DB_ID },
+          properties,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Create Income Failed');
+      return res.status(200).json({ success: true, id: data.id });
+    }
+
+    // ✅ 지출: 생성
+    if (action === 'createExpense') {
+      if (!NOTION_EXPENSE_DB_ID) {
+        return res.status(500).json({ error: 'NOTION_EXPENSE_DB_ID is not configured' });
+      }
+      const safeTitle = String(title ?? '').trim();
+      if (!safeTitle) {
+        return res.status(400).json({ error: 'createExpense requires a title (내역)' });
+      }
+      const safeAmount = Number(amount) || 0;
+      if (safeAmount <= 0) {
+        return res.status(400).json({ error: 'createExpense requires a positive amount' });
+      }
+
+      const properties = {
+        '내역': { title: [{ text: { content: safeTitle } }] },
+        '금액': { number: safeAmount },
+        '지출 날짜': { date: { start: normalizeISODate(date) || kstToday } },
+      };
+
+      const safeFixedCat = String(fixedCategory ?? '').trim();
+      if (safeFixedCat) {
+        properties['고정비 분류'] = { select: { name: safeFixedCat } };
+      }
+
+      const safePayment = String(payment ?? '').trim();
+      if (safePayment) {
+        properties['결제 수단'] = { select: { name: safePayment } };
+      }
+
+      const safeSpendType = String(spendType ?? '').trim();
+      if (safeSpendType) {
+        properties['소비 유형'] = { select: { name: safeSpendType } };
+      }
+
+      const response = await fetch('https://api.notion.com/v1/pages', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          parent: { database_id: NOTION_EXPENSE_DB_ID },
+          properties,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Create Expense Failed');
+      return res.status(200).json({ success: true, id: data.id });
     }
 
     return res.status(400).json({ error: 'Invalid action' });

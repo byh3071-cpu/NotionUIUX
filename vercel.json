@@ -8,6 +8,7 @@
     { "source": "/embed/pomodoro", "destination": "/embed/pomodomo.html" },
     { "source": "/embed/todo", "destination": "/embed/todo.html" },
     { "source": "/embed/schedule", "destination": "/embed/schedule.html" },
-    { "source": "/embed/memo", "destination": "/embed/memo.html" }
+    { "source": "/embed/memo", "destination": "/embed/memo.html" },
+    { "source": "/embed/finance", "destination": "/embed/finance.html" }
   ]
 }
