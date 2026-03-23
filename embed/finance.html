@@ -463,9 +463,9 @@
     wrap.innerHTML = html;
   }
 
-  // Keyboard shortcut
+  // Enter key submits
   document.addEventListener('keydown', function(e) {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    if (e.key === 'Enter') {
       e.preventDefault();
       submitEntry();
     }
