@@ -186,24 +186,6 @@
   .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .submit-btn.success { background: var(--income-color); border-color: var(--income-color); }
 
-  .recent {
-    border-top: 1.5px solid var(--border);
-    max-height: 120px; overflow-y: auto; flex-shrink: 0;
-  }
-  .recent-item {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 6px 14px; border-bottom: 1px solid var(--border); font-size: 11px;
-  }
-  .recent-item:last-child { border-bottom: none; }
-  .recent-left { display: flex; align-items: center; gap: 6px; min-width: 0; }
-  .recent-type { font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 3px; flex-shrink: 0; }
-  .recent-type.income { color: var(--income-color); background: var(--income-bg); }
-  .recent-type.expense { color: var(--expense-color); background: var(--expense-bg); }
-  .recent-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
-  .recent-amount { font-weight: 600; flex-shrink: 0; margin-left: 8px; }
-  .recent-amount.income { color: var(--income-color); }
-  .recent-amount.expense { color: var(--expense-color); }
-
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
@@ -262,7 +244,6 @@
     <button class="submit-btn" id="submit-btn">기록하기</button>
   </div>
 
-  <div class="recent" id="recent-list"></div>
 </div>
 
 <script>
@@ -278,9 +259,6 @@
   var selectedPayment = '';
   var selectedSpendType = '';
   var selectedFixedCategory = '';
-  var recentItems = [];
-  try { recentItems = JSON.parse(localStorage.getItem('finance_recent_v2') || '[]'); } catch(e) { recentItems = []; }
-
   var PAYMENTS = {
     income:  ['현금', '토스카드', '토스 통장', '농협 통장'],
     expense: ['현금', '토스카드', '토스통장', '농협카드', '농협통장', '하나은행통장', 'IBK 기업은행통장', '삼성카드']
@@ -399,12 +377,6 @@
       body.fixedCategory = selectedFixedCategory;
     }
 
-    // Optimistic UI — 즉시 성공 처리, API는 백그라운드
-    recentItems.unshift({ type: currentType, title: title, amount: amount, timestamp: Date.now() });
-    if (recentItems.length > 20) recentItems = recentItems.slice(0, 20);
-    try { localStorage.setItem('finance_recent_v2', JSON.stringify(recentItems)); } catch(e) {}
-    renderRecent();
-
     // 즉시 폼 리셋 — 바로 다음 입력 가능
     titleEl.value = '';
     amountEl.value = '';
@@ -436,31 +408,6 @@
     });
   }
 
-  // Recent entries
-  function renderRecent() {
-    var wrap = document.getElementById('recent-list');
-    var items = recentItems.slice(0, 5);
-    if (!items.length) { wrap.innerHTML = ''; return; }
-
-    var html = '';
-    for (var i = 0; i < items.length; i++) {
-      var e = items[i];
-      var isIncome = e.type === 'income';
-      var sign = isIncome ? '+' : '-';
-      var cls = isIncome ? 'income' : 'expense';
-      var label = isIncome ? '소득' : '지출';
-      var formatted = Number(e.amount).toLocaleString();
-      html += '<div class="recent-item">' +
-        '<div class="recent-left">' +
-        '<span class="recent-type ' + cls + '">' + label + '</span>' +
-        '<span class="recent-title">' + e.title + '</span>' +
-        '</div>' +
-        '<span class="recent-amount ' + cls + '">' + sign + formatted + '</span>' +
-        '</div>';
-    }
-    wrap.innerHTML = html;
-  }
-
   // Enter key submits
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Enter') {
@@ -471,7 +418,6 @@
 
   // Init
   renderAllChips();
-  renderRecent();
 })();
 </script>
 
