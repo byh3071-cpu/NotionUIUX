@@ -57,7 +57,6 @@
     border: 1.5px solid var(--border);
   }
 
-  /* Header */
   .header {
     display: flex;
     align-items: center;
@@ -82,10 +81,8 @@
     opacity: 0;
     transition: opacity 0.3s;
   }
-
   .header-status.show { opacity: 1; }
 
-  /* Tab selector */
   .tab-bar {
     display: flex;
     border-bottom: 1.5px solid var(--border);
@@ -106,18 +103,10 @@
     border-bottom: 2px solid transparent;
     transition: all 0.2s;
   }
-
   .tab:first-child { border-right: 1px solid var(--border); }
-
-  .tab.active {
-    color: var(--text);
-    border-bottom-color: var(--accent);
-    font-weight: 600;
-  }
-
+  .tab.active { color: var(--text); border-bottom-color: var(--accent); font-weight: 600; }
   .tab:hover:not(.active) { color: var(--text); }
 
-  /* Form area */
   .form-area {
     flex: 1;
     padding: 12px 14px;
@@ -128,11 +117,7 @@
     background: var(--bg);
   }
 
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-  }
+  .field { display: flex; flex-direction: column; gap: 3px; }
 
   .field label {
     font-size: 10px;
@@ -142,8 +127,7 @@
     color: var(--text-secondary);
   }
 
-  .field input,
-  .field select {
+  .field input, .field select {
     font-family: var(--font);
     font-size: 13px;
     padding: 7px 10px;
@@ -154,74 +138,34 @@
     outline: none;
     transition: border-color 0.2s;
   }
+  .field input:focus, .field select:focus { border-color: var(--border-strong); }
+  .field input::placeholder { color: var(--text-secondary); opacity: 0.6; }
 
-  .field input:focus,
-  .field select:focus {
-    border-color: var(--border-strong);
-  }
-
-  .field input::placeholder {
-    color: var(--text-secondary);
-    opacity: 0.6;
-  }
-
-  .row {
-    display: flex;
-    gap: 8px;
-  }
-
+  .row { display: flex; gap: 8px; }
   .row .field { flex: 1; }
 
-  /* Amount with currency */
-  .amount-wrap {
-    position: relative;
-  }
-
-  .amount-wrap input {
-    width: 100%;
-    padding-right: 30px;
-  }
-
+  .amount-wrap { position: relative; }
+  .amount-wrap input { width: 100%; padding-right: 30px; }
   .amount-wrap .currency {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 11px;
-    color: var(--text-secondary);
-    pointer-events: none;
+    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+    font-size: 11px; color: var(--text-secondary); pointer-events: none;
   }
 
-  /* Chip selectors */
-  .chip-group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-  }
+  .chip-group { display: flex; flex-wrap: wrap; gap: 4px; }
 
   .chip {
-    padding: 4px 10px;
-    font-size: 11px;
-    border: 1.5px solid var(--border);
-    border-radius: 20px;
-    background: var(--surface);
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: all 0.15s;
-    white-space: nowrap;
+    padding: 4px 10px; font-size: 11px;
+    border: 1.5px solid var(--border); border-radius: 20px;
+    background: var(--surface); color: var(--text-secondary);
+    cursor: pointer; transition: all 0.15s; white-space: nowrap;
   }
-
   .chip:hover { border-color: var(--border-strong); color: var(--text); }
-
-  .chip.selected {
-    background: var(--accent);
-    color: #fff;
-    border-color: var(--accent);
-  }
-
+  .chip.selected { background: var(--accent); color: #fff; border-color: var(--accent); }
   :root.dark .chip.selected { color: #0f1115; }
 
-  /* Submit button */
+  .expense-only { display: block; }
+  body.income-mode .expense-only { display: none; }
+
   .submit-bar {
     padding: 10px 14px;
     border-top: 1.5px solid var(--border);
@@ -230,88 +174,36 @@
   }
 
   .submit-btn {
-    width: 100%;
-    padding: 9px 0;
-    font-family: var(--font);
-    font-size: 12px;
-    font-weight: 600;
+    width: 100%; padding: 9px 0;
+    font-family: var(--font); font-size: 12px; font-weight: 600;
     letter-spacing: 0.3px;
-    border: 1.5px solid var(--accent);
-    border-radius: var(--radius);
-    background: var(--accent);
-    color: #fff;
-    cursor: pointer;
-    transition: all 0.2s;
+    border: 1.5px solid var(--accent); border-radius: var(--radius);
+    background: var(--accent); color: #fff;
+    cursor: pointer; transition: all 0.2s;
   }
-
   :root.dark .submit-btn { color: #0f1115; }
-
   .submit-btn:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+  .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .submit-btn.success { background: var(--income-color); border-color: var(--income-color); }
 
-  .submit-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-
-  .submit-btn.success {
-    background: var(--income-color);
-    border-color: var(--income-color);
-  }
-
-  /* Recent entries */
   .recent {
     border-top: 1.5px solid var(--border);
-    max-height: 120px;
-    overflow-y: auto;
-    flex-shrink: 0;
+    max-height: 120px; overflow-y: auto; flex-shrink: 0;
   }
-
   .recent-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 6px 14px;
-    border-bottom: 1px solid var(--border);
-    font-size: 11px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 14px; border-bottom: 1px solid var(--border); font-size: 11px;
   }
-
   .recent-item:last-child { border-bottom: none; }
-
-  .recent-left {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    min-width: 0;
-  }
-
-  .recent-type {
-    font-size: 9px;
-    font-weight: 700;
-    padding: 1px 5px;
-    border-radius: 3px;
-    flex-shrink: 0;
-  }
-
+  .recent-left { display: flex; align-items: center; gap: 6px; min-width: 0; }
+  .recent-type { font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 3px; flex-shrink: 0; }
   .recent-type.income { color: var(--income-color); background: var(--income-bg); }
   .recent-type.expense { color: var(--expense-color); background: var(--expense-bg); }
-
-  .recent-title {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    color: var(--text);
-  }
-
-  .recent-amount {
-    font-weight: 600;
-    flex-shrink: 0;
-    margin-left: 8px;
-  }
-
+  .recent-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
+  .recent-amount { font-weight: 600; flex-shrink: 0; margin-left: 8px; }
   .recent-amount.income { color: var(--income-color); }
   .recent-amount.expense { color: var(--expense-color); }
 
-  /* Scrollbar */
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
@@ -326,59 +218,14 @@
   </div>
 
   <div class="tab-bar">
-    <button class="tab active" data-type="expense" onclick="switchTab('expense')">지출</button>
-    <button class="tab" data-type="income" onclick="switchTab('income')">소득</button>
+    <button class="tab active" data-type="expense" id="tab-expense">지출</button>
+    <button class="tab" data-type="income" id="tab-income">소득</button>
   </div>
 
-  <div class="form-area" id="form-area"></div>
-
-  <div class="submit-bar">
-    <button class="submit-btn" id="submit-btn" onclick="submitEntry()">기록하기</button>
-  </div>
-
-  <div class="recent" id="recent-list"></div>
-</div>
-
-<script>
-// Theme — 기본 라이트모드, ?mode=dark일 때만 다크
-const params = new URLSearchParams(location.search);
-if (params.get('mode') === 'dark') {
-  document.documentElement.classList.add('dark');
-}
-
-// State
-let currentType = 'expense';
-let selectedPayment = '';
-let selectedSpendType = '';
-let selectedFixedCategory = '';
-let recentItems = JSON.parse(localStorage.getItem('finance_recent_v2') || '[]');
-
-// Data definitions matching Notion DB
-const PAYMENTS = {
-  income:  ['현금', '토스카드', '토스 통장', '농협 통장'],
-  expense: ['현금', '토스카드', '토스통장', '농협카드', '농협통장', '하나은행통장', 'IBK 기업은행통장', '삼성카드'],
-};
-
-const SPEND_TYPES = ['행복', '낭비', '미래', '성장', '필수'];
-
-const FIXED_CATEGORIES = ['식비', '저축', '오프라인 고정비', '온라인 구독', 'AI 구독', '비상금', '카페', '기타'];
-
-const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' });
-
-// Render form based on current type
-function renderForm() {
-  const area = document.getElementById('form-area');
-
-  const fixedField = currentType === 'expense' ? `
-    <div class="field">
-      <label>고정비 분류</label>
-      <div class="chip-group" id="chips-fixed"></div>
-    </div>` : '';
-
-  area.innerHTML = `
+  <div class="form-area">
     <div class="field">
       <label>내역</label>
-      <input type="text" id="f-title" placeholder="${currentType === 'expense' ? '무엇에 사용했나요?' : '어디서 들어온 소득인가요?'}" autocomplete="off">
+      <input type="text" id="f-title" placeholder="무엇에 사용했나요?" autocomplete="off">
     </div>
 
     <div class="row">
@@ -390,12 +237,15 @@ function renderForm() {
         </div>
       </div>
       <div class="field">
-        <label>${currentType === 'expense' ? '지출 날짜' : '소득 날짜'}</label>
-        <input type="date" id="f-date" value="${today}">
+        <label id="date-label">지출 날짜</label>
+        <input type="date" id="f-date">
       </div>
     </div>
 
-    ${fixedField}
+    <div class="field expense-only">
+      <label>고정비 분류</label>
+      <div class="chip-group" id="chips-fixed"></div>
+    </div>
 
     <div class="field">
       <label>결제 수단</label>
@@ -406,178 +256,225 @@ function renderForm() {
       <label>소비 유형</label>
       <div class="chip-group" id="chips-spend"></div>
     </div>
-  `;
+  </div>
 
-  renderChips();
-}
+  <div class="submit-bar">
+    <button class="submit-btn" id="submit-btn">기록하기</button>
+  </div>
 
-function renderChips() {
-  // Payment chips
-  const payWrap = document.getElementById('chips-payment');
-  if (payWrap) {
-    payWrap.innerHTML = PAYMENTS[currentType].map(p =>
-      `<span class="chip${selectedPayment === p ? ' selected' : ''}"
-            onclick="pickChip('payment','${p}')">${p}</span>`
-    ).join('');
+  <div class="recent" id="recent-list"></div>
+</div>
+
+<script>
+(function() {
+  // Theme — 기본 라이트모드
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('mode') === 'dark') {
+    document.documentElement.classList.add('dark');
   }
 
-  // Spend type chips
-  const spendWrap = document.getElementById('chips-spend');
-  if (spendWrap) {
-    spendWrap.innerHTML = SPEND_TYPES.map(s =>
-      `<span class="chip${selectedSpendType === s ? ' selected' : ''}"
-            onclick="pickChip('spend','${s}')">${s}</span>`
-    ).join('');
-  }
+  // State
+  var currentType = 'expense';
+  var selectedPayment = '';
+  var selectedSpendType = '';
+  var selectedFixedCategory = '';
+  var recentItems = [];
+  try { recentItems = JSON.parse(localStorage.getItem('finance_recent_v2') || '[]'); } catch(e) { recentItems = []; }
 
-  // Fixed category chips (expense only)
-  const fixedWrap = document.getElementById('chips-fixed');
-  if (fixedWrap) {
-    fixedWrap.innerHTML = FIXED_CATEGORIES.map(c =>
-      `<span class="chip${selectedFixedCategory === c ? ' selected' : ''}"
-            onclick="pickChip('fixed','${c}')">${c}</span>`
-    ).join('');
-  }
-}
-
-function pickChip(group, value) {
-  if (group === 'payment') {
-    selectedPayment = selectedPayment === value ? '' : value;
-  } else if (group === 'spend') {
-    selectedSpendType = selectedSpendType === value ? '' : value;
-  } else if (group === 'fixed') {
-    selectedFixedCategory = selectedFixedCategory === value ? '' : value;
-  }
-  renderChips();
-}
-
-// Tab switch
-function switchTab(type) {
-  currentType = type;
-  selectedPayment = '';
-  selectedSpendType = '';
-  selectedFixedCategory = '';
-  document.querySelectorAll('.tab').forEach(t => {
-    t.classList.toggle('active', t.dataset.type === type);
-  });
-  renderForm();
-}
-
-// Status flash
-function showStatus(msg, duration = 2000) {
-  const el = document.getElementById('status');
-  el.textContent = msg;
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), duration);
-}
-
-// Submit
-async function submitEntry() {
-  const title = document.getElementById('f-title').value.trim();
-  const amount = parseInt(document.getElementById('f-amount').value, 10);
-  const date = document.getElementById('f-date').value;
-
-  if (!title) { showStatus('내역을 입력하세요'); return; }
-  if (!amount || amount <= 0) { showStatus('금액을 입력하세요'); return; }
-
-  const btn = document.getElementById('submit-btn');
-  btn.disabled = true;
-  btn.textContent = '저장 중...';
-
-  const entry = {
-    action: currentType === 'income' ? 'createIncome' : 'createExpense',
-    title,
-    amount,
-    date,
-    payment: selectedPayment || null,
-    spendType: selectedSpendType || null,
+  var PAYMENTS = {
+    income:  ['현금', '토스카드', '토스 통장', '농협 통장'],
+    expense: ['현금', '토스카드', '토스통장', '농협카드', '농협통장', '하나은행통장', 'IBK 기업은행통장', '삼성카드']
   };
+  var SPEND_TYPES = ['행복', '낭비', '미래', '성장', '필수'];
+  var FIXED_CATEGORIES = ['식비', '저축', '오프라인 고정비', '온라인 구독', 'AI 구독', '비상금', '카페', '기타'];
 
-  if (currentType === 'expense' && selectedFixedCategory) {
-    entry.fixedCategory = selectedFixedCategory;
+  // Set today's date
+  var now = new Date();
+  var y = now.getFullYear();
+  var m = String(now.getMonth() + 1).padStart(2, '0');
+  var d = String(now.getDate()).padStart(2, '0');
+  var today = y + '-' + m + '-' + d;
+  document.getElementById('f-date').value = today;
+
+  // Build chips helper
+  function buildChips(container, items, selectedValue, groupName) {
+    var html = '';
+    for (var i = 0; i < items.length; i++) {
+      var item = items[i];
+      var cls = selectedValue === item ? 'chip selected' : 'chip';
+      html += '<span class="' + cls + '" data-group="' + groupName + '" data-value="' + item + '">' + item + '</span>';
+    }
+    container.innerHTML = html;
   }
 
-  try {
-    const res = await fetch('/api/notion', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(entry),
-    });
+  function renderAllChips() {
+    buildChips(document.getElementById('chips-payment'), PAYMENTS[currentType], selectedPayment, 'payment');
+    buildChips(document.getElementById('chips-spend'), SPEND_TYPES, selectedSpendType, 'spend');
+    var fixedEl = document.getElementById('chips-fixed');
+    if (fixedEl) {
+      buildChips(fixedEl, FIXED_CATEGORIES, selectedFixedCategory, 'fixed');
+    }
+  }
 
-    const data = await res.json();
-    if (!res.ok || !data.success) throw new Error(data.error || 'Failed');
+  // Chip click delegation
+  document.addEventListener('click', function(e) {
+    var chip = e.target.closest('.chip');
+    if (!chip) return;
+    var group = chip.getAttribute('data-group');
+    var value = chip.getAttribute('data-value');
+    if (!group || !value) return;
 
-    // Save to recent
-    const recentEntry = {
-      type: currentType,
-      title,
-      amount,
-      payment: selectedPayment,
-      timestamp: Date.now(),
-    };
-    recentItems.unshift(recentEntry);
-    if (recentItems.length > 20) recentItems = recentItems.slice(0, 20);
-    localStorage.setItem('finance_recent_v2', JSON.stringify(recentItems));
-    renderRecent();
+    if (group === 'payment') {
+      selectedPayment = selectedPayment === value ? '' : value;
+    } else if (group === 'spend') {
+      selectedSpendType = selectedSpendType === value ? '' : value;
+    } else if (group === 'fixed') {
+      selectedFixedCategory = selectedFixedCategory === value ? '' : value;
+    }
+    renderAllChips();
+  });
 
-    // Reset form
-    document.getElementById('f-title').value = '';
-    document.getElementById('f-amount').value = '';
+  // Tab switch
+  document.getElementById('tab-expense').addEventListener('click', function() { switchTab('expense'); });
+  document.getElementById('tab-income').addEventListener('click', function() { switchTab('income'); });
+
+  function switchTab(type) {
+    currentType = type;
     selectedPayment = '';
     selectedSpendType = '';
     selectedFixedCategory = '';
-    renderChips();
 
-    btn.textContent = '저장 완료';
-    btn.classList.add('success');
-    showStatus('Notion에 저장됨');
-    setTimeout(() => {
+    document.getElementById('tab-expense').className = type === 'expense' ? 'tab active' : 'tab';
+    document.getElementById('tab-income').className = type === 'income' ? 'tab active' : 'tab';
+
+    document.getElementById('f-title').placeholder = type === 'expense' ? '무엇에 사용했나요?' : '어디서 들어온 소득인가요?';
+    document.getElementById('date-label').textContent = type === 'expense' ? '지출 날짜' : '소득 날짜';
+
+    if (type === 'income') {
+      document.body.classList.add('income-mode');
+    } else {
+      document.body.classList.remove('income-mode');
+    }
+
+    renderAllChips();
+  }
+
+  // Status flash
+  function showStatus(msg, duration) {
+    var el = document.getElementById('status');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(function() { el.classList.remove('show'); }, duration || 2000);
+  }
+
+  // Submit
+  document.getElementById('submit-btn').addEventListener('click', function() { submitEntry(); });
+
+  function submitEntry() {
+    var titleEl = document.getElementById('f-title');
+    var amountEl = document.getElementById('f-amount');
+    var dateEl = document.getElementById('f-date');
+
+    var title = titleEl.value.trim();
+    var amount = parseInt(amountEl.value, 10);
+    var date = dateEl.value;
+
+    if (!title) { showStatus('내역을 입력하세요'); return; }
+    if (!amount || amount <= 0) { showStatus('금액을 입력하세요'); return; }
+
+    var btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.textContent = '저장 중...';
+
+    var body = {
+      action: currentType === 'income' ? 'createIncome' : 'createExpense',
+      title: title,
+      amount: amount,
+      date: date,
+      payment: selectedPayment || null,
+      spendType: selectedSpendType || null
+    };
+
+    if (currentType === 'expense' && selectedFixedCategory) {
+      body.fixedCategory = selectedFixedCategory;
+    }
+
+    fetch('/api/notion', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    })
+    .then(function(res) { return res.json().then(function(data) { return { ok: res.ok, data: data }; }); })
+    .then(function(result) {
+      if (!result.ok || !result.data.success) {
+        throw new Error(result.data.error || 'Failed');
+      }
+
+      // Save to recent
+      recentItems.unshift({ type: currentType, title: title, amount: amount, timestamp: Date.now() });
+      if (recentItems.length > 20) recentItems = recentItems.slice(0, 20);
+      try { localStorage.setItem('finance_recent_v2', JSON.stringify(recentItems)); } catch(e) {}
+      renderRecent();
+
+      // Reset
+      titleEl.value = '';
+      amountEl.value = '';
+      selectedPayment = '';
+      selectedSpendType = '';
+      selectedFixedCategory = '';
+      renderAllChips();
+
+      btn.textContent = '저장 완료';
+      btn.classList.add('success');
+      showStatus('Notion에 저장됨');
+      setTimeout(function() { btn.textContent = '기록하기'; btn.classList.remove('success'); }, 1500);
+    })
+    .catch(function(err) {
+      showStatus('저장 실패: ' + err.message, 3000);
       btn.textContent = '기록하기';
-      btn.classList.remove('success');
-    }, 1500);
-
-  } catch (err) {
-    console.error(err);
-    showStatus('저장 실패: ' + err.message, 3000);
-    btn.textContent = '기록하기';
-  } finally {
-    btn.disabled = false;
+    })
+    .finally(function() {
+      btn.disabled = false;
+    });
   }
-}
 
-// Recent entries
-function renderRecent() {
-  const wrap = document.getElementById('recent-list');
-  const items = recentItems.slice(0, 5);
-  if (!items.length) { wrap.innerHTML = ''; return; }
+  // Recent entries
+  function renderRecent() {
+    var wrap = document.getElementById('recent-list');
+    var items = recentItems.slice(0, 5);
+    if (!items.length) { wrap.innerHTML = ''; return; }
 
-  wrap.innerHTML = items.map(e => {
-    const isIncome = e.type === 'income';
-    const sign = isIncome ? '+' : '-';
-    const cls = isIncome ? 'income' : 'expense';
-    const label = isIncome ? '소득' : '지출';
-    const formatted = Number(e.amount).toLocaleString();
-    return `<div class="recent-item">
-      <div class="recent-left">
-        <span class="recent-type ${cls}">${label}</span>
-        <span class="recent-title">${e.title}</span>
-      </div>
-      <span class="recent-amount ${cls}">${sign}${formatted}</span>
-    </div>`;
-  }).join('');
-}
-
-// Keyboard shortcut
-document.addEventListener('keydown', e => {
-  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-    e.preventDefault();
-    submitEntry();
+    var html = '';
+    for (var i = 0; i < items.length; i++) {
+      var e = items[i];
+      var isIncome = e.type === 'income';
+      var sign = isIncome ? '+' : '-';
+      var cls = isIncome ? 'income' : 'expense';
+      var label = isIncome ? '소득' : '지출';
+      var formatted = Number(e.amount).toLocaleString();
+      html += '<div class="recent-item">' +
+        '<div class="recent-left">' +
+        '<span class="recent-type ' + cls + '">' + label + '</span>' +
+        '<span class="recent-title">' + e.title + '</span>' +
+        '</div>' +
+        '<span class="recent-amount ' + cls + '">' + sign + formatted + '</span>' +
+        '</div>';
+    }
+    wrap.innerHTML = html;
   }
-});
 
-// Init
-renderForm();
-renderRecent();
+  // Keyboard shortcut
+  document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      submitEntry();
+    }
+  });
+
+  // Init
+  renderAllChips();
+  renderRecent();
+})();
 </script>
 
 </body>
