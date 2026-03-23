@@ -399,6 +399,27 @@
       body.fixedCategory = selectedFixedCategory;
     }
 
+    // Optimistic UI — 즉시 성공 처리, API는 백그라운드
+    recentItems.unshift({ type: currentType, title: title, amount: amount, timestamp: Date.now() });
+    if (recentItems.length > 20) recentItems = recentItems.slice(0, 20);
+    try { localStorage.setItem('finance_recent_v2', JSON.stringify(recentItems)); } catch(e) {}
+    renderRecent();
+
+    // 즉시 폼 리셋 — 바로 다음 입력 가능
+    titleEl.value = '';
+    amountEl.value = '';
+    selectedPayment = '';
+    selectedSpendType = '';
+    selectedFixedCategory = '';
+    renderAllChips();
+    titleEl.focus();
+
+    btn.textContent = '저장 완료';
+    btn.classList.add('success');
+    btn.disabled = false;
+    setTimeout(function() { btn.textContent = '기록하기'; btn.classList.remove('success'); }, 800);
+
+    // 백그라운드 API 호출
     fetch('/api/notion', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -407,34 +428,11 @@
     .then(function(res) { return res.json().then(function(data) { return { ok: res.ok, data: data }; }); })
     .then(function(result) {
       if (!result.ok || !result.data.success) {
-        throw new Error(result.data.error || 'Failed');
+        showStatus('동기화 실패', 2000);
       }
-
-      // Save to recent
-      recentItems.unshift({ type: currentType, title: title, amount: amount, timestamp: Date.now() });
-      if (recentItems.length > 20) recentItems = recentItems.slice(0, 20);
-      try { localStorage.setItem('finance_recent_v2', JSON.stringify(recentItems)); } catch(e) {}
-      renderRecent();
-
-      // Reset
-      titleEl.value = '';
-      amountEl.value = '';
-      selectedPayment = '';
-      selectedSpendType = '';
-      selectedFixedCategory = '';
-      renderAllChips();
-
-      btn.textContent = '저장 완료';
-      btn.classList.add('success');
-      showStatus('Notion에 저장됨');
-      setTimeout(function() { btn.textContent = '기록하기'; btn.classList.remove('success'); }, 1500);
     })
     .catch(function(err) {
-      showStatus('저장 실패: ' + err.message, 3000);
-      btn.textContent = '기록하기';
-    })
-    .finally(function() {
-      btn.disabled = false;
+      showStatus('동기화 실패: ' + err.message, 3000);
     });
   }
 
