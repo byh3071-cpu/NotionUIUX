@@ -300,7 +300,9 @@
             await new Promise(r => setTimeout(r, 300));
             try {
                 if (CSV_URL && CSV_URL !== '') {
-                    const response = await fetch(CSV_URL + '&t=' + new Date().getTime());
+                    // http로 시작하는 등 외부 URL일 때만 캐시 무효화 파라미터 추가 (로컬 파일 에러 방지)
+                    const cacheBuster = CSV_URL.startsWith('http') ? (CSV_URL.includes('?') ? '&' : '?') + 't=' + new Date().getTime() : '';
+                    const response = await fetch(CSV_URL + cacheBuster);
                     if(!response.ok) throw new Error("Network response was not ok");
                     const csvText = await response.text();
                     renderData(parseCSV(csvText));
