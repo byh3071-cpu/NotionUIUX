@@ -206,8 +206,8 @@
         // 로컬에 있는 CSV 파일(investment-data.csv)을 직접 불러옵니다.
         const CSV_URL = 'investment-data.csv'; 
         
-        // 데이터 대치용 (적립식 투자 포함 버젼)
-        const DUMMY_CSV = `목표일자,목표금액,초기자산,월적립액,시작일자,현재자산(자동)\n2028-12-31,50000000,18520000,1000000,2024-03-31,19520000`;
+        // 데이터 대치용 (CSV 로드 실패 시 사용 - 실제 값과 동일하게 유지할 것)
+        const DUMMY_CSV = `목표일자,목표금액,초기자산,월적립액,시작일자,현재자산(자동)\n2030-12-31,50000000,25000000,1000000,2027-08-31,25000000`;
         // =======================================
         function parseCSV(csvText) {
             const lines = csvText.trim().split('\n');
@@ -300,9 +300,10 @@
             await new Promise(r => setTimeout(r, 300));
             try {
                 if (CSV_URL && CSV_URL !== '') {
-                    // http로 시작하는 등 외부 URL일 때만 캐시 무효화 파라미터 추가 (로컬 파일 에러 방지)
-                    const cacheBuster = CSV_URL.startsWith('http') ? (CSV_URL.includes('?') ? '&' : '?') + 't=' + new Date().getTime() : '';
-                    const response = await fetch(CSV_URL + cacheBuster);
+                    // 로컬 파일이면 캐시버스터 없이, 외부 URL(구글시트 등)이면 캐시버스터 추가
+                    const isExternal = CSV_URL.startsWith('http');
+                    const fetchUrl = isExternal ? CSV_URL + '&t=' + new Date().getTime() : CSV_URL;
+                    const response = await fetch(fetchUrl);
                     if(!response.ok) throw new Error("Network response was not ok");
                     const csvText = await response.text();
                     renderData(parseCSV(csvText));
