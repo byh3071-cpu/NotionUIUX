@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>투자 목표 위젯 v2</title>
+    <!-- 2030 트렌드: Pretendard 폰트 (토스 스타일) -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <style>
+        :root {
+            --bg-color: transparent;
+            --text-color: #37352F;   
+            --border-color: #EAEAEC; 
+            --accent-color: #111111; 
+            --accent-gradient: linear-gradient(90deg, #333333, #000000); /* 프리미엄 그라데이션 */
+            --gray-color: rgba(55, 53, 47, 0.65); 
+            --bar-bg: #EAEAEC;       
+            --notion-bg: #FFFFFF;
+        }
+        /* 위젯 진입 애니메이션 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* 뼈대(Skeleton) 로딩 애니메이션 */
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        /* 100% 달성 시 축하 글로우 */
+        @keyframes glow {
+            0% { box-shadow: 0 0 4px rgba(0,0,0,0.1); }
+            50% { box-shadow: 0 0 12px rgba(0,0,0,0.3); }
+            100% { box-shadow: 0 0 4px rgba(0,0,0,0.1); }
+        }
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 8px; /* 노션 임베드 시 최소 패딩 */
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+            user-select: none; 
+            -webkit-user-select: none;
+            overflow: hidden; 
+        }
+        .widget-container {
+            width: 100%;
+            min-width: 220px;
+            max-width: 340px; 
+            background: var(--notion-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px; 
+            box-shadow: 0 2px 14px rgba(0, 0, 0, 0.03); 
+            display: flex;
+            flex-direction: column;
+            gap: 24px;    
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+        .widget-container:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08); 
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap; 
+            gap: 8px;
+        }
+        .d-day-badge {
+            background-color: var(--accent-color);
+            color: #FFFFFF;
+            font-size: 13px;
+            font-weight: 700;
+            padding: 5px 10px;
+            border-radius: 8px;
+            line-height: 1;
+        }
+        .target-text {
+            font-size: 13px;
+            color: var(--gray-color);
+            font-weight: 500;
+        }
+        .main-amount {
+            display: flex;
+            flex-direction: column;
+            gap: 8px; 
+        }
+        .amount-label {
+            font-size: 14px;
+            color: var(--gray-color);
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+        }
+        .monthly-badge {
+            font-size: 11px;
+            font-weight: 600;
+            color: #FFFFFF;
+            background: var(--accent-color);
+            border-radius: 6px;
+            padding: 2px 6px;
+            margin-left: 8px;
+        }
+        .amount-value {
+            font-size: 36px; 
+            font-weight: 800;
+            letter-spacing: -1.2px;
+            color: var(--accent-color);
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+            display: flex;
+            align-items: baseline; 
+            gap: 2px;
+        }
+        .currency-unit {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: var(--text-color);
+        }
+        .progress-section {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .progress-bar-bg {
+            width: 100%;
+            height: 6px; 
+            background-color: var(--bar-bg);
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--accent-gradient);
+            width: 0%;
+            transition: width 2s cubic-bezier(0.2, 0.8, 0.2, 1);
+            border-radius: 6px;
+        }
+        .progress-bar-fill.success {
+            animation: glow 2s infinite ease-in-out;
+            background: #000000; 
+        }
+        .progress-rate {
+            text-align: right;
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--accent-color);
+            letter-spacing: -0.5px;
+            font-variant-numeric: tabular-nums;
+            display: flex;
+            justify-content: flex-end;
+            align-items: baseline;
+        }
+        .percent-unit {
+            font-size: 13px;
+            font-weight: 700;
+            margin-left: 1px;
+        }
+        .skeleton {
+            background: #EAEAEC;
+            background-image: linear-gradient(90deg, #EAEAEC 0px, #F5F5F7 40px, #EAEAEC 80px);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite linear;
+            border-radius: 4px;
+            color: transparent !important; 
+            display: inline-block;
+        }
+        
+    </style>
+</head>
+<body>
+    <article class="widget-container" id="widget">
+        
+        <header class="header">
+            <div class="d-day-badge skeleton" id="dDay">D-00</div>
+            <div class="target-text skeleton" id="targetInfo">목표: 0원</div>
+        </header>
+        <section class="main-amount">
+            <div class="amount-label">
+                누적 현금 자산 
+                <span class="monthly-badge skeleton" id="monthlySavings">매월 0원 적립</span>
+            </div>
+            <div class="amount-value skeleton" id="currentAsset">0<span class="currency-unit">원</span></div>
+        </section>
+        <section class="progress-section">
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progressBar"></div>
+            </div>
+            <div class="progress-rate skeleton" id="progressRate">0.0<span class="percent-unit">%</span></div>
+        </section>
+    </article>
+    <script>
+        // ============== [설정 부분] ==============
+        // 로컬에 있는 CSV 파일(investment-data.csv)을 직접 불러옵니다.
+        const CSV_URL = 'investment-data.csv'; 
+        
+        // 데이터 대치용 (적립식 투자 포함 버젼)
+        const DUMMY_CSV = `목표일자,목표금액,초기자산,월적립액,시작일자,현재자산(자동)\n2028-12-31,50000000,18520000,1000000,2024-03-31,19520000`;
+        // =======================================
+        function parseCSV(csvText) {
+            const lines = csvText.trim().split('\n');
+            if (lines.length < 2) return null;
+            const data = lines[1].split(',').map(item => item.replace(/"/g, '').trim());
+            return {
+                targetDate: data[0],
+                targetAmount: parseInt(data[1], 10) || 0,
+                monthlySavings: parseInt(data[3], 10) || 0,
+                currentAsset: parseInt(data[5], 10) || 0
+            };
+        }
+        function calculateDDay(targetDateStr) {
+            if (!targetDateStr) return 'D-?';
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            
+            const target = new Date(targetDateStr);
+            if(isNaN(target.getTime())) return 'D-?';
+            target.setHours(0, 0, 0, 0);
+            const diffDays = Math.ceil((target - today) / (1000 * 60 * 60 * 24));
+            
+            if (diffDays > 0) return `D-` + diffDays;
+            if (diffDays === 0) return 'D-Day';
+            return `D+` + Math.abs(diffDays);
+        }
+        function removeSkeleton() {
+            document.querySelectorAll('.skeleton').forEach(el => el.classList.remove('skeleton'));
+        }
+        function easeOutExpo(x) {
+            return x === 1 ? 1 : 1 - Math.pow(2, -10 * x);
+        }
+        function animateNumber(element, start, end, duration, formatFn) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                const ease = easeOutExpo(progress);
+                const currentVal = (ease * (end - start) + start);
+                
+                element.innerHTML = formatFn(currentVal);
+                
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                } else {
+                    element.innerHTML = formatFn(end); 
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+        function renderData(data) {
+            if (!data) return;
+            removeSkeleton(); 
+            document.getElementById('dDay').innerText = calculateDDay(data.targetDate);
+            
+            let targetShort = data.targetAmount.toLocaleString('ko-KR') + '원';
+            if(data.targetAmount >= 10000 && data.targetAmount % 10000 === 0) {
+                targetShort = (data.targetAmount / 10000).toLocaleString('ko-KR') + '만원';
+            }
+            document.getElementById('targetInfo').innerText = `목표: ${targetShort}`;
+
+            const monthlyEl = document.getElementById('monthlySavings');
+            if(data.monthlySavings > 0) {
+                let monthlyShort = data.monthlySavings.toLocaleString('ko-KR') + '원';
+                if(data.monthlySavings >= 10000 && data.monthlySavings % 10000 === 0) {
+                    monthlyShort = (data.monthlySavings / 10000).toLocaleString('ko-KR') + '만원';
+                }
+                monthlyEl.innerText = `매월 ${monthlyShort} 적립 중`;
+                monthlyEl.style.display = 'inline-block';
+            } else {
+                monthlyEl.style.display = 'none';
+            }
+
+            let percent = (data.currentAsset / data.targetAmount) * 100;
+            if (percent > 100) percent = 100;
+            if (percent < 0) percent = 0;
+            
+            setTimeout(() => {
+                const bar = document.getElementById('progressBar');
+                bar.style.width = `${percent}%`;
+                if(percent === 100) bar.classList.add('success');
+            }, 50);
+            
+            const rateEl = document.getElementById('progressRate');
+            animateNumber(rateEl, 0, percent, 2000, (val) => val.toFixed(1) + '<span class="percent-unit">%</span>');
+            const assetEl = document.getElementById('currentAsset');
+            animateNumber(assetEl, 0, data.currentAsset, 2200, (val) => Math.floor(val).toLocaleString('ko-KR') + '<span class="currency-unit">원</span>');
+        }
+        async function init() {
+            await new Promise(r => setTimeout(r, 300));
+            try {
+                if (CSV_URL && CSV_URL !== '') {
+                    const response = await fetch(CSV_URL + '&t=' + new Date().getTime());
+                    if(!response.ok) throw new Error("Network response was not ok");
+                    const csvText = await response.text();
+                    renderData(parseCSV(csvText));
+                } else {
+                    renderData(parseCSV(DUMMY_CSV));
+                }
+            } catch (error) {
+                console.error("데이터 로드 실패:", error);
+                renderData(parseCSV(DUMMY_CSV));
+            }
+        }
+        window.onload = init;
+    </script>
+</body>
+</html>
