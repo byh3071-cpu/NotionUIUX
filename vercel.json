@@ -7,8 +7,11 @@
     { "source": "/embed/weather", "destination": "/embed/weather.html" },
     { "source": "/embed/pomodoro", "destination": "/embed/pomodomo.html" },
     { "source": "/embed/todo", "destination": "/embed/todo.html" },
+    { "source": "/embed/todo2", "destination": "/embed/todo2.html" },
     { "source": "/embed/schedule", "destination": "/embed/schedule.html" },
     { "source": "/embed/memo", "destination": "/embed/memo.html" },
-    { "source": "/embed/finance", "destination": "/embed/finance.html" }
+    { "source": "/embed/finance", "destination": "/embed/finance.html" },
+    { "source": "/embed/project", "destination": "/embed/project.html" },
+    { "source": "/embed/investment", "destination": "/embed/investment-dashboard.html" }
   ]
 }
